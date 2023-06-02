@@ -42,4 +42,4 @@ jobs:
         run: dotnet test --no-restore --verbosity normal      
       - name: Publish
         if: startsWith(github.ref, 'refs/heads/release')
-        run: nuget push **\*.nupkg -Source 'https://api.nuget.org/v3.index.json' -ApiKey ${{secrets.NUGET_APIKEY}}
+        run: nuget push **\*.nupkg -Source https://api.nuget.org/v3/index.json -ApiKey ${{secrets.NUGET_APIKEY}}
