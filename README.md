@@ -1,6 +1,6 @@
 # About
 
-This is a fork of the [ElmahCore](https://github.com/ElmahCoreEx/ElmahCoreEx) project, with changes for PR's that were sitting idle.
+This is a fork of the [ElmahCore](https://github.com/ElmahCore/ElmahCore) project, with changes for PR's that were sitting idle.
 It should be an almost slot in replacement for ElmahCore v2.1.2.
 
 See [changelog.md](changelog.md) for any further changes from v2.1.2
