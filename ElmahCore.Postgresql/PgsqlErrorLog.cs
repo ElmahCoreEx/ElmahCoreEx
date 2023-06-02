@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 using Npgsql;
 using NpgsqlTypes;
@@ -10,6 +11,7 @@ namespace ElmahCore.Postgresql
     ///     An <see cref="ErrorLog" /> implementation that uses PostgreSQL
     ///     as its backing store.
     /// </summary>
+    [UsedImplicitly]
     public class PgsqlErrorLog : ErrorLog
     {
         private const int MaxAppNameLength = 60;
@@ -140,7 +142,7 @@ namespace ElmahCore.Postgresql
         }
 
         /// <summary>
-        ///     Creates the neccessary tables and sequences used by this implementation
+        ///     Creates the necessary tables and sequences used by this implementation
         /// </summary>
         private void CreateTableIfNotExists()
         {
@@ -255,7 +257,8 @@ VALUES (@ErrorId, @Application, @Host, @Type, @Source, @Message, @User, @StatusC
 
                 command.CommandText =
                     @"
-SELECT AllXml FROM Elmah_Error 
+SELECT AllXml 
+FROM Elmah_Error 
 WHERE 
     Application = @Application 
     AND ErrorId = @ErrorId

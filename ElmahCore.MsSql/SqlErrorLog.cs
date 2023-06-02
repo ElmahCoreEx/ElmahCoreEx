@@ -26,19 +26,9 @@ namespace ElmahCore.Sql
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="SqlErrorLog" /> class
-        ///     to use a specific connection string for connecting to the database.
-        /// </summary>
-        public SqlErrorLog(string connectionString)
-            : this(connectionString, null, null, true)
-        {
-
-        }
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="SqlErrorLog" /> class
         ///     to use a specific connection string for connecting to the database and a specific schema and table name.
         /// </summary>
-        public SqlErrorLog(string connectionString, string schemaName, string tableName, bool createTablesIfNotExist)
+        public SqlErrorLog(string connectionString, string schemaName = null, string tableName = null, bool createTablesIfNotExist = true)
         {
             if (string.IsNullOrEmpty(connectionString))
                 throw new ArgumentNullException(nameof(connectionString));
@@ -85,15 +75,13 @@ namespace ElmahCore.Sql
             {
                 var errorXml = ErrorXml.EncodeString(error);
 
-                using (var connection = new SqlConnection(ConnectionString))
-                using (var command = Commands.LogError(id, ApplicationName, error.HostName, error.Type, error.Source,
-                           error.Message, error.User, error.StatusCode, error.Time, errorXml,
-                           DatabaseSchemaName, DatabaseTableName))
-                {
-                    command.Connection = connection;
-                    connection.Open();
-                    command.ExecuteNonQuery();
-                }
+                using var connection = new SqlConnection(ConnectionString);
+                using var command = Commands.LogError(id, ApplicationName, error.HostName, error.Type, error.Source,
+                    error.Message, error.User, error.StatusCode, error.Time, errorXml,
+                    DatabaseSchemaName, DatabaseTableName);
+                command.Connection = connection;
+                connection.Open();
+                command.ExecuteNonQuery();
             }
             catch
             {
@@ -140,33 +128,31 @@ namespace ElmahCore.Sql
             if (errorIndex < 0) throw new ArgumentOutOfRangeException(nameof(errorIndex), errorIndex, null);
             if (pageSize < 0) throw new ArgumentOutOfRangeException(nameof(pageSize), pageSize, null);
 
-            using (var connection = new SqlConnection(ConnectionString))
+            using var connection = new SqlConnection(ConnectionString);
+            connection.Open();
+
+            using (var command = Commands.GetErrorsXml(ApplicationName, errorIndex, pageSize,
+                       DatabaseSchemaName, DatabaseTableName))
             {
-                connection.Open();
+                command.Connection = connection;
 
-                using (var command = Commands.GetErrorsXml(ApplicationName, errorIndex, pageSize,
-                DatabaseSchemaName, DatabaseTableName))
+                using (var reader = command.ExecuteReader())
                 {
-                    command.Connection = connection;
-
-                    using (var reader = command.ExecuteReader())
+                    while (reader.Read())
                     {
-                        while (reader.Read())
-                        {
-                            var id = reader.GetGuid(0);
-                            var xml = reader.GetString(1);
-                            var error = ErrorXml.DecodeString(xml);
-                            errorEntryList.Add(new ErrorLogEntry(this, id.ToString(), error));
-                        }
+                        var id = reader.GetGuid(0);
+                        var xml = reader.GetString(1);
+                        var error = ErrorXml.DecodeString(xml);
+                        errorEntryList.Add(new ErrorLogEntry(this, id.ToString(), error));
                     }
                 }
+            }
 
-                using (var command = Commands.GetErrorsXmlTotal(ApplicationName,
-                DatabaseSchemaName, DatabaseTableName))
-                {
-                    command.Connection = connection;
-                    return int.Parse(command.ExecuteScalar().ToString());
-                }
+            using (var command = Commands.GetErrorsXmlTotal(ApplicationName,
+                       DatabaseSchemaName, DatabaseTableName))
+            {
+                command.Connection = connection;
+                return int.Parse(command.ExecuteScalar().ToString());
             }
         }
 
