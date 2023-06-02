@@ -1,0 +1,49 @@
+name: release
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+  NUGET_PUSH_SOURCE: https://api.nuget.org/v3/index.json
+  NuGetDirectory: ${{ github.workspace}}/nuget
+
+defaults:
+  run:
+    shell: pwsh
+    working-directory: ./
+
+on: 
+  push:
+    # matched against refs/heads
+    branches-ignore:
+    - develop
+    # matched against ref/tags
+    tags:
+    - 1.*
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dotnet-version: ['6.0.x']
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # get all history to allow MinVer to work.
+      - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}      
+      - name: Install dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+      - name: Test
+        run: dotnet test --no-restore --verbosity normal      
+      - name: Publish
+        env:
+          API_KEY: ${{ secrets.NUGET_APIKEY }}
+          SOURCE: ${{ env.NUGET_PUSH_SOURCE }}
+        if: startsWith(github.ref, 'refs/heads/release')
+        run: nuget push **/*.nupkg -Source ${{ env.SOURCE }} -ApiKey ${{ env.API_KEY }}
+
