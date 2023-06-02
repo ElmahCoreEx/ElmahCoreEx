@@ -43,7 +43,12 @@ jobs:
         run: dotnet restore
       - name: Build
         # Create the NuGet package in the folder from the environment variable NuGetDirectory
-        run: dotnet pack --configuration Release --output ${{ env.NuGetDirectory }}
+        run: |
+          dotnet pack ElmahCore.MsSql\ElmahCore.sql.csproj --configuration Release --output ${{ env.NugetDirectory }}
+          dotnet pack ElmahCore.Postgresql\ElmahCore.Postgresql.csproj --configuration Release --output ${{ env.NugetDirectory }}
+          dotnet pack ElmahCore.MySql\ElmahCore.MySql.csproj --configuration Release --output ${{ env.NugetDirectory }}
+          dotnet pack ElmahCore.Mvc\ElmahCore.Mvc.csproj --configuration Release --output ${{ env.NugetDirectory }}
+          dotnet pack ElmahCore\ElmahCore.csproj --configuration Release --output ${{ env.NugetDirectory }}
       - name: Test
         run: dotnet test --no-restore --verbosity normal      
       - uses: actions/upload-artifact@v3
