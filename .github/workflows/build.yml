@@ -10,13 +10,11 @@ defaults:
     shell: pwsh
 
 on: 
-  create:
-    branches: 
-    - release/**
   push:
     branches:
     - main
     - develop
+    - release/**
   pull_request:
     branches:
     - main
