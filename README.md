@@ -3,7 +3,7 @@
 This is a fork of the [ElmahCore](https://github.com/ElmahCoreEx/ElmahCoreEx) project, with changes for PR's that were sitting idle.
 It should be an almost slot in replacement for ElmahCore v2.1.2.
 
-See changelog.md for differences
+See [changelog.md](changelog.md) for any further changes from v2.1.2
 
 **Please note:** The source code for the front end appears non-existant, in ElmahCore the front end Vue SPA files are all [minified](https://github.com/ElmahCoreEx/ElmahCoreEx/issues/77). Consider this a warning sign for the continuation of the front end without a rewrite WITH SOURCE.  Sourcemaps may have enough content to obtain the code but this has not be investigated.
 
