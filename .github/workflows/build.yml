@@ -31,7 +31,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0 #get all history to allow MinVer to work.
+          fetch-depth: 0 # get all history to allow MinVer to work.
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
         uses: actions/setup-dotnet@v3
         with:
@@ -42,10 +42,6 @@ jobs:
         run: dotnet build --configuration Release --no-restore
       - name: Test
         run: dotnet test --no-restore --verbosity normal      
-      # - name: Create the package
-      #   run: dotnet pack --configuration Release <my project>
-      # - name: Publish the package to GPR
-      #   run: dotnet nuget push <my project>/bin/Release/*.nupkg        
       - name: Publish
         if: startsWith(github.ref, 'refs/heads/release')
-        run: nuget push **\*.nupkg -Source 'https://api.nuget.org/v3.index.json' -ApiKey ${{secrets.NUGET_APIKEY}}'
+        run: nuget push **\*.nupkg -Source 'https://api.nuget.org/v3.index.json' -ApiKey ${{secrets.NUGET_APIKEY}}
