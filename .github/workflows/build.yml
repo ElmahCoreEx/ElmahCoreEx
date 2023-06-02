@@ -1,16 +1,37 @@
-name: dotnet package
+name: build
 
-on: [push]
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+  NuGetDirectory: ${{ github.workspace}}/nuget
+
+defaults:
+  run:
+    shell: pwsh
+
+on: 
+  create:
+    branches: 
+    - release/**
+  push:
+    branches:
+    - main
+    - develop
+  pull_request:
+    branches:
+    - main
+    - develop
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       matrix:
         dotnet-version: ['6.0.x']
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 #get all history to allow MinVer to work.
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
         uses: actions/setup-dotnet@v3
         with:
@@ -25,3 +46,6 @@ jobs:
       #   run: dotnet pack --configuration Release <my project>
       # - name: Publish the package to GPR
       #   run: dotnet nuget push <my project>/bin/Release/*.nupkg        
+      - name: Publish
+        if: startsWith(github.ref, 'refs/heads/release')
+        run: nuget push **\*.nupkg -Source 'https://api.nuget.org/v3.index.json' -ApiKey ${{secrets.NUGET_APIKEY}}'

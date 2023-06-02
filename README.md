@@ -1,10 +1,10 @@
 # What is it
 
-This is a fork of the [ElmahCore](https://github.com/ElmahCore/ElmahCore) project, with changes for PR's that were sitting idle.
+This is a fork of the [ElmahCore](https://github.com/ElmahCoreEx/ElmahCoreEx) project, with changes for PR's that were sitting idle.
 It should be an almost slot in replacement for ElmahCore 2.1.2.
 See changelog.md for differences
 
-**Please note:** I was unable to locate source code for the front end, in ElmahCore the front end commits are all [minified}(https://github.com/ElmahCore/ElmahCore/issues/77). I consider this a huge warning sign for the continuation of the front end without source code.
+**Please note:** I was unable to locate source code for the front end, in ElmahCore the front end commits are all [minified}(https://github.com/ElmahCoreEx/ElmahCoreEx/issues/77). I consider this a huge warning sign for the continuation of the front end without source code.
 
 # License
 
@@ -14,7 +14,7 @@ This project is licensed under the terms of the Apache license 2.0.
 
 ELMAH for Net.Standard and Net 6
 
-![alt text](https://github.com/ElmahCore/ElmahCore/raw/master/images/elmah-new-ui.png)
+![alt text](https://github.com/ElmahCoreEx/ElmahCoreEx/raw/master/images/elmah-new-ui.png)
 
 Add nuget package **elmahcore**
 
@@ -69,9 +69,9 @@ This ErrorLogs available in board:
 
 - MemoryErrorLog – store errors in memory (by default)
 - XmlFileErrorLog – store errors in XML files
-- SqlErrorLog - store errors in MS SQL (add reference to [ElmahCore.Sql](https://www.nuget.org/packages/ElmahCore.Sql))
-- MysqlErrorLog - store errors in MySQL (add reference to [ElmahCore.MySql](https://www.nuget.org/packages/ElmahCore.MySql))
-- PgsqlErrorLog - store errors in PostgreSQL (add reference to [ElmahCore.Postgresql](https://www.nuget.org/packages/ElmahCore.Postgresql))
+- SqlErrorLog - store errors in MS SQL (add reference to [ElmahCore.Sql](https://www.nuget.org/packages/ElmahCoreEx.Sql))
+- MysqlErrorLog - store errors in MySQL (add reference to [ElmahCore.MySql](https://www.nuget.org/packages/ElmahCoreEx.MySql))
+- PgsqlErrorLog - store errors in PostgreSQL (add reference to [ElmahCore.Postgresql](https://www.nuget.org/packages/ElmahCoreEx.Postgresql))
 
 ```csharp
 services.AddElmah<XmlFileErrorLog>(options =>
@@ -102,7 +102,7 @@ public IActionResult Test()
 ## Microsoft.Extensions.Logging support
 
 Since version 2.0 ElmahCore support Microsoft.Extensions.Logging
-![alt text](https://github.com/ElmahCore/ElmahCore/raw/master/images/elmah-log.png)
+![alt text](https://github.com/ElmahCoreEx/ElmahCoreEx/raw/master/images/elmah-log.png)
 
 ## Source Preview
 
@@ -128,12 +128,12 @@ Since version 2.0.5 ElmahCore can log the request body.
 ## Logging SQL request body
 
 Since version 2.0.6 ElmahCore can log the SQL request body.
-![alt text](https://github.com/ElmahCore/ElmahCore/raw/master/images/elmah-4.png)
+![alt text](https://github.com/ElmahCoreEx/ElmahCoreEx/raw/master/images/elmah-4.png)
 
 ## Logging method parameters
 
 Since version 2.0.6 ElmahCore can log method parameters.
-![alt text](https://github.com/ElmahCore/ElmahCore/raw/master/images/elmah-5.png)
+![alt text](https://github.com/ElmahCoreEx/ElmahCoreEx/raw/master/images/elmah-5.png)
 
 ```csharp
 using ElmahCore;
