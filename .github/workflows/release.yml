@@ -14,8 +14,8 @@ defaults:
 on: 
   push:
     # matched against refs/heads
-    branches-ignore:
-    - develop
+    # branches-ignore:
+    # - develop
     # matched against ref/tags
     tags:
     - 1.*
@@ -44,6 +44,6 @@ jobs:
         env:
           API_KEY: ${{ secrets.NUGET_APIKEY }}
           SOURCE: ${{ env.NUGET_PUSH_SOURCE }}
-        if: startsWith(github.ref, 'refs/heads/release')
+        # if: startsWith(github.ref, 'refs/heads/release')
         run: nuget push **/*.nupkg -Source ${{ env.SOURCE }} -ApiKey ${{ env.API_KEY }} -SkipDuplicate
 
