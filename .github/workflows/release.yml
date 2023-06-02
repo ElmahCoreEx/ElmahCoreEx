@@ -45,5 +45,5 @@ jobs:
           API_KEY: ${{ secrets.NUGET_APIKEY }}
           SOURCE: ${{ env.NUGET_PUSH_SOURCE }}
         if: startsWith(github.ref, 'refs/heads/release')
-        run: nuget push **/*.nupkg -Source ${{ env.SOURCE }} -ApiKey ${{ env.API_KEY }}
+        run: nuget push **/*.nupkg -Source ${{ env.SOURCE }} -ApiKey ${{ env.API_KEY }} -SkipDuplicate
 
