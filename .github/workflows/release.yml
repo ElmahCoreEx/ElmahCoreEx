@@ -19,6 +19,7 @@ on:
     # matched against ref/tags
     tags:
     - 1.*
+    - 2.*
 
 jobs:
   build:
