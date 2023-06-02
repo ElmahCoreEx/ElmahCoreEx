@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
-using System.Linq.Expressions;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 
 namespace ElmahCore.Sql
@@ -29,7 +28,7 @@ namespace ElmahCore.Sql
         ///     Initializes a new instance of the <see cref="SqlErrorLog" /> class
         ///     to use a specific connection string for connecting to the database.
         /// </summary>
-        public SqlErrorLog(string connectionString) 
+        public SqlErrorLog(string connectionString)
             : this(connectionString, null, null, true)
         {
 
@@ -248,12 +247,12 @@ CREATE NONCLUSTERED INDEX [IX_{tableName}_App_Time_Seq] ON [{schemaName}].[{tabl
     [TimeUtc]       DESC,
     [Sequence]      DESC
 ) 
-ON [PRIMARY]"; 
+ON [PRIMARY]";
             }
 
             public static SqlCommand CheckTable(string schemaName, string tableName)
             {
-                var command = new SqlCommand
+                return new SqlCommand
                 {
                     CommandText = $@"
 SELECT 1 
@@ -265,7 +264,6 @@ WHERE EXISTS (
    )
 "
                 };
-                return command;
             }
 
 
@@ -306,7 +304,7 @@ VALUES (@ErrorId, @Application, @Host, @Type, @Source, @Message, @User, @StatusC
             }
 
             public static SqlCommand GetErrorXml(
-                string appName, 
+                string appName,
                 Guid id,
                 string schemaName,
                 string tableName)
@@ -321,7 +319,6 @@ WHERE
 "
                 };
 
-
                 command.Parameters.Add(new SqlParameter("Application", appName));
                 command.Parameters.Add(new SqlParameter("ErrorId", id));
 
@@ -329,8 +326,8 @@ WHERE
             }
 
             public static SqlCommand GetErrorsXml(
-                string appName, 
-                int errorIndex, 
+                string appName,
+                int errorIndex,
                 int pageSize,
                 string schemaName,
                 string tableName)
@@ -346,7 +343,6 @@ OFFSET     @offset ROWS
 FETCH NEXT @limit ROWS ONLY;
 "
                 };
-
 
                 command.Parameters.Add("@Application", SqlDbType.NVarChar, MaxAppNameLength).Value = appName;
                 command.Parameters.Add("@offset", SqlDbType.Int).Value = errorIndex;
