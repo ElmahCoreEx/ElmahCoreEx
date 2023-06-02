@@ -1,10 +1,13 @@
-# What is it
+# About
 
 This is a fork of the [ElmahCore](https://github.com/ElmahCoreEx/ElmahCoreEx) project, with changes for PR's that were sitting idle.
-It should be an almost slot in replacement for ElmahCore 2.1.2.
+It should be an almost slot in replacement for ElmahCore v2.1.2.
+
 See changelog.md for differences
 
-**Please note:** I was unable to locate source code for the front end, in ElmahCore the front end commits are all [minified}(https://github.com/ElmahCoreEx/ElmahCoreEx/issues/77). I consider this a huge warning sign for the continuation of the front end without source code.
+**Please note:** The source code for the front end appears non-existant, in ElmahCore the front end Vue SPA files are all [minified](https://github.com/ElmahCoreEx/ElmahCoreEx/issues/77). Consider this a warning sign for the continuation of the front end without a rewrite WITH SOURCE.  Sourcemaps may have enough content to obtain the code but this has not be investigated.
+
+The interfaces and namespaces have been kept the same.
 
 # License
 
@@ -12,11 +15,9 @@ This project is licensed under the terms of the Apache license 2.0.
 
 # Using ElmahCore
 
-ELMAH for Net.Standard and Net 6
+ELMAH for Net.Standard 2.0 and .Net 6
 
-![alt text](https://github.com/ElmahCoreEx/ElmahCoreEx/raw/master/images/elmah-new-ui.png)
-
-Add nuget package **elmahcore**
+Add nuget package **ElmahCoreEx**
 
 ## Simple usage
 
@@ -102,7 +103,6 @@ public IActionResult Test()
 ## Microsoft.Extensions.Logging support
 
 Since version 2.0 ElmahCore support Microsoft.Extensions.Logging
-![alt text](https://github.com/ElmahCoreEx/ElmahCoreEx/raw/master/images/elmah-log.png)
 
 ## Source Preview
 
@@ -128,12 +128,10 @@ Since version 2.0.5 ElmahCore can log the request body.
 ## Logging SQL request body
 
 Since version 2.0.6 ElmahCore can log the SQL request body.
-![alt text](https://github.com/ElmahCoreEx/ElmahCoreEx/raw/master/images/elmah-4.png)
 
 ## Logging method parameters
 
 Since version 2.0.6 ElmahCore can log method parameters.
-![alt text](https://github.com/ElmahCoreEx/ElmahCoreEx/raw/master/images/elmah-5.png)
 
 ```csharp
 using ElmahCore;
