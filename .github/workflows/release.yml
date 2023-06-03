@@ -55,7 +55,7 @@ jobs:
           name: nuget
           if-no-files-found: error
           retention-days: 7
-          path: ${{ env.NuGetDirectory }}/*.nupkg
+          path: ${{ env.NUGET_OUT_DIR }}/*.*nupkg
   deploy:
       runs-on: ubuntu-latest
       needs: [build]
