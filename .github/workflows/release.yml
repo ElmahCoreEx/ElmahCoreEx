@@ -47,11 +47,11 @@ jobs:
           NUGET_DIR: ${{ vars.NuGetDirectory }}
         # Create the NuGet package in the folder from the environment variable NuGetDirectory
         run: |
-          dotnet build ElmahCore.MsSql\ElmahCore.sql.csproj --configuration Release --output $NUGET_DIR
-          dotnet build ElmahCore.Postgresql\ElmahCore.Postgresql.csproj --configuration Release --output $NUGET_DIR
-          dotnet build ElmahCore.MySql\ElmahCore.MySql.csproj --configuration Release --output $NUGET_DIR
-          dotnet build ElmahCore.Mvc\ElmahCore.Mvc.csproj --configuration Release --output $NUGET_DIR
-          dotnet build ElmahCore\ElmahCore.csproj --configuration Release --output $NUGET_DIR
+          dotnet build ElmahCore.MsSql\ElmahCore.sql.csproj --configuration Release --output ${{ env.NUGET_DIR }}
+          dotnet build ElmahCore.Postgresql\ElmahCore.Postgresql.csproj --configuration Release --output ${{ env.NUGET_DIR }}
+          dotnet build ElmahCore.MySql\ElmahCore.MySql.csproj --configuration Release --output ${{ env.NUGET_DIR }}
+          dotnet build ElmahCore.Mvc\ElmahCore.Mvc.csproj --configuration Release --output ${{ env.NUGET_DIR }}
+          dotnet build ElmahCore\ElmahCore.csproj --configuration Release --output ${{ env.NUGET_DIR }}
       - uses: actions/upload-artifact@v3
         with:
           name: nuget
