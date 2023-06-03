@@ -5,7 +5,7 @@ It should be an almost slot in replacement for ElmahCore v2.1.2.
 
 See [changelog.md](changelog.md) for any further changes from v2.1.2
 
-**Please note:** The source code for the front end appears non-existant, in ElmahCore the front end Vue SPA files are all [minified](https://github.com/ElmahCoreEx/ElmahCoreEx/issues/77). Consider this a warning sign for the continuation of the front end without a rewrite WITH SOURCE.  Sourcemaps may have enough content to obtain the code but this has not be investigated.
+**Please note:** The source code for the front end appears non-existent, in ElmahCore the front end Vue SPA files are all [minified](https://github.com/ElmahCoreEx/ElmahCoreEx/issues/77). Consider this a warning sign for the continuation of the front end without a rewrite WITH SOURCE. Source-maps may have enough content to obtain the code but this has not be investigated.
 
 The interfaces and namespaces have been kept the same.
 
@@ -17,20 +17,20 @@ This project is licensed under the terms of the Apache license 2.0.
 
 ELMAH for Net.Standard 2.0 and .Net 6
 
-Add nuget package **ElmahCoreEx**
+Add NuGet package **ElmahCoreEx**
 
 ## Simple usage
 
 Startup.cs
 
 ```csharp
-1) services.AddElmah() in ConfigureServices
-2) app.UseElmah(); in Configure
+services.AddElmah() in ConfigureServices
+app.UseElmah(); in Configure
 ```
 
-`app.UseElmah()` must be after initializing other exception handling middleware, such as (UseExceptionHandler, UseDeveloperExceptionPage, etc.)
+`app.UseElmah()` must be set after initializing other exception handling middleware, such as (`UseExceptionHandler`, `UseDeveloperExceptionPage`, etc.)
 
-bDefault Elmah path `~/elmah`.
+Default Elmah path `~/elmah`.
 
 ## Change URL path
 
@@ -38,16 +38,16 @@ bDefault Elmah path `~/elmah`.
 services.AddElmah(options => options.Path = "you_path_here")
 ```
 
-## Restrict access to the Elmah url
+## Restrict access to the Elmah URL
 
 ```csharp
 services.AddElmah(options =>
 {
-        options.OnPermissionCheck = context => context.User.Identity.IsAuthenticated;
+    options.OnPermissionCheck = context => context.User.Identity.IsAuthenticated;
 });
 ```
 
-**Note:** `app.UseElmah();` needs to be after
+**Note:** `app.UseElmah();` needs to be placed after `UseAuthentication` and `UseAuthorization`
 
 ```csharp
 app.UseAuthentication();
@@ -55,7 +55,7 @@ app.UseAuthorization();
 app.UseElmah();
 ```
 
-or the user will be redirected to the sign in screen even if he is authenticated.
+or the user will be redirected to the sign in screen even if they are authenticated.
 
 ## Change Error Log type
 
@@ -63,10 +63,10 @@ You can create your own error log, which will store errors anywhere.
 
 ```csharp
     class MyErrorLog: ErrorLog
-    //implement ErrorLog
+    // Implement ErrorLog
 ```
 
-This ErrorLogs available in board:
+This ErrorLogs available:
 
 - MemoryErrorLog – store errors in memory (by default)
 - XmlFileErrorLog – store errors in XML files
