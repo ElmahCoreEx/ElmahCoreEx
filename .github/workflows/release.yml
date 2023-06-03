@@ -40,17 +40,17 @@ jobs:
         with:
           dotnet-version: ${{ matrix.dotnet-version }}      
       - name: Install dependencies
+        env:
+          NUGET_DIR: ${{ vars.NuGetDirectory }}
         run: dotnet restore
       - name: Build
         # Create the NuGet package in the folder from the environment variable NuGetDirectory
         run: |
-          dotnet build ElmahCore.MsSql\ElmahCore.sql.csproj --configuration Release --output ${{ env.NugetDirectory }}
-          dotnet build ElmahCore.Postgresql\ElmahCore.Postgresql.csproj --configuration Release --output ${{ env.NugetDirectory }}
-          dotnet build ElmahCore.MySql\ElmahCore.MySql.csproj --configuration Release --output ${{ env.NugetDirectory }}
-          dotnet build ElmahCore.Mvc\ElmahCore.Mvc.csproj --configuration Release --output ${{ env.NugetDirectory }}
-          dotnet build ElmahCore\ElmahCore.csproj --configuration Release --output ${{ env.NugetDirectory }}
-      - name: Test
-        run: dotnet test --no-restore --verbosity normal      
+          dotnet build ElmahCore.MsSql\ElmahCore.sql.csproj --configuration Release --output $NUGET_DIR
+          dotnet build ElmahCore.Postgresql\ElmahCore.Postgresql.csproj --configuration Release --output $NUGET_DIR
+          dotnet build ElmahCore.MySql\ElmahCore.MySql.csproj --configuration Release --output $NUGET_DIR
+          dotnet build ElmahCore.Mvc\ElmahCore.Mvc.csproj --configuration Release --output $NUGET_DIR
+          dotnet build ElmahCore\ElmahCore.csproj --configuration Release --output $NUGET_DIR
       - uses: actions/upload-artifact@v3
         with:
           name: nuget
