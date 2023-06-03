@@ -40,10 +40,11 @@ jobs:
         with:
           dotnet-version: ${{ matrix.dotnet-version }}      
       - name: Install dependencies
-        env:
-          NUGET_DIR: ${{ vars.NuGetDirectory }}
+        
         run: dotnet restore
       - name: Build
+        env:
+          NUGET_DIR: ${{ vars.NuGetDirectory }}
         # Create the NuGet package in the folder from the environment variable NuGetDirectory
         run: |
           dotnet build ElmahCore.MsSql\ElmahCore.sql.csproj --configuration Release --output $NUGET_DIR
