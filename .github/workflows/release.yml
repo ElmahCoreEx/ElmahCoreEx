@@ -4,7 +4,7 @@ env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: true
   NUGET_PUSH_SOURCE: https://api.nuget.org/v3/index.json
-  NuGetDirectory: ${{ github.workspace}}/nuget
+  NUGET_OUT_DIR: ${{ github.workspace}}/nuget
 
 defaults:
   run:
@@ -43,15 +43,13 @@ jobs:
         
         run: dotnet restore
       - name: Build
-        env:
-          NUGET_DIR: ${{ vars.NuGetDirectory }}
         # Create the NuGet package in the folder from the environment variable NuGetDirectory
         run: |
-          dotnet build ElmahCore.MsSql\ElmahCore.sql.csproj --configuration Release --output ${{ env.NUGET_DIR }}
-          dotnet build ElmahCore.Postgresql\ElmahCore.Postgresql.csproj --configuration Release --output ${{ env.NUGET_DIR }}
-          dotnet build ElmahCore.MySql\ElmahCore.MySql.csproj --configuration Release --output ${{ env.NUGET_DIR }}
-          dotnet build ElmahCore.Mvc\ElmahCore.Mvc.csproj --configuration Release --output ${{ env.NUGET_DIR }}
-          dotnet build ElmahCore\ElmahCore.csproj --configuration Release --output ${{ env.NUGET_DIR }}
+          dotnet build ElmahCore.MsSql\ElmahCore.sql.csproj --configuration Release --output ${{ env.NUGET_OUT_DIR }}
+          dotnet build ElmahCore.Postgresql\ElmahCore.Postgresql.csproj --configuration Release --output ${{ env.NUGET_OUT_DIR }}
+          dotnet build ElmahCore.MySql\ElmahCore.MySql.csproj --configuration Release --output ${{ env.NUGET_OUT_DIR }}
+          dotnet build ElmahCore.Mvc\ElmahCore.Mvc.csproj --configuration Release --output ${{ env.NUGET_OUT_DIR }}
+          dotnet build ElmahCore\ElmahCore.csproj --configuration Release --output ${{ env.NUGET_OUT_DIR }}
       - uses: actions/upload-artifact@v3
         with:
           name: nuget
