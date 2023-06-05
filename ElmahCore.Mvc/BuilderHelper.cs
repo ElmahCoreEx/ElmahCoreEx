@@ -22,17 +22,15 @@ namespace ElmahCore.Mvc
         [UsedImplicitly]
         public static IApplicationBuilder UseElmah(this IApplicationBuilder app)
         {
-            
             app.UseStaticHttpContext();
 
             var elmahOptions = app.ApplicationServices.GetService<IOptions<ElmahOptions>>();
             if (elmahOptions == null || elmahOptions.Value.EnableDiagnosticObserver)
             {
-                DiagnosticListener.AllListeners.Subscribe(new ElmahDiagnosticObserver(app.ApplicationServices));    
+                DiagnosticListener.AllListeners.Subscribe(new ElmahDiagnosticObserver(app.ApplicationServices));
             }
+
             app.UseMiddleware<ErrorLogMiddleware>();
-
-
             return app;
         }
 
@@ -72,33 +70,6 @@ namespace ElmahCore.Mvc
             var builder = services.AddElmah<T>();
             builder.Configure(setupAction);
             return builder;
-        }
-    }
-
-    internal static class InternalHttpContext
-    {
-        private static IHttpContextAccessor _contextAccessor;
-
-        public static HttpContext Current => _contextAccessor.HttpContext;
-
-        internal static void Configure(IHttpContextAccessor contextAccessor)
-        {
-            _contextAccessor = contextAccessor;
-        }
-    }
-
-    internal static class StaticHttpContextExtensions
-    {
-        public static void AddHttpContextAccessor(this IServiceCollection services)
-        {
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-        }
-
-        public static IApplicationBuilder UseStaticHttpContext(this IApplicationBuilder app)
-        {
-            var httpContextAccessor = app.ApplicationServices.GetRequiredService<IHttpContextAccessor>();
-            InternalHttpContext.Configure(httpContextAccessor);
-            return app;
         }
     }
 }
