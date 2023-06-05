@@ -74,9 +74,9 @@ or the user will be redirected to the sign in screen even if they are authentica
 You can create your own error log, which will store errors anywhere.
 
 ```csharp
-    public class MyErrorLog: ErrorLog {
-        // Implement ErrorLog
-    }    
+public class MyErrorLog: ErrorLog {
+    // Implement ErrorLog
+}    
 ```
 
 The ErrorLog adapters:
@@ -127,9 +127,9 @@ services.AddElmah(options =>
 {
    options.SourcePaths = new []
    {
-      @"D:\tmp\ElmahCore.DemoCore3",
-      @"D:\tmp\ElmahCore.Mvc",
-      @"D:\tmp\ElmahCore"
+      @"D:\src\ElmahCore.DemoCore6",
+      @"D:\src\ElmahCore.Mvc",
+      @"D:\src\ElmahCore"
    };
 });
 ```
@@ -166,7 +166,7 @@ You can replace UseDeveloperExceptionPage to UseElmahExceptionPage
 ```csharp
 if (env.IsDevelopment())
 {
-   //app.UseDeveloperExceptionPage();
+   // app.UseDeveloperExceptionPage();
    app.UseElmahExceptionPage();
 }
 ```
