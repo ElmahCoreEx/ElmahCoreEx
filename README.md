@@ -1,6 +1,6 @@
 ![Build Status](https://github.com/elmahcoreex/elmahcoreex/actions/workflows/build.yml/badge.svg)
-![Lastest Version](https://img.shields.io/nuget/v/elmahcoreex?style=flat-square)
-![Version Prerelease](https://img.shields.io/nuget/vpre/elmahcoreex?style=flat-square)
+![Latest Version](https://img.shields.io/nuget/v/elmahcoreex?style=flat-square)
+![Version Pre-release](https://img.shields.io/nuget/vpre/elmahcoreex?style=flat-square)
 ![Last Commit](https://img.shields.io/github/last-commit/elmahcoreex/elmahcoreex?style=flat-square)
 
 ![Code Quality](https://img.shields.io/codefactor/grade/github/elmahcoreex/elmahcoreex/develop?style=flat-square)
@@ -16,13 +16,16 @@ It should be an almost slot in replacement for ElmahCore v2.1.2.
 
 See [changelog.md](changelog.md) for any further changes from v2.1.2
 
-**Please note:** The source code for the front end appears non-existent, in ElmahCore the front end Vue SPA files are all [minified](https://github.com/ElmahCoreEx/ElmahCoreEx/issues/77). Consider this a warning sign for the continuation of the front end without a rewrite WITH SOURCE. Source-maps may have enough content to obtain the code but this has not be investigated.
-
 The interfaces and namespaces have been kept the same.
 
 # License
 
 This project is licensed under the terms of the Apache license 2.0.
+
+# Warnings & Dragons
+
+The source code for the front end appears non-existent, in ElmahCore the front end Vue SPA files are all [minified](https://github.com/ElmahCoreEx/ElmahCoreEx/issues/77). Consider this a warning sign for the continuation of the front end without a rewrite WITH SOURCE. Source-maps may have enough content to obtain the code but this has not be investigated.
+
 
 # Using ElmahCore
 
@@ -32,16 +35,16 @@ Add NuGet package [ElmahCoreEx](https://www.nuget.org/packages?q=elmahcoreex)
 
 ## Simple usage
 
-Startup.cs
-
 ```csharp
-services.AddElmah() in ConfigureServices
-app.UseElmah(); in Configure
+// Startup.cs
+services.AddElmah() //in ConfigureServices
+// ...
+app.UseElmah(); //in Configure, must be set after initializing other exception handlers
+    //such as UseExceptionHandler and UseDeveloperExceptionPage
+
 ```
 
-`app.UseElmah()` must be set after initializing other exception handling middleware, such as (`UseExceptionHandler`, `UseDeveloperExceptionPage`, etc.)
-
-Default Elmah path `~/elmah`.
+Default ELMAH endpoint path `~/elmah`.
 
 ## Change URL path
 
@@ -49,7 +52,7 @@ Default Elmah path `~/elmah`.
 services.AddElmah(options => options.Path = "you_path_here")
 ```
 
-## Restrict access to the Elmah URL
+## Restrict access to the ELMAH URL
 
 ```csharp
 services.AddElmah(options =>
@@ -58,12 +61,10 @@ services.AddElmah(options =>
 });
 ```
 
-**Note:** `app.UseElmah();` needs to be placed after `UseAuthentication` and `UseAuthorization`
-
 ```csharp
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseElmah();
+app.UseElmah(); //needs to be placed after `UseAuthentication` and `UseAuthorization`
 ```
 
 or the user will be redirected to the sign in screen even if they are authenticated.
