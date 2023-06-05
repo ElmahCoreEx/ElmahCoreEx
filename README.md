@@ -1,3 +1,14 @@
+![Build Status](https://github.com/elmahcoreex/elmahcoreex/actions/workflows/build.yml/badge.svg)
+![Lastest Version](https://img.shields.io/nuget/v/elmahcoreex?style=flat-square)
+![Version Prerelease](https://img.shields.io/nuget/vpre/elmahcoreex?style=flat-square)
+![Last Commit](https://img.shields.io/github/last-commit/elmahcoreex/elmahcoreex?style=flat-square)
+
+![Code Quality](https://img.shields.io/codefactor/grade/github/elmahcoreex/elmahcoreex/develop?style=flat-square)
+![Dependencies](https://img.shields.io/librariesio/github/elmahcoreex/elmahcoreex?style=flat-square)
+
+![License](https://img.shields.io/github/license/elmahcoreex/elmahcoreex)
+![Contributors](https://img.shields.io/github/contributors/elmahcoreex/elmahcoreex?style=flat-square)
+
 # About
 
 This is a fork of the [ElmahCore](https://github.com/ElmahCore/ElmahCore) project, with changes for PR's that were sitting idle.
