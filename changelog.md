@@ -6,6 +6,11 @@
 
 Drop in replacement for existing ElmahCore with collection of outstanding PR's merged in.
 
+### Features
+
+- Add config toggle for `ElmahDiagnosticObserver` so it can be switched off.
+
+
 ### Changes
 
 - Dropped support for net core 3.1, 5.0 (unsupported from Microsoft)
