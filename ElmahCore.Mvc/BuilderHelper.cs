@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace ElmahCore.Mvc
 {
@@ -21,10 +22,14 @@ namespace ElmahCore.Mvc
         [UsedImplicitly]
         public static IApplicationBuilder UseElmah(this IApplicationBuilder app)
         {
+            
             app.UseStaticHttpContext();
 
-            DiagnosticListener.AllListeners.Subscribe(new ElmahDiagnosticObserver(app.ApplicationServices));
-
+            var elmahOptions = app.ApplicationServices.GetService<IOptions<ElmahOptions>>();
+            if (elmahOptions == null || elmahOptions.Value.EnableDiagnosticObserver)
+            {
+                DiagnosticListener.AllListeners.Subscribe(new ElmahDiagnosticObserver(app.ApplicationServices));    
+            }
             app.UseMiddleware<ErrorLogMiddleware>();
 
 

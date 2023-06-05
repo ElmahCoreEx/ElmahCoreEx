@@ -62,17 +62,18 @@ or the user will be redirected to the sign in screen even if they are authentica
 You can create your own error log, which will store errors anywhere.
 
 ```csharp
-    class MyErrorLog: ErrorLog
-    // Implement ErrorLog
+    public class MyErrorLog: ErrorLog {
+        // Implement ErrorLog
+    }    
 ```
 
 The ErrorLog adapters:
 
-- MemoryErrorLog – store errors in memory (by default)
-- XmlFileErrorLog – store errors in XML files
-- SqlErrorLog - store errors in MS SQL (add reference to [ElmahCoreEx.Sql](https://www.nuget.org/packages/ElmahCoreEx.Sql))
-- MysqlErrorLog - store errors in MySQL (add reference to [ElmahCoreEx.MySql](https://www.nuget.org/packages/ElmahCoreEx.MySql))
-- PgsqlErrorLog - store errors in PostgreSQL (add reference to [ElmahCoreEx.Postgresql](https://www.nuget.org/packages/ElmahCoreEx.Postgresql))
+- **MemoryErrorLog** – store errors in memory (by default)
+- **XmlFileErrorLog** – store errors in XML files
+- **SqlErrorLog** - store errors in MS SQL (add reference to [ElmahCoreEx.Sql](https://www.nuget.org/packages/ElmahCoreEx.Sql))
+- **MysqlErrorLog** - store errors in MySQL (add reference to [ElmahCoreEx.MySql](https://www.nuget.org/packages/ElmahCoreEx.MySql))
+- **PgsqlErrorLog** - store errors in PostgreSQL (add reference to [ElmahCoreEx.Postgresql](https://www.nuget.org/packages/ElmahCoreEx.Postgresql))
 
 ```csharp
 services.AddElmah<XmlFileErrorLog>(options =>

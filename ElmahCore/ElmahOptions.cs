@@ -70,7 +70,7 @@ namespace ElmahCore
         public Func<HttpContext, bool> OnPermissionCheck { get; set; } = context => true;
 
         /// <summary>
-        ///     Custom error hanaler
+        ///     Custom error handler
         /// </summary>
         public Func<HttpContext, Error, Task> OnError { get; set; } = (context, error) => Task.CompletedTask;
 
@@ -88,6 +88,12 @@ namespace ElmahCore
         ///     Enable/Disable request body logging
         /// </summary>
         public bool LogRequestBody { get; set; } = true;
+
+        /// <summary>
+        /// Enable or disable the diagnostic observer
+        /// Default is true
+        /// </summary>
+        public bool EnableDiagnosticObserver { get; set; } = true;
 
         public virtual bool PermissionCheck(HttpContext context)
         {
