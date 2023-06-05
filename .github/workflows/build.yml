@@ -9,27 +9,24 @@ defaults:
   run:
     shell: pwsh
 
-on: 
-  create:
-    branches: 
-    - release/**
+on:
   push:
     branches:
-    - main
-    - develop
+      - main
+      - develop
     tags-ignore:
-    - '**'
+      - "**"
   pull_request:
     branches:
-    - main
-    - develop
+      - main
+      - develop
 
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        dotnet-version: ['6.0.x']
+        dotnet-version: ["6.0.x"]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -37,17 +34,17 @@ jobs:
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: ${{ matrix.dotnet-version }}      
+          dotnet-version: ${{ matrix.dotnet-version }}
       - name: Install dependencies
         run: dotnet restore
       - name: Build
         run: dotnet build --configuration Release --no-restore
       - name: Test
-        run: dotnet test --no-restore --verbosity normal      
+        run: dotnet test --no-restore --verbosity normal
       # - name: Create the package
       #   run: dotnet pack --configuration Release <my project>
       # - name: Publish the package to GPR
-      #   run: dotnet nuget push <my project>/bin/Release/*.nupkg        
+      #   run: dotnet nuget push <my project>/bin/Release/*.nupkg
       # - name: Publish
       #   if: startsWith(github.ref, 'refs/heads/release')
       #   run: nuget push **\*.nupkg -Source 'https://api.nuget.org/v3.index.json' -ApiKey ${{secrets.NUGET_APIKEY}}'
