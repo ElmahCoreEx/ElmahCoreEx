@@ -183,7 +183,6 @@ namespace ElmahCore.Mvc
             }
         }
 
-
         public string Severity
         {
             get

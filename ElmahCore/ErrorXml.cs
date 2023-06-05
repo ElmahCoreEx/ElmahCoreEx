@@ -559,8 +559,6 @@ namespace ElmahCore
             Debug.Assert(!reader.IsEmptyElement);
             reader.Read();
 
-
-
             while (reader.NodeType != XmlNodeType.EndElement)
             {
                 if (reader.IsStartElement("sql"))

@@ -39,6 +39,7 @@ namespace ElmahCore.Mvc
             return AddElmah<MemoryErrorLog>(services);
         }
 
+        // ReSharper disable once MemberCanBePrivate.Global
         public static IServiceCollection AddElmah<T>(this IServiceCollection services) where T : ErrorLog
         {
             services.AddHttpContextAccessor();
@@ -60,6 +61,7 @@ namespace ElmahCore.Mvc
             return AddElmah<MemoryErrorLog>(services, setupAction);
         }
 
+        // ReSharper disable once MemberCanBePrivate.Global
         public static IServiceCollection AddElmah<T>(this IServiceCollection services, Action<ElmahOptions> setupAction)
             where T : ErrorLog
         {

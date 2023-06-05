@@ -17,7 +17,7 @@ namespace ElmahCore.Mvc.Handlers
             string json = null;
             lock (Cache)
             {
-                if (Cache.ContainsKey(path)) json = Cache[path];
+                if (Cache.TryGetValue(path, out var value)) json = value;
             }
 
             if (json != null)

@@ -19,8 +19,9 @@ namespace ElmahCore.Sql
         ///     Initializes a new instance of the <see cref="SqlErrorLog" /> class
         ///     using a dictionary of configured settings.
         /// </summary>
-        public SqlErrorLog(IOptions<ElmahOptions> option) 
-            : this(option.Value.ConnectionString, option.Value.SqlServerDatabaseSchemaName, option.Value.SqlServerDatabaseTableName, option.Value.CreateTablesIfNotExist)
+        public SqlErrorLog(IOptions<ElmahOptions> option)
+            : this(option.Value.ConnectionString, option.Value.SqlServerDatabaseSchemaName,
+                option.Value.SqlServerDatabaseTableName, option.Value.CreateTablesIfNotExist)
         {
         }
 
@@ -28,7 +29,8 @@ namespace ElmahCore.Sql
         ///     Initializes a new instance of the <see cref="SqlErrorLog" /> class
         ///     to use a specific connection string for connecting to the database and a specific schema and table name.
         /// </summary>
-        public SqlErrorLog(string connectionString, string schemaName = null, string tableName = null, bool createTablesIfNotExist = true)
+        public SqlErrorLog(string connectionString, string schemaName = null, string tableName = null,
+            bool createTablesIfNotExist = true)
         {
             if (string.IsNullOrEmpty(connectionString))
                 throw new ArgumentNullException(nameof(connectionString));
@@ -109,11 +111,11 @@ namespace ElmahCore.Sql
 
             using (var connection = new SqlConnection(ConnectionString))
             using (var command = Commands.GetErrorXml(ApplicationName, errorGuid,
-                DatabaseSchemaName, DatabaseTableName))
+                       DatabaseSchemaName, DatabaseTableName))
             {
                 command.Connection = connection;
                 connection.Open();
-                errorXml = (string) command.ExecuteScalar();
+                errorXml = (string)command.ExecuteScalar();
             }
 
             if (errorXml == null)
@@ -164,14 +166,15 @@ namespace ElmahCore.Sql
             using (var connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
-
                 using (var cmdCheck = Commands.CheckTable(DatabaseSchemaName, DatabaseTableName))
                 {
                     cmdCheck.Connection = connection;
                     // ReSharper disable once PossibleNullReferenceException
-                    var exists = (int?) cmdCheck.ExecuteScalar();
+                    var exists = (int?)cmdCheck.ExecuteScalar();
 
-                    if (!exists.HasValue) ExecuteBatchNonQuery(Commands.CreateTableSql(DatabaseSchemaName, DatabaseTableName), connection);
+                    if (!exists.HasValue)
+                        ExecuteBatchNonQuery(Commands.CreateTableSql(DatabaseSchemaName, DatabaseTableName),
+                            connection);
                 }
             }
         }
@@ -182,8 +185,8 @@ namespace ElmahCore.Sql
             using (var cmd = new SqlCommand(string.Empty, conn))
             {
                 sql += "\nGO"; // make sure last batch is executed.
-                foreach (var line in sql.Split(new[] {"\n", "\r"},
-                    StringSplitOptions.RemoveEmptyEntries))
+                foreach (var line in sql.Split(new[] { "\n", "\r" },
+                             StringSplitOptions.RemoveEmptyEntries))
                     if (line.ToUpperInvariant().Trim() == "GO")
                     {
                         cmd.CommandText = sqlBatch;
@@ -202,7 +205,7 @@ namespace ElmahCore.Sql
             public static string CreateTableSql(string schemaName, string tableName)
             {
                 return
-                $@"
+                    $@"
 CREATE TABLE [{schemaName}].[{tableName}]
 (
     [ErrorId]     UNIQUEIDENTIFIER NOT NULL,
@@ -264,7 +267,7 @@ WHERE EXISTS (
                 int statusCode,
                 DateTime time,
                 string xml,
-                string schemaName, 
+                string schemaName,
                 string tableName)
             {
                 var command = new SqlCommand

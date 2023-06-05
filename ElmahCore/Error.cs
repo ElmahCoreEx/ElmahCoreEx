@@ -17,11 +17,11 @@ using Microsoft.Extensions.Primitives;
 
 namespace ElmahCore
 {
-	/// <summary>
-	///     Represents a logical application error (as opposed to the actual
-	///     exception it may be representing).
-	/// </summary>
-	[Serializable]
+    /// <summary>
+    ///     Represents a logical application error (as opposed to the actual
+    ///     exception it may be representing).
+    /// </summary>
+    [Serializable]
     public sealed class Error : ICloneable
     {
         private string _applicationName;
@@ -74,10 +74,7 @@ namespace ElmahCore
 
             Exception = baseException;
 
-            //
             // Load the basic information.
-            //
-
             try
             {
                 _hostName = Environment.MachineName;
@@ -94,12 +91,9 @@ namespace ElmahCore
             _user = context?.User?.Identity?.Name ?? string.Empty;
             Time = DateTime.Now;
 
-            //
             // If the HTTP context is available, then capture the
             // collections that represent the state request as well as
             // the user.
-            //
-
             if (context != null)
             {
                 var webUser = context.User;
@@ -109,7 +103,7 @@ namespace ElmahCore
 
                 var request = context.Request;
 
-                //Load Server Variables
+                // Load Server Variables
                 _serverVariables = GetServerVariables(context);
                 _serverVariables.Add("HttpStatusCode", StatusCode.ToString());
                 _queryString = CopyCollection(QueryHelpers.ParseQuery(request.QueryString.Value));
@@ -145,9 +139,10 @@ namespace ElmahCore
                                        + _detail;
         }
 
-        private KeyValuePair<string,string>[] GetStringParams((string name, object value)[] paramParams) =>
-            (from param in paramParams where param != default 
-                select new KeyValuePair<string,string>(param.name, ToJsonString(param.value))).ToArray();
+        private KeyValuePair<string, string>[] GetStringParams((string name, object value)[] paramParams) =>
+            (from param in paramParams
+                where param != default
+                select new KeyValuePair<string, string>(param.name, ToJsonString(param.value))).ToArray();
 
         private string ToJsonString(object paramValue)
         {
@@ -171,6 +166,7 @@ namespace ElmahCore
         public List<ElmahLogMessageEntry> MessageLog { get; } = new List<ElmahLogMessageEntry>();
 
         public List<ElmahLogSqlEntry> SqlLog { get; } = new List<ElmahLogSqlEntry>();
+
         public List<ElmahLogParamEntry> Params { get; } = new List<ElmahLogParamEntry>();
 
         /// <summary>
@@ -198,7 +194,6 @@ namespace ElmahCore
         /// <summary>
         ///     Gets or sets name of host machine where this error occurred.
         /// </summary>
-
         public string HostName
         {
             get => _hostName ?? Environment.GetEnvironmentVariable("COMPUTERNAME") ??
@@ -207,9 +202,8 @@ namespace ElmahCore
         }
 
         /// <summary>
-        ///     Gets or sets the type, class or category of the error.
+        /// Gets or sets the type, class or category of the error.
         /// </summary>
-
         public string Type
         {
             get => _typeName ?? string.Empty;
@@ -217,9 +211,8 @@ namespace ElmahCore
         }
 
         /// <summary>
-        ///     Gets or sets the Request Body
+        ///  Gets or sets the Request Body
         /// </summary>
-
         public string Body
         {
             get => _form == null ? null : _form["$request-body"] ?? string.Empty;
@@ -230,7 +223,6 @@ namespace ElmahCore
         /// <summary>
         ///     Gets or sets the source that is the cause of the error.
         /// </summary>
-
         public string Source
         {
             get => _source ?? string.Empty;
@@ -240,7 +232,6 @@ namespace ElmahCore
         /// <summary>
         ///     Gets or sets a brief text describing the error.
         /// </summary>
-
         public string Message
         {
             get => _message ?? string.Empty;
@@ -251,7 +242,6 @@ namespace ElmahCore
         ///     Gets or sets a detailed text describing the error, such as a
         ///     stack trace.
         /// </summary>
-
         public string Detail
         {
             get => _detail ?? string.Empty;
@@ -262,7 +252,6 @@ namespace ElmahCore
         ///     Gets or sets the user logged into the application at the time
         ///     of the error.
         /// </summary>
-
         public string User
         {
             get => _user ?? Environment.GetEnvironmentVariable("USERDOMAIN") ??
@@ -275,7 +264,6 @@ namespace ElmahCore
         ///     Gets or sets the date and time (in local time) at which the
         ///     error occurred.
         /// </summary>
-
         public DateTime Time { get; set; }
 
         /// <summary>
@@ -286,14 +274,12 @@ namespace ElmahCore
         ///     For cases where this value cannot always be reliably determined,
         ///     the value may be reported as zero.
         /// </remarks>
-
         public int StatusCode { get; set; }
 
         /// <summary>
         ///     Gets or sets the HTML message generated by the web host (ASP.NET)
         ///     for the given error.
         /// </summary>
-
         public string WebHostHtmlMessage
         {
             get => _webHostHtmlMessage ?? string.Empty;
@@ -304,28 +290,24 @@ namespace ElmahCore
         ///     Gets a collection representing the Web server variables
         ///     captured as part of diagnostic data for the error.
         /// </summary>
-
         public NameValueCollection ServerVariables => FaultIn(ref _serverVariables);
 
         /// <summary>
         ///     Gets a collection representing the Web query string variables
         ///     captured as part of diagnostic data for the error.
         /// </summary>
-
         public NameValueCollection QueryString => FaultIn(ref _queryString);
 
         /// <summary>
         ///     Gets a collection representing the form variables captured as
         ///     part of diagnostic data for the error.
         /// </summary>
-
         public NameValueCollection Form => FaultIn(ref _form);
 
         /// <summary>
         ///     Gets a collection representing the client cookies
         ///     captured as part of diagnostic data for the error.
         /// </summary>
-
         public NameValueCollection Cookies => FaultIn(ref _cookies);
 
         /// <summary>
@@ -333,16 +315,10 @@ namespace ElmahCore
         /// </summary>
         object ICloneable.Clone()
         {
-            //
             // Make a base shallow copy of all the members.
-            //
+            var copy = (Error)MemberwiseClone();
 
-            var copy = (Error) MemberwiseClone();
-
-            //
             // Now make a deep copy of items that are mutable.
-            //
-
             copy._serverVariables = CopyCollection(_serverVariables);
             copy._queryString = CopyCollection(_queryString);
             copy._form = CopyCollection(_form);
@@ -450,7 +426,7 @@ namespace ElmahCore
 
         public Error Clone()
         {
-            return (Error) ((ICloneable) this).Clone();
+            return (Error)((ICloneable)this).Clone();
         }
 
         private static NameValueCollection CopyCollection(NameValueCollection collection)
@@ -484,11 +460,8 @@ namespace ElmahCore
             var copy = new NameValueCollection(cookies.Count);
 
             foreach (var cookie in cookies)
-                //
                 // NOTE: We drop the Path and Domain properties of the 
                 // cookie for sake of simplicity.
-                //
-
                 copy.Add(cookie.Key, cookie.Value);
 
             return copy;

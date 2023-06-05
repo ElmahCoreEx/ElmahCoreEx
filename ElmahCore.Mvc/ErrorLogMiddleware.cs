@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 [assembly: InternalsVisibleTo("ElmahCore.Mvc.Tests")]
+
 namespace ElmahCore.Mvc
 {
     internal sealed class ErrorLogMiddleware
@@ -75,7 +76,6 @@ namespace ElmahCore.Mvc
 
             _logRequestBody = elmahOptions.Value?.LogRequestBody == true;
 
-
             if (!string.IsNullOrEmpty(options.FiltersConfig))
                 try
                 {
@@ -125,7 +125,7 @@ namespace ElmahCore.Mvc
                                 if (name != null) notList.Add(name);
                             }
                     }
-                    var assertionNode = (XmlElement) filterNode.SelectSingleNode("test/*");
+                    var assertionNode = (XmlElement)filterNode.SelectSingleNode("test/*");
 
                     if (assertionNode != null)
                     {
@@ -172,7 +172,6 @@ namespace ElmahCore.Mvc
                     body = await GetBody(context.Request);
 
                 await _next(context);
-
 
                 if (context.Response.HasStarted
                     || context.Response.StatusCode < 400
@@ -269,7 +268,6 @@ namespace ElmahCore.Mvc
                 _logger.LogError(ex, "Elmah request processing error");
             }
         }
-
 
         internal async Task<string> LogException(Exception e, HttpContext context,
             Func<HttpContext, Error, Task> onError, string body = null)
