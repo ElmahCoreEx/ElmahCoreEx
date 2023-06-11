@@ -89,7 +89,6 @@ namespace ElmahCore
 
                 var typeName = source.GetType().ToString();
                 feature.LogParameters(list, typeName, memberName, file, line);
-
             }
             catch
             {

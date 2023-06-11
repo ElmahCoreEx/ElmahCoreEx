@@ -93,11 +93,7 @@ namespace ElmahCore.Mvc.Handlers
                     break;
                 }
 
-
-                //
                 // Fetch next page of results.
-                //
-
                 errorEntryList.Clear();
             }
         }
@@ -166,7 +162,7 @@ namespace ElmahCore.Mvc.Handlers
                 // Setup to emit CSV records.
                 //
 
-                var writer = new StringWriter {NewLine = "\r\n"};
+                var writer = new StringWriter { NewLine = "\r\n" };
                 var csv = new CsvWriter(writer);
 
                 var culture = CultureInfo.InvariantCulture;
@@ -271,7 +267,7 @@ namespace ElmahCore.Mvc.Handlers
                 Debug.Assert(index >= 0);
                 Debug.Assert(index + count <= entries.Count);
 
-                var writer = new StringWriter {NewLine = "\n"};
+                var writer = new StringWriter { NewLine = "\n" };
 
                 if (_wrapped)
                 {
@@ -338,7 +334,7 @@ namespace ElmahCore.Mvc.Handlers
 
         private sealed class CsvWriter
         {
-            private static readonly char[] Reserved = {'\"', ',', '\r', '\n'};
+            private static readonly char[] Reserved = { '\"', ',', '\r', '\n' };
             private readonly TextWriter _writer;
             private int _column;
 

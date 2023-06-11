@@ -40,18 +40,16 @@ namespace ElmahCore.Mvc.Handlers
             }
 
             var ext = Path.GetExtension(path).ToLower();
-            if (ext == ".svg")
-                context.Response.ContentType = "image/svg+xml";
-            if (ext == ".css")
-                context.Response.ContentType = "text/css";
-            if (ext == ".js")
-                context.Response.ContentType = "text/javascript";
-
-
-            using (var resource = assembly.GetManifestResourceStream(resName))
+            context.Response.ContentType = ext switch
             {
-                if (resource != null) await resource.CopyToAsync(context.Response.Body);
-            }
+                ".svg" => "image/svg+xml",
+                ".css" => "text/css",
+                ".js" => "text/javascript",
+                _ => context.Response.ContentType
+            };
+
+            using var resource = assembly.GetManifestResourceStream(resName);
+            if (resource != null) await resource.CopyToAsync(context.Response.Body);
         }
     }
 }

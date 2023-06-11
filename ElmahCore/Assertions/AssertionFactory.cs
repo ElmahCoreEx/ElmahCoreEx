@@ -23,7 +23,7 @@ namespace ElmahCore.Assertions
     internal static class AssertionFactory
     {
         private static readonly string[]
-            Truths = {"true", "yes", "on", "1"}; // TODO Remove duplication with SecurityConfiguration
+            Truths = { "true", "yes", "on", "1" }; // TODO Remove duplication with SecurityConfiguration
 
         public static IAssertion assert_is_null(IContextExpression binding)
         {
@@ -116,7 +116,6 @@ namespace ElmahCore.Assertions
             return new RegexMatchAssertion(binding, new Regex(pattern, options));
         }
 
-
         public static IAssertion Create(XmlElement config)
         {
             if (config == null)
@@ -148,17 +147,11 @@ namespace ElmahCore.Assertions
             {
                 var nodeType = child.NodeType;
 
-                //
                 // Skip comments and whitespaces.
-                //
-
                 if (nodeType == XmlNodeType.Comment || nodeType == XmlNodeType.Whitespace)
                     continue;
 
-                //
                 // Otherwise all elements only.
-                //
-
                 if (nodeType != XmlNodeType.Element)
                     throw new Exception(
                         $"Unexpected type of node ({nodeType.ToString()}).");
@@ -166,17 +159,14 @@ namespace ElmahCore.Assertions
                 elementCount++;
             }
 
-            //
             // In the second pass, create and configure the assertions
             // from each element.
-            //
-
             var assertions = new IAssertion[elementCount];
             elementCount = 0;
 
             foreach (XmlNode node in nodes)
                 if (node.NodeType == XmlNodeType.Element)
-                    assertions[elementCount++] = Create((XmlElement) node);
+                    assertions[elementCount++] = Create((XmlElement)node);
 
             return assertions;
         }
@@ -221,12 +211,12 @@ namespace ElmahCore.Assertions
                 && method.ReturnType == typeof(IAssertion))
             {
                 var handler =
-                    (AssertionFactoryHandler) Delegate.CreateDelegate(typeof(AssertionFactoryHandler), factoryType,
+                    (AssertionFactoryHandler)Delegate.CreateDelegate(typeof(AssertionFactoryHandler), factoryType,
                         name);
                 return handler(config); // TODO Check if Delegate.CreateDelegate could return null
             }
 
-            return (IAssertion) method.Invoke(null, ParseArguments(method, config));
+            return (IAssertion)method.Invoke(null, ParseArguments(method, config));
         }
 
         private static object[] ParseArguments(MethodInfo method, XmlElement config)

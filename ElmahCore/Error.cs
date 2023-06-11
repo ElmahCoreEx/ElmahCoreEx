@@ -178,13 +178,11 @@ namespace ElmahCore
         ///     during XML serialization via <see cref="ErrorXml.Decode" /> and
         ///     <see cref="ErrorXml.Encode(Error,XmlWriter)" />.
         /// </remarks>
-
         public Exception Exception { get; }
 
         /// <summary>
         ///     Gets or sets the name of application in which this error occurred.
         /// </summary>
-
         public string ApplicationName
         {
             get => _applicationName ?? string.Empty;

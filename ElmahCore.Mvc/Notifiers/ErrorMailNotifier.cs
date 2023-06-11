@@ -75,7 +75,6 @@ namespace ElmahCore.Mvc.Notifiers
         /// <summary>
         ///     Gets the e-mail address of the sender.
         /// </summary>
-
         protected virtual string MailSender { get; }
 
         /// <summary>
@@ -204,7 +203,6 @@ namespace ElmahCore.Mvc.Notifiers
             //     Unhandled exceptions cause ASP.NET-based applications 
             //     to unexpectedly quit in the .NET Framework 2.0
             //     http://support.microsoft.com/kb/911816
-
             catch (SmtpException e)
             {
                 Trace.TraceError(e.ToString());
@@ -356,21 +354,5 @@ namespace ElmahCore.Mvc.Notifiers
 
             client.Send(mail);
         }
-    }
-
-    public class EmailOptions
-    {
-        public string MailRecipient { get; set; }
-        public string MailSender { get; set; }
-        public string MailCopyRecipient { get; set; }
-        public string MailSubjectFormat { get; set; }
-        public MailPriority MailPriority { get; set; }
-        public bool ReportAsynchronously { get; set; }
-        public string SmtpServer { get; set; }
-        public int SmtpPort { get; set; }
-        public string AuthUserName { get; set; }
-        public string AuthPassword { get; set; }
-        public bool SendYsod { get; set; }
-        public bool UseSsl { get; set; }
     }
 }

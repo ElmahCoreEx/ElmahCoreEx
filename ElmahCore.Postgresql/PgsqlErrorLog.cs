@@ -31,7 +31,7 @@ namespace ElmahCore.Postgresql
         public PgsqlErrorLog(string connectionString, bool createTablesIfNotExist)
         {
             if (string.IsNullOrEmpty(connectionString))
-                throw new ArgumentNullException("connectionString");
+                throw new ArgumentNullException(nameof(connectionString));
 
             ConnectionString = connectionString;
 
@@ -61,7 +61,7 @@ namespace ElmahCore.Postgresql
         public override void Log(Guid id, Error error)
         {
             if (error == null)
-                throw new ArgumentNullException("error");
+                throw new ArgumentNullException(nameof(error));
 
             var errorXml = ErrorXml.EncodeString(error);
 
@@ -77,8 +77,8 @@ namespace ElmahCore.Postgresql
 
         public override ErrorLogEntry GetError(string id)
         {
-            if (id == null) throw new ArgumentNullException("id");
-            if (id.Length == 0) throw new ArgumentException(null, "id");
+            if (id == null) throw new ArgumentNullException(nameof(id));
+            if (id.Length == 0) throw new ArgumentException(null, nameof(id));
 
             Guid errorGuid;
 
@@ -88,7 +88,7 @@ namespace ElmahCore.Postgresql
             }
             catch (FormatException e)
             {
-                throw new ArgumentException(e.Message, "id", e);
+                throw new ArgumentException(e.Message, nameof(id), e);
             }
 
             string errorXml;
@@ -110,8 +110,8 @@ namespace ElmahCore.Postgresql
 
         public override int GetErrors(int errorIndex, int pageSize, ICollection<ErrorLogEntry> errorEntryList)
         {
-            if (errorIndex < 0) throw new ArgumentOutOfRangeException("errorIndex", errorIndex, null);
-            if (pageSize < 0) throw new ArgumentOutOfRangeException("pageSize", pageSize, null);
+            if (errorIndex < 0) throw new ArgumentOutOfRangeException(nameof(errorIndex), errorIndex, null);
+            if (pageSize < 0) throw new ArgumentOutOfRangeException(nameof(pageSize), pageSize, null);
 
             using (var connection = new NpgsqlConnection(ConnectionString))
             {

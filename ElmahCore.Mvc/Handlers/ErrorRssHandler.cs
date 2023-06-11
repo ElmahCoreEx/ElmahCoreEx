@@ -25,7 +25,6 @@ namespace ElmahCore.Mvc.Handlers
 
             var title = $@"Error log of {log.ApplicationName} on {Environment.MachineName}";
 
-
             var link = $"{context.Request.Scheme}://{context.Request.PathBase.ToString().TrimEnd('/')}{elmahRoot}";
             var baseUrl = new Uri(link.TrimEnd('/') + "/");
 

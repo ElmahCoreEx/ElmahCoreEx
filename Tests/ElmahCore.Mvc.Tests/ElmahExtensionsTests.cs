@@ -13,7 +13,7 @@ namespace ElmahCore.Mvc.Tests
         public void RiseErrorExceptionWhenMiddlewareNotInitialised()
         {
             var httpContext = new DefaultHttpContext();
-            Func<Task> act = async () => await ElmahExtensions.RaiseError(httpContext, new Exception());
+            var act = async () => await ElmahExtensions.RaiseError(httpContext, new Exception());
             act.Should().ThrowAsync<MiddlewareNotInitializedException>();
         }
     }
