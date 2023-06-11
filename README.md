@@ -24,7 +24,7 @@ This project is licensed under the terms of the Apache license 2.0.
 
 # Warnings & Dragons
 
-The source code for the front end appears non-existent, in ElmahCore the front end Vue SPA files are all [minified](https://github.com/ElmahCoreEx/ElmahCoreEx/issues/77). Consider this a warning sign for the continuation of the front end without a rewrite WITH SOURCE. Source-maps may have enough content to obtain the code but this has not be investigated.
+The source code for the front end appears non-existent, in ElmahCore the front end Vue SPA files are all [minified](https://github.com/ElmahCore/ElmahCore/issues/77). Consider this a warning sign for the continuation of the front end without a rewrite WITH SOURCE. Source-maps may have enough content to obtain the code but this has not be investigated.
 
 
 # Using ElmahCore
