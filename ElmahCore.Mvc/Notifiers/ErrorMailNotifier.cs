@@ -324,12 +324,9 @@ namespace ElmahCore.Mvc.Notifiers
             if (mail == null)
                 throw new ArgumentNullException(nameof(mail));
 
-            //
             // Under .NET Framework 2.0, the authentication settings
             // go on the SmtpClient object rather than mail message
             // so these have to be set up here.
-            //
-
             var client = new SmtpClient();
 
             var host = SmtpServer ?? string.Empty;

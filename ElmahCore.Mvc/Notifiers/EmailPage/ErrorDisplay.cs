@@ -23,17 +23,11 @@
 
 #endregion
 
-//[assembly: Elmah.Scc("$Id: ErrorDisplay.cs 607 2009-05-27 23:47:10Z azizatif $")]
-
 using System;
 using System.Globalization;
 
 namespace ElmahCore.Mvc.Notifiers
 {
-    #region Imports
-
-    #endregion
-
     /// <summary>
     ///     Provides miscellaneous formatting methods for
     /// </summary>

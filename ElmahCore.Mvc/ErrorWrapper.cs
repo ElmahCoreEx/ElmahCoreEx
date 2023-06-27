@@ -126,7 +126,7 @@ namespace ElmahCore.Mvc
         [XmlElement("StatusCode")]
         public int? StatusCode
         {
-            get => _error.StatusCode == 0 ? (int?) null : _error.StatusCode;
+            get => _error.StatusCode == 0 ? (int?)null : _error.StatusCode;
             // ReSharper disable once ValueParameterNotUsed
             set { }
         }
@@ -231,10 +231,10 @@ namespace ElmahCore.Mvc
 
         private List<ElmahLogMessageEntry> GetMessageLog()
         {
-            var resut = _error.MessageLog.ToList();
+            var result = _error.MessageLog.ToList();
             foreach (var param in _error.Params)
             {
-                resut.Add(new ElmahLogMessageEntry
+                result.Add(new ElmahLogMessageEntry
                 {
                     Collapsed = true,
                     TimeStamp = param.TimeStamp,
@@ -244,7 +244,7 @@ namespace ElmahCore.Mvc
                 });
             }
 
-            return resut.OrderBy(i => i.TimeStamp).ToList();
+            return result.OrderBy(i => i.TimeStamp).ToList();
         }
 
         [XmlIgnore]

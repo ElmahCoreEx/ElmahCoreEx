@@ -23,18 +23,12 @@
 
 #endregion
 
-//[assembly: Elmah.Scc("$Id: ErrorMailHtmlFormatter.cs 640 2009-06-01 17:22:02Z azizatif $")]
-
 using System;
 using System.IO;
 using ElmahCore.Mvc.Notifiers.ErrorMailHtml;
 
 namespace ElmahCore.Mvc.Notifiers
 {
-    #region Imports
-
-    #endregion
-
     /// <summary>
     ///     Formats the HTML to display the details of a given error that is
     ///     suitable for sending as the body of an e-mail message.

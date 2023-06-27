@@ -40,20 +40,14 @@ namespace ElmahCore
             if (!reader.IsStartElement())
                 throw new ArgumentException("Reader is not positioned at the start of an element.", nameof(reader));
 
-            //
             // Read out the attributes that contain the simple
             // typed state.
-            //
-
             var error = new Error();
             ReadXmlAttributes(reader, error);
 
-            //
             // Move past the element. If it's not empty, then
             // read also the inner XML that contains complex
             // types like collections.
-            //
-
             var isEmpty = reader.IsEmptyElement;
             reader.Read();
 
@@ -100,20 +94,12 @@ namespace ElmahCore
         {
             if (reader == null) throw new ArgumentNullException(nameof(reader));
 
-            //
             // Loop through the elements, reading those that we
             // recognize. If an unknown element is found then
             // this method bails out immediately without
             // consuming it, assuming that it belongs to a subclass.
-            //
-
             while (reader.IsStartElement())
             {
-                //
-                // Optimization Note: This block could be re-wired slightly 
-                // to be more efficient by not causing a collection to be
-                // created if the element is going to be empty.
-                //
 
                 NameValueCollection collection;
                 if (reader.Name == "paramsLog")
@@ -185,7 +171,6 @@ namespace ElmahCore
             Encode(error, writer);
             writer.WriteEndElement();
             writer.Flush();
-
             return sw.ToString();
         }
 
@@ -198,11 +183,8 @@ namespace ElmahCore
             if (writer.WriteState != WriteState.Element)
                 throw new ArgumentException("Writer is not in the expected Element state.", nameof(writer));
 
-            //
             // Write out the basic typed information in attributes
             // followed by collections as inner elements.
-            //
-
             WriteXmlAttributes(error, writer);
             WriteInnerXml(error, writer);
         }
@@ -350,7 +332,6 @@ namespace ElmahCore
             if (collection.Count == 0)
                 return;
 
-            //
             // Write out a named multi-value collection as follows 
             // (example here is the ServerVariables collection):
             //
@@ -361,7 +342,6 @@ namespace ElmahCore
             //          <value string="a=1&amp;b=2" />
             //      </item>
             //      ...
-            //
 
             foreach (string key in collection.Keys)
             {
@@ -458,8 +438,6 @@ namespace ElmahCore
         {
             if (reader == null) throw new ArgumentNullException(nameof(reader));
             if (log == null) throw new ArgumentNullException(nameof(log));
-
-            Debug.Assert(!reader.IsEmptyElement);
             reader.Read();
 
             while (reader.NodeType != XmlNodeType.EndElement)

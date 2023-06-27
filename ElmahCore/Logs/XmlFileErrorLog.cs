@@ -51,7 +51,7 @@ namespace ElmahCore
         /// </summary>
         /// <remarks>
         ///     Logs an error as a single XML file stored in a folder. XML files are named with a
-        ///     sortable date and a unique identifier. Currently the XML files are stored indefinately.
+        ///     sortable date and a unique identifier. Currently the XML files are stored indefinitely.
         ///     As they are stored as files, they may be managed using standard scheduled jobs.
         /// </remarks>
         public override string Log(Error error)
@@ -80,7 +80,7 @@ namespace ElmahCore
 
             try
             {
-                using var writer = new XmlTextWriter(path, Encoding.UTF8) {Formatting = Formatting.Indented};
+                using var writer = new XmlTextWriter(path, Encoding.UTF8) { Formatting = Formatting.Indented };
                 writer.WriteStartElement("error");
                 writer.WriteAttributeString("errorId", id.ToString());
                 ErrorXml.Encode(error, writer);
@@ -140,7 +140,7 @@ namespace ElmahCore
             for (var i = 0; i < 5; i++)
                 try
                 {
-                    using var reader = XmlReader.Create(path, new XmlReaderSettings() { CheckCharacters = false });
+                    using var reader = XmlReader.Create(path, new XmlReaderSettings { CheckCharacters = false });
                     if (!reader.IsStartElement("error"))
                         return null;
 
@@ -150,8 +150,7 @@ namespace ElmahCore
                 }
                 catch (IOException)
                 {
-                    //ignored
-                    Task.Delay(500).GetAwaiter().GetResult();
+                    // ignored
                 }
 
             throw new IOException("");
@@ -180,7 +179,7 @@ namespace ElmahCore
             if (!IsUserFile(file.Attributes))
                 return null;
 
-            using var reader = XmlReader.Create(file.FullName, new XmlReaderSettings() { CheckCharacters = false });
+            using var reader = XmlReader.Create(file.FullName, new XmlReaderSettings { CheckCharacters = false });
             return new ErrorLogEntry(this, id, ErrorXml.Decode(reader));
         }
 

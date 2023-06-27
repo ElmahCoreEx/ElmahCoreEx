@@ -113,31 +113,29 @@ namespace ElmahCore.Postgresql
             if (errorIndex < 0) throw new ArgumentOutOfRangeException(nameof(errorIndex), errorIndex, null);
             if (pageSize < 0) throw new ArgumentOutOfRangeException(nameof(pageSize), pageSize, null);
 
-            using (var connection = new NpgsqlConnection(ConnectionString))
+            using var connection = new NpgsqlConnection(ConnectionString);
+            connection.Open();
+
+            using (var command = Commands.GetErrorsXml(ApplicationName, errorIndex, pageSize))
             {
-                connection.Open();
+                command.Connection = connection;
 
-                using (var command = Commands.GetErrorsXml(ApplicationName, errorIndex, pageSize))
+                using (var reader = command.ExecuteReader())
                 {
-                    command.Connection = connection;
-
-                    using (var reader = command.ExecuteReader())
+                    while (reader.Read())
                     {
-                        while (reader.Read())
-                        {
-                            var id = reader.GetGuid(0);
-                            var xml = reader.GetString(1);
-                            var error = ErrorXml.DecodeString(xml);
-                            errorEntryList.Add(new ErrorLogEntry(this, id.ToString(), error));
-                        }
+                        var id = reader.GetGuid(0);
+                        var xml = reader.GetString(1);
+                        var error = ErrorXml.DecodeString(xml);
+                        errorEntryList.Add(new ErrorLogEntry(this, id.ToString(), error));
                     }
                 }
+            }
 
-                using (var command = Commands.GetErrorsXmlTotal(ApplicationName))
-                {
-                    command.Connection = connection;
-                    return Convert.ToInt32(command.ExecuteScalar());
-                }
+            using (var command = Commands.GetErrorsXmlTotal(ApplicationName))
+            {
+                command.Connection = connection;
+                return Convert.ToInt32(command.ExecuteScalar());
             }
         }
 

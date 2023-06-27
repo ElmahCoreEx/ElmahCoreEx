@@ -15,7 +15,7 @@ using System.Text.RegularExpressions;
 namespace ElmahCore.Assertions
 {
     /// <summary>
-    ///     Provides data expression evaluation facilites similar to
+    ///     Provides data expression evaluation facilities similar to
     ///     <see cref="DataBinder" /> in ASP.NET.
     /// </summary>
     internal static class DataBinder

@@ -14,7 +14,6 @@ using Microsoft.Extensions.Primitives;
 
 [assembly: InternalsVisibleTo("ElmahCore.Mvc")]
 
-
 namespace ElmahCore
 {
     /// <summary>
@@ -56,10 +55,8 @@ namespace ElmahCore
             _message = baseException?.Message;
             _typeName = baseException?.GetType().FullName;
 
-            //
             // If this is an HTTP exception, then get the status code
             // and detailed HTML message provided by the host.
-            //
             if (baseException is HttpException httpExc)
             {
                 StatusCode = httpExc.StatusCode;

@@ -8,7 +8,7 @@ namespace ElmahCore.Mvc.Tests.StacktraceParser
 {
     public class ParseStackTrace
     {
-        private List<SourceInfo> list = new List<SourceInfo>();
+        private List<SourceInfo> list = new ();
 
         [Fact]
         public void CanParseStackTraceString()
@@ -42,7 +42,7 @@ namespace ElmahCore.Mvc.Tests.StacktraceParser
                         list.Add(new SourceInfo
                         {
                             Source = f.Html,
-                            Line = line,
+                            Line = line
                         });
                     return new
                     {
