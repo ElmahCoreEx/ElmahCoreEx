@@ -17,7 +17,7 @@ namespace ElmahCore.Mvc
 
     internal static class ErrorDetailHelper
     {
-        internal static Dictionary<string, StackFrameSourceCodeInfo> Cache =
+        private static readonly Dictionary<string, StackFrameSourceCodeInfo> Cache =
             new Dictionary<string, StackFrameSourceCodeInfo>();
 
         // make it internal to enable unit testing
@@ -27,7 +27,7 @@ namespace ElmahCore.Mvc
             var key = $"{method}:{type}:{filePath}:{lineNumber}";
             lock (Cache)
             {
-                if (Cache.ContainsKey(key)) return Cache[key];
+                if (Cache.TryGetValue(key, out var info)) return info;
             }
 
             var stackFrame = new StackFrameSourceCodeInfo
@@ -141,7 +141,7 @@ namespace ElmahCore.Mvc
                         list.Add(new SourceInfo
                         {
                             Source = f.Html,
-                            Line = line,
+                            Line = line
                         });
                     return new
                     {

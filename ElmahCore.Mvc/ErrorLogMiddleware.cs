@@ -195,7 +195,7 @@ namespace ElmahCore.Mvc
             }
         }
 
-        private async Task<string> GetBody(HttpRequest request)
+        private static async Task<string> GetBody(HttpRequest request)
         {
             request.EnableBuffering();
             var body = request.Body;
@@ -213,7 +213,7 @@ namespace ElmahCore.Mvc
         {
             try
             {
-                var elmahRoot = (_elmahRoot.StartsWith("~/"))
+                var elmahRoot = _elmahRoot.StartsWith("~/")
                     ? context.Request.PathBase + _elmahRoot.Substring(1)
                     : _elmahRoot;
 

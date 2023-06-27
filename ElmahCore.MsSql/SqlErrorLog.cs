@@ -179,25 +179,23 @@ namespace ElmahCore.Sql
             }
         }
 
-        private void ExecuteBatchNonQuery(string sql, SqlConnection conn)
+        private static void ExecuteBatchNonQuery(string sql, SqlConnection conn)
         {
             var sqlBatch = string.Empty;
-            using (var cmd = new SqlCommand(string.Empty, conn))
-            {
-                sql += "\nGO"; // make sure last batch is executed.
-                foreach (var line in sql.Split(new[] { "\n", "\r" },
-                             StringSplitOptions.RemoveEmptyEntries))
-                    if (line.ToUpperInvariant().Trim() == "GO")
-                    {
-                        cmd.CommandText = sqlBatch;
-                        cmd.ExecuteNonQuery();
-                        sqlBatch = string.Empty;
-                    }
-                    else
-                    {
-                        sqlBatch += line + "\n";
-                    }
-            }
+            using var cmd = new SqlCommand(string.Empty, conn);
+            sql += "\nGO"; // make sure last batch is executed.
+            foreach (var line in sql.Split(new[] { "\n", "\r" },
+                         StringSplitOptions.RemoveEmptyEntries))
+                if (line.ToUpperInvariant().Trim() == "GO")
+                {
+                    cmd.CommandText = sqlBatch;
+                    cmd.ExecuteNonQuery();
+                    sqlBatch = string.Empty;
+                }
+                else
+                {
+                    sqlBatch += line + "\n";
+                }
         }
 
         private static class Commands

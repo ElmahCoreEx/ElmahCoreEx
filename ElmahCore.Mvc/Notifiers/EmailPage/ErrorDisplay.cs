@@ -55,7 +55,7 @@ namespace ElmahCore.Mvc.Notifiers
         /// </remarks>
         public static string HumaneExceptionErrorType(string type)
         {
-            if (type == null || type.Length == 0)
+            if (string.IsNullOrEmpty(type))
                 return string.Empty;
 
             var lastDotIndex = CultureInfo.InvariantCulture.CompareInfo.LastIndexOf(type, '.');

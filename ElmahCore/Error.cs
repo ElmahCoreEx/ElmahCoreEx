@@ -136,22 +136,23 @@ namespace ElmahCore
                                        + _detail;
         }
 
-        private KeyValuePair<string, string>[] GetStringParams((string name, object value)[] paramParams) =>
-            (from param in paramParams
-                where param != default
-                select new KeyValuePair<string, string>(param.name, ToJsonString(param.value))).ToArray();
+        private KeyValuePair<string, string>[] GetStringParams(IEnumerable<(string name, object value)> paramParams) =>
+            (paramParams.Where(param => param != default)
+                .Select(param => new KeyValuePair<string, string>(param.name, ToJsonString(param.value)))).ToArray();
+
+        private static JsonSerializerOptions SerializerOptions => new JsonSerializerOptions
+        {
+            DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            MaxDepth = 0
+        };
 
         private string ToJsonString(object paramValue)
         {
             if (paramValue == null) return "null";
             try
             {
-                var jsonResult = JsonSerializer.Serialize(paramValue, new JsonSerializerOptions
-                {
-                    DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                    MaxDepth = 0
-                });
+                var jsonResult = JsonSerializer.Serialize(paramValue, SerializerOptions);
                 return jsonResult;
             }
             catch

@@ -21,14 +21,12 @@ namespace ElmahCore
         /// </summary>
         public static Error DecodeString(string xml)
         {
-            using (var sr = new StringReader(xml))
-            using (var reader = XmlReader.Create(sr, new XmlReaderSettings { CheckCharacters = false }))
-            {
-                if (!reader.IsStartElement("error"))
-                    throw new ApplicationException("The error XML is not in the expected format.");
+            using var sr = new StringReader(xml);
+            using var reader = XmlReader.Create(sr, new XmlReaderSettings { CheckCharacters = false });
+            if (!reader.IsStartElement("error"))
+                throw new ApplicationException("The error XML is not in the expected format.");
 
-                return Decode(reader);
-            }
+            return Decode(reader);
         }
 
         /// <summary>
@@ -100,54 +98,54 @@ namespace ElmahCore
             // consuming it, assuming that it belongs to a subclass.
             while (reader.IsStartElement())
             {
-
-                NameValueCollection collection;
-                if (reader.Name == "paramsLog")
+                switch (reader.Name)
                 {
-                    if (reader.IsEmptyElement)
+                    case "paramsLog" when reader.IsEmptyElement:
                         reader.Read();
-                    else
+                        break;
+                    case "paramsLog":
                         UpcodeToParams(reader, error.Params);
-                }
-                if (reader.Name == "sqlLog")
-                {
-                    if (reader.IsEmptyElement)
+                        break;
+                    case "sqlLog" when reader.IsEmptyElement:
                         reader.Read();
-                    else
+                        break;
+                    case "sqlLog":
                         UpcodeToSqlLog(reader, error.SqlLog);
-                }
-                else if (reader.Name == "messageLog")
-                {
-                    if (reader.IsEmptyElement)
+                        break;
+                    case "messageLog" when reader.IsEmptyElement:
                         reader.Read();
-                    else
+                        break;
+                    case "messageLog":
                         UpcodeToLog(reader, error.MessageLog);
-                }
-                else
-                {
-                    switch (reader.Name)
+                        break;
+                    default:
                     {
-                        case "serverVariables":
-                            collection = error.ServerVariables;
-                            break;
-                        case "queryString":
-                            collection = error.QueryString;
-                            break;
-                        case "form":
-                            collection = error.Form;
-                            break;
-                        case "cookies":
-                            collection = error.Cookies;
-                            break;
-                        default:
-                            reader.Skip();
-                            continue;
-                    }
+                        NameValueCollection collection;
+                        switch (reader.Name)
+                        {
+                            case "serverVariables":
+                                collection = error.ServerVariables;
+                                break;
+                            case "queryString":
+                                collection = error.QueryString;
+                                break;
+                            case "form":
+                                collection = error.Form;
+                                break;
+                            case "cookies":
+                                collection = error.Cookies;
+                                break;
+                            default:
+                                reader.Skip();
+                                continue;
+                        }
 
-                    if (reader.IsEmptyElement)
-                        reader.Read();
-                    else
-                        UpcodeTo(reader, collection);
+                        if (reader.IsEmptyElement)
+                            reader.Read();
+                        else
+                            UpcodeTo(reader, collection);
+                        break;
+                    }
                 }
             }
         }

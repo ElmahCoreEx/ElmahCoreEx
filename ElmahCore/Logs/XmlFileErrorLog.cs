@@ -107,32 +107,30 @@ namespace ElmahCore
         {
             if (errorIndex < 0) throw new ArgumentOutOfRangeException(nameof(errorIndex), errorIndex, null);
             if (pageSize < 0) throw new ArgumentOutOfRangeException(nameof(pageSize), pageSize, null);
-
-            var logPath = LogPath;
-            var dir = new DirectoryInfo(logPath);
-            if (!dir.Exists)
+            
+            if (!Directory.Exists(LogPath))
                 return 0;
-
+            var dir = new DirectoryInfo(LogPath);
             var infos = dir.GetFiles("error-*.xml");
             if (!infos.Any())
                 return 0;
 
             var files = infos.Where(info => IsUserFile(info.Attributes))
-                .OrderBy(info => info.Name, StringComparer.OrdinalIgnoreCase)
-                .Select(info => Path.Combine(logPath, info.Name))
-                .Reverse()
-                .ToArray();
-
-            if (errorEntryList == null) return files.Length; // Return total
+                .OrderByDescending(info => info.Name, StringComparer.OrdinalIgnoreCase)
+                //.Select(info => Path.Combine(LogPath, info.Name))
+                //.Reverse()
+                .ToList();
+                
+            if (errorEntryList == null) return files.Count; // Return total
 
             var entries = files.Skip(errorIndex)
                 .Take(pageSize)
-                .Select(LoadErrorLogEntry);
-
+                .Select(x=>  LoadErrorLogEntry(x.FullName));
+            
             foreach (var entry in entries)
                 errorEntryList.Add(entry);
 
-            return files.Length; // Return total
+            return files.Count; // Return total
         }
 
         private ErrorLogEntry LoadErrorLogEntry(string path)

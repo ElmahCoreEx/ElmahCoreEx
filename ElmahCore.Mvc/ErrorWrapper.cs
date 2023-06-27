@@ -254,6 +254,7 @@ namespace ElmahCore.Mvc
             // ReSharper disable once ValueParameterNotUsed
             set { }
         }
+
         [XmlIgnore]
         public List<ElmahLogParamEntry> Params
         {
@@ -339,11 +340,12 @@ namespace ElmahCore.Mvc
             set { }
         }
 
+        private static string[] keyWords = { "User_", "Header_", "Connection_", "Items_", "Session_" };
+
         public SerializableDictionary<string, string> ServerVariables
         {
             get
             {
-                var keyWords = new[] {"User_", "Header_", "Connection_", "Items_", "Session_"};
                 return _error.ServerVariables.AllKeys.Where(i => !keyWords.Any(i.StartsWith))
                     .ToSerializableDictionary(k => k, k => _error.ServerVariables[k]);
             }

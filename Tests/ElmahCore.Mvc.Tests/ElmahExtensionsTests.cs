@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using ElmahCore.Mvc.Exceptions;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
@@ -12,8 +11,7 @@ namespace ElmahCore.Mvc.Tests
         [Fact]
         public void RiseErrorExceptionWhenMiddlewareNotInitialised()
         {
-            var httpContext = new DefaultHttpContext();
-            var act = async () => await ElmahExtensions.RaiseError(httpContext, new Exception());
+            var act = async () => await ElmahExtensions.RaiseError(new DefaultHttpContext(), new Exception());
             act.Should().ThrowAsync<MiddlewareNotInitializedException>();
         }
     }

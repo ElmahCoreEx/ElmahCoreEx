@@ -304,7 +304,7 @@ namespace ElmahCore.Mvc.Notifiers
         private static MailAttachment CreateHtmlAttachment(string name, string html)
         {
             return MailAttachment.CreateAttachmentFromString(html,
-                name + ".html", Encoding.UTF8, "text/html");
+                $"{name}.html", Encoding.UTF8, "text/html");
         }
 
         /// <summary>

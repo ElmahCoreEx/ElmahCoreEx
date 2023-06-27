@@ -144,7 +144,6 @@ namespace ElmahCore
         /// </summary>
         public abstract int GetErrors(int errorIndex, int pageSize, ICollection<ErrorLogEntry> errorEntryList);
 
-
         /// <summary>
         ///     When overridden in a subclass, starts a task that asynchronously
         ///     does the same as <see cref="GetErrors" />. An additional
@@ -202,23 +201,33 @@ namespace ElmahCore
             }
         }
 
-        public async Task<int> GetNewErrorsAsync(string id, List<ErrorLogEntry> entries)
+        public async IAsyncEnumerable<ErrorLogEntry> GetNewErrorsAsync(string id)
         {
-            int cnt = 0, count, page = 0;
+            var page = 0;
+            var pageSize = 2;
+            var continueGet = true;
             do
             {
                 var errors = new List<ErrorLogEntry>();
-                count = await GetErrorsAsync(page, 10, errors);
+                
+                await GetErrorsAsync(page, pageSize, errors);
+                if (errors.Count == 0)
+                {
+                    continueGet = false;
+                }
+
                 foreach (var el in errors)
                 {
-                    if (el.Id == id) return cnt;
-                    cnt += 1;
-                    entries.Add(el);
+                    if (el.Id == id)
+                    {
+                        continueGet = false;
+                        break;
+                    }
+
+                    yield return el;
                 }
                 page += 1;
-            } while (cnt > 0);
-
-            return count;
+            } while (continueGet);
         }
     }
 }

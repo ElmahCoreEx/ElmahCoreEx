@@ -83,7 +83,7 @@ namespace ElmahCore.Mvc.Tests.StacktraceParser
             frames.Should().NotBeNull();
         }
 
-        public string GetTestStackStringIssue158_HighCPULoop()
+        private static string GetTestStackStringIssue158_HighCPULoop()
         {
             return @"
 # caller: @C:\Sources\ElmahCore\ElmahCore\ElmahCore\Internal$\CallerInfo.cs:9

@@ -88,7 +88,7 @@ namespace ElmahCore.Mvc.Handlers
                 if (count == 0 || downloadCount == maxDownloadCount)
                 {
                     if (count > 0)
-                        foreach (var entry in format.Entries(new ErrorLogEntry[0], total)) // Terminator
+                        foreach (var entry in format.Entries(Array.Empty<ErrorLogEntry>(), total)) // Terminator
                             await response.WriteAsync(entry);
                     break;
                 }
