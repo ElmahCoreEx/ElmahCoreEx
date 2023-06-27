@@ -107,7 +107,7 @@ namespace ElmahCore
         {
             if (errorIndex < 0) throw new ArgumentOutOfRangeException(nameof(errorIndex), errorIndex, null);
             if (pageSize < 0) throw new ArgumentOutOfRangeException(nameof(pageSize), pageSize, null);
-            
+
             if (!Directory.Exists(LogPath))
                 return 0;
             var dir = new DirectoryInfo(LogPath);
@@ -120,13 +120,13 @@ namespace ElmahCore
                 //.Select(info => Path.Combine(LogPath, info.Name))
                 //.Reverse()
                 .ToList();
-                
+
             if (errorEntryList == null) return files.Count; // Return total
 
             var entries = files.Skip(errorIndex)
                 .Take(pageSize)
-                .Select(x=>  LoadErrorLogEntry(x.FullName));
-            
+                .Select(x => LoadErrorLogEntry(x.FullName));
+
             foreach (var entry in entries)
                 errorEntryList.Add(entry);
 
@@ -171,15 +171,14 @@ namespace ElmahCore
             var file = new DirectoryInfo(LogPath).GetFiles($"error-*-{id}.xml")
                 .FirstOrDefault();
 
-            if (file == null)
+            if (file == null || !IsUserFile(file.Attributes))
                 return null;
 
-            if (!IsUserFile(file.Attributes))
-                return null;
-
-            using var reader = XmlReader.Create(file.FullName, new XmlReaderSettings { CheckCharacters = false });
+            using var reader = XmlReader.Create(file.FullName, XmlReaderSettings);
             return new ErrorLogEntry(this, id, ErrorXml.Decode(reader));
         }
+
+        private static readonly XmlReaderSettings XmlReaderSettings = new XmlReaderSettings { CheckCharacters = false };
 
         private static bool IsUserFile(FileAttributes attributes)
         {

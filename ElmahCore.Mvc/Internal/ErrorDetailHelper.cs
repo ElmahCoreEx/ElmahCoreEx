@@ -79,7 +79,7 @@ namespace ElmahCore.Mvc
         }
 
         // make it internal to enable unit testing
-        internal static void ReadFrameContent(
+        private static void ReadFrameContent(
             StackFrameSourceCodeInfo frame,
             IEnumerable<string> allLines,
             int errorStartLineNumberInFile,
@@ -107,8 +107,6 @@ namespace ElmahCore.Mvc
 
         public static string MarkupStackTrace(string text, out List<SourceInfo> srcList)
         {
-            Debug.Assert(text != null);
-
             var list = new List<SourceInfo>();
             srcList = list;
 
