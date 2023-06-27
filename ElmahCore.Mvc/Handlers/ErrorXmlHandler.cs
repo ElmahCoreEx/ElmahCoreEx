@@ -17,11 +17,8 @@ namespace ElmahCore.Mvc.Handlers
             var response = context.Response;
             response.ContentType = "application/xml";
 
-            //
             // Retrieve the ID of the requested error and read it from 
             // the store.
-            //
-
             var errorId = context.Request.Query["id"].FirstOrDefault();
 
             if (string.IsNullOrEmpty(errorId))
@@ -29,24 +26,16 @@ namespace ElmahCore.Mvc.Handlers
 
             var entry = await errorLog.GetErrorAsync(errorId);
 
-            //
             // Perhaps the error has been deleted from the store? Whatever
             // the reason, pretend it does not exist.
-            //
-
             if (entry == null) context.Response.StatusCode = 404;
 
-            //
             // Stream out the error as formatted XML.
-            //
-
             var wrappedError = new ErrorWrapper(entry?.Error, errorLog.SourcePaths);
             var xmlSerializer = new XmlSerializer(wrappedError.GetType(), new XmlRootAttribute("Error"));
-            using (var textWriter = new StringWriter())
-            {
-                xmlSerializer.Serialize(textWriter, wrappedError);
-                await response.WriteAsync(textWriter.ToString(), Encoding.UTF8);
-            }
+            using var textWriter = new StringWriter();
+            xmlSerializer.Serialize(textWriter, wrappedError);
+            await response.WriteAsync(textWriter.ToString(), Encoding.UTF8);
         }
     }
 }

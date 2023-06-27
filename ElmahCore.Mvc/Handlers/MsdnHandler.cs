@@ -13,7 +13,7 @@ namespace ElmahCore.Mvc.Handlers
 
         public static async Task ProcessRequestException(HttpContext context, string path)
         {
-            bool useCache = false;
+            var useCache = false;
             context.Response.ContentType = "application/json";
             string json = null;
             if (useCache)

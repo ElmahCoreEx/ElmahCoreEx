@@ -13,6 +13,7 @@ namespace ElmahCore.Mvc
             foreach (var element in source) d.Add(keySelector(element), elementSelector(element));
             return d;
         }
+
         /// <summary>
         ///     Returns a sequence resulting from applying a function to each
         ///     element in the source sequence and its
