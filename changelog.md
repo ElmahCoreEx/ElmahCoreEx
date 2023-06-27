@@ -8,6 +8,15 @@ Drop in replacement for existing ElmahCore with collection of outstanding PR's m
 
 ### Changes
 
+#### 2.1.3-alpha.2
+
+- Refactoring to statics, parser.
+- Drop Dictionary cache (No LRU)
+- Set regex to compiled.
+- Bump HtmlAgility to 1.11.48, system.Text.Json 6.0.8
+
+#### 2.1.3-alpha.1
+
 - Dropped support for net core 3.1, 5.0 (unsupported from Microsoft)
 - Tests run under .NET6 [#162](https://github.com/ElmahCore/ElmahCore/pull/162)
 - Update other package dependencies
