@@ -10,10 +10,12 @@ Drop in replacement for existing ElmahCore with collection of outstanding PR's m
 
 #### 2.1.3-alpha.2
 
-- Refactoring to statics, parser.
-- Drop Dictionary cache (No LRU)
-- Set regex to compiled.
-- Bump HtmlAgility to 1.11.48, system.Text.Json 6.0.8
+- refactor: Refactoring to statics, parser.
+- refactor: Drop Dictionary cache (No LRU)
+- perf: Set regex to compiled.
+- chore: Bump HtmlAgility to 1.11.48, system.Text.Json 6.0.8
+- fix: UserAgent < 3 characters will not throw exception.
+
 
 #### 2.1.3-alpha.1
 
