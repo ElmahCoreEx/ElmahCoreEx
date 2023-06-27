@@ -11,11 +11,6 @@ namespace ElmahCore.Mvc.Handlers
     /// </summary>
     internal static class ErrorJsonHandler
     {
-        private static readonly JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
-        {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault
-        };
-
         public static async Task ProcessRequest(HttpContext context, ErrorLog errorLog)
         {
             var response = context.Response;
@@ -35,7 +30,7 @@ namespace ElmahCore.Mvc.Handlers
 
             // Stream out the error as formatted JSON.
             var err = new ErrorWrapper(entry?.Error, errorLog.SourcePaths) { HtmlMessage = null };
-            var jsonString = JsonSerializer.Serialize(err, JsonSerializerOptions);
+            var jsonString = JsonSerializer.Serialize(err, JsonSerializerHelper.DefaultJsonSerializerOptions);
             await response.WriteAsync(jsonString);
         }
     }

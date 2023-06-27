@@ -69,7 +69,7 @@ namespace ElmahCore.Mvc.Handlers
             {
                 Path = url,
                 Html = html
-            }, SerializerOptions);
+            }, JsonSerializerHelper.DefaultJsonSerializerOptions);
             if (useCache)
             {
                 lock (Cache)
@@ -80,13 +80,6 @@ namespace ElmahCore.Mvc.Handlers
 
             await context.Response.WriteAsync(json);
         }
-
-        private static JsonSerializerOptions SerializerOptions => new JsonSerializerOptions
-        {
-            DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            MaxDepth = 0
-        };
 
         public static async Task ProcessRequestStatus(HttpContext context, string statusStr)
         {
@@ -148,7 +141,7 @@ namespace ElmahCore.Mvc.Handlers
             {
                 Path = url,
                 Html = html
-            }, SerializerOptions);
+            }, JsonSerializerHelper.DefaultJsonSerializerOptions);
             lock (Cache)
             {
                 if (!Cache.ContainsKey("status-" + statusStr)) Cache.Add("status-" + statusStr, json);

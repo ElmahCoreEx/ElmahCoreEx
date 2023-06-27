@@ -9,13 +9,7 @@ namespace ElmahCore.Mvc.Handlers
 {
     internal static class ErrorApiHandler
     {
-        private static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions
-        {
-            DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            MaxDepth = 0
-        };
-
+     
         public static async Task ProcessRequest(HttpContext context, ErrorLog errorLog, string path)
         {
             switch (path)
@@ -24,20 +18,20 @@ namespace ElmahCore.Mvc.Handlers
                     var errorId = context.Request.Query["id"].ToString();
                     if (string.IsNullOrEmpty(errorId)) await context.Response.WriteAsync("{}");
                     var error = await GetErrorAsync(errorLog, errorId);
-                    await context.Response.WriteJsonAsync(JsonSerializer.Serialize(error, SerializerOptions));
+                    await context.Response.WriteJsonAsync(JsonSerializer.Serialize(error, JsonSerializerHelper.DefaultJsonSerializerOptions));
                     break;
 
                 case "api/errors":
                     int.TryParse(context.Request.Query["i"].ToString(), out var errorIndex);
                     int.TryParse(context.Request.Query["s"].ToString(), out var pageSize);
                     var entities = await GetErrorsAsync(errorLog, errorIndex, pageSize);
-                    await context.Response.WriteJsonAsync(JsonSerializer.Serialize(entities, SerializerOptions));
+                    await context.Response.WriteJsonAsync(JsonSerializer.Serialize(entities, JsonSerializerHelper.DefaultJsonSerializerOptions));
                     break;
 
                 case "api/new-errors":
                     var id = context.Request.Query["id"].ToString();
                     var newEntities = await GetNewErrorsAsync(errorLog, id);
-                    await context.Response.WriteJsonAsync(JsonSerializer.Serialize(newEntities, SerializerOptions));
+                    await context.Response.WriteJsonAsync(JsonSerializer.Serialize(newEntities, JsonSerializerHelper.DefaultJsonSerializerOptions));
                     break;
             }
         }
