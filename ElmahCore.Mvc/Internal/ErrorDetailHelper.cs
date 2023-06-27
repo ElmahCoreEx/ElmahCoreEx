@@ -1,17 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 
 namespace ElmahCore.Mvc
 {
     internal class SourceInfo
     {
         public string Type { get; set; }
+
         public string Method { get; set; }
+
         public string Source { get; set; }
+
         public int Line { get; set; }
     }
 
@@ -58,7 +61,7 @@ namespace ElmahCore.Mvc
 
         private static string GetPath(string[] sourcePaths, string filePath)
         {
-            sourcePaths ??= new[] {""};
+            sourcePaths ??= new[] { "" };
             foreach (var source in sourcePaths)
             {
                 var sourcePath = source;
@@ -97,101 +100,126 @@ namespace ElmahCore.Mvc
             var errorStartLineNumberInArray = errorStartLineNumberInFile - preErrorLineNumberInFile;
 
             frame.PreContextLine = preErrorLineNumberInFile;
-            frame.PreContextCode = string.Join("\n", codeBlock.Take(errorStartLineNumberInArray));
-            frame.ContextCode = string.Join("\n", codeBlock
+            frame.PreContextCode = string.Join(Environment.NewLine, codeBlock.Take(errorStartLineNumberInArray));
+            frame.ContextCode = string.Join(Environment.NewLine, codeBlock
                 .Skip(errorStartLineNumberInArray)
                 .Take(numOfErrorLines));
-            frame.PostContextCode = string.Join("\n", codeBlock
+            frame.PostContextCode = string.Join(Environment.NewLine, codeBlock
                 .Skip(errorStartLineNumberInArray + numOfErrorLines));
         }
 
-        public static string MarkupStackTrace(string text, out List<SourceInfo> srcList)
+        public static (string markup, List<SourceInfo> srcList) MarkupStackTrace(string text)
         {
             var list = new List<SourceInfo>();
-            srcList = list;
+
+            (HtmlChunk File, HtmlChunk Line) SourceLocationSelector(HtmlChunk f, HtmlChunk l)
+            {
+                if (int.TryParse(l.Html, out var line))
+                {
+                    list.Add(new SourceInfo { Source = f.Html, Line = line });
+                }
+
+                return (
+                    File: f.Html?.Length > 0
+                        ? new HtmlChunk(f.Index, f.End, $"<span class='st-file'>{f.Html}</span>")
+                        : new HtmlChunk(),
+                    Line: l.Html?.Length > 0
+                        ? new HtmlChunk(l.Index, l.End, $"<span class='st-line'>{l.Html}</span>")
+                        : new HtmlChunk()
+                );
+            }
+
+            IEnumerable<HtmlChunk> Selector(HtmlChunk f, (HtmlChunk Type, HtmlChunk Method) tm,
+                (HtmlChunk List, (HtmlChunk Type, HtmlChunk Name)[] Parameters) p,
+                (HtmlChunk File, HtmlChunk Line) fl) =>
+                new[]
+                    {
+                        new[]
+                        {
+                            new HtmlChunk(f.Index, f.Index, "<span class='st-frame'>"),
+                            tm.Type,
+                            tm.Method,
+                            new HtmlChunk(p.List.Index, p.List.Index, "<span class='params'>")
+                        },
+                        from pe in p.Parameters from e in new[] { pe.Type, pe.Name } select e,
+                        new[]
+                        {
+                            new HtmlChunk(p.List.End, p.List.End, "</span>"), fl.File, fl.Line,
+                            new HtmlChunk(f.End, f.End, "</span>")
+                        }
+                    }.SelectMany(tokens => tokens, (tokens, token) => new { tokens, token })
+                    .Where(t => t.token.Html != null)
+                    .Select(t => t.token);
 
             var frames = StackTraceParser.Parse
             (
                 text,
-                (idx, len, txt) => new
-                {
-                    Index = idx,
-                    End = idx + len,
-                    Html = txt.Length > 0
-                        ? WebUtility.HtmlEncode(txt)
-                        : string.Empty
-                },
-                (t, m) => new
-                {
-                    Type = new {t.Index, t.End, Html = $"<span class='st-type'>{t.Html}</span>"},
-                    Method = new {m.Index, m.End, Html = $"<span class='st-method'>{m.Html}</span>"}
-                },
-                (t, n) => new
-                {
-                    Type = new {t.Index, t.End, Html = $"<span class='st-param-type'>{t.Html}</span>"},
-                    Name = new {n.Index, n.End, Html = $"<span class='st-param-name'>{n.Html}</span>"}
-                },
-                (p, ps) => new {List = p, Parameters = ps.ToArray()},
-                (f,l) =>
-                
-                {
-                    if (int.TryParse(l.Html, out var line))
-                        list.Add(new SourceInfo
-                        {
-                            Source = f.Html,
-                            Line = line
-                        });
-                    return new
-                    {
-                        File = f.Html.Length > 0
-                            ? new {f.Index, f.End, Html = $"<span class='st-file'>{f.Html}</span>"}
-                            : null,
-                        Line = l.Html.Length > 0
-                            ? new {l.Index, l.End, Html = $"<span class='st-line'>{l.Html}</span>"}
-                            : null
-                    };
-                },
-                (f, tm, p, fl) =>
-                    from tokens in new[]
-                    {
-                        new[]
-                        {
-                            new {f.Index, End = f.Index, Html = "<span class='st-frame'>"},
-                            tm.Type,
-                            tm.Method,
-                            new {p.List.Index, End = p.List.Index, Html = "<span class='params'>"}
-                        },
-                        from pe in p.Parameters
-                        from e in new[] {pe.Type, pe.Name}
-                        select e,
-                        new[]
-                        {
-                            new {Index = p.List.End, p.List.End, Html = "</span>"},
-                            fl.File,
-                            fl.Line,
-                            new {Index = f.End, f.End, Html = "</span>"}
-                        }
-                    }
-                    from token in tokens
-                    where token != null
-                    select token
-            );
+                TokenSelector,
+                MethodSelector,
+                ParameterSelector,
+                ParametersSelector,
+                SourceLocationSelector,
+                Selector);
 
-            var markups =
-                from token in Enumerable.Repeat(new {Index = 0, End = 0, Html = string.Empty}, 1)
-                    .Concat(from tokens in frames from token in tokens select token)
-                    .Pairwise((prev, curr) => new {Previous = prev, Current = curr})
-                from m in new object[]
-                {
-                    text.Substring(token.Previous.End, token.Current.Index - token.Previous.End),
-                    token.Current.Html
-                }
-                select m.ToString()
-                into m
-                where m.Length > 0
-                select m;
+            var markups = Enumerable.Repeat(new HtmlChunk(0, 0, string.Empty), 1)
+                .Concat(from tokens in frames from token in tokens select token)
+                .Pairwise((prev, curr) => new { Previous = prev, Current = curr })
+                .SelectMany(
+                    token => new[]
+                    {
+                        text.Substring(token.Previous.End, token.Current.Index - token.Previous.End),
+                        token.Current.Html
+                    }, (token, m) => m)
+                .Where(m => m.Length > 0);
 
-            return string.Join(string.Empty, markups);
+            var sb = new StringBuilder();
+            foreach (var markup in markups)
+            {
+                sb.Append(markup);
+            }
+
+            return (sb.ToString(), list);
         }
+
+        private static (HtmlChunk List, (HtmlChunk Type, HtmlChunk Name)[] Parameters) ParametersSelector(HtmlChunk p,
+            IEnumerable<(HtmlChunk Type, HtmlChunk Name)> ps)
+        {
+            return (List: p, Parameters: ps.ToArray());
+        }
+
+        private static (HtmlChunk Type, HtmlChunk Name) ParameterSelector(HtmlChunk type, HtmlChunk name)
+        {
+            return (new HtmlChunk(type.Index, type.End, $"<span class='st-param-type'>{type.Html}</span>"),
+                new HtmlChunk(name.Index, name.End, $"<span class='st-param-name'>{name.Html}</span>"));
+        }
+
+        private static ( HtmlChunk Type, HtmlChunk Method) MethodSelector(HtmlChunk type, HtmlChunk method)
+        {
+            return (new HtmlChunk(type.Index, type.End, $"<span class='st-type'>{type.Html}</span>"),
+                new HtmlChunk(method.Index, method.End, $"<span class='st-method'>{method.Html}</span>"));
+        }
+
+        private static HtmlChunk TokenSelector(int idx, int len, string txt)
+        {
+            return new HtmlChunk(idx, idx + len, txt.Length > 0
+                ? WebUtility.HtmlEncode(txt)
+                : string.Empty);
+        }
+    }
+
+    public struct HtmlChunk
+    {
+        public HtmlChunk(int index, int end, string html)
+        {
+            Index = index;
+            End = end;
+            Html = html;
+        }
+
+        public int Index { get; set; }
+
+        public int End { get; set; }
+
+        public string Html { get; set; }
     }
 }

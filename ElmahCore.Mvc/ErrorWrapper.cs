@@ -40,7 +40,8 @@ namespace ElmahCore.Mvc
         public ErrorWrapper(Error error, string[] sourcePath)
         {
             _error = error ?? throw new ArgumentNullException(nameof(error));
-            HtmlMessage = ErrorDetailHelper.MarkupStackTrace(_error.Detail, out var srcList);
+            var (markup, srcList) = ErrorDetailHelper.MarkupStackTrace(_error.Detail);
+            HtmlMessage = markup; 
             if (srcList?.Any() == true)
                 Sources = srcList.Select(i
                         => ErrorDetailHelper.GetStackFrameSourceCodeInfo(sourcePath, i.Method, i.Type, i.Source,

@@ -63,21 +63,6 @@ namespace ElmahCore.Mvc
             // https://github.com/atifaziz/StackTraceParser/issues/4
             TimeSpan.FromSeconds(5));
 
-        public static IEnumerable<T> Parse<T>(
-            string text,
-            Func<string, string, string, string, IEnumerable<KeyValuePair<string, string>>, string, string, T> selector)
-        {
-            if (selector == null) throw new ArgumentNullException(nameof(selector));
-
-            return Parse(text, (idx, len, txt) => txt,
-                               (t, m) => new { Type = t, Method = m },
-                               (pt, pn) => new KeyValuePair<string, string>(pt, pn),
-                               // ReSharper disable once PossibleMultipleEnumeration
-                               (pl, ps) => new { List = pl, Items = ps },
-                               (fn, ln) => new { File = fn, Line = ln },
-                               (f, tm, p, fl) => selector(f, tm.Type, tm.Method, p.List, p.Items, fl.File, fl.Line));
-        }
-
         public static IEnumerable<TFrame> Parse<TToken, TMethod, TParameters, TParameter, TSourceLocation, TFrame>(
             string text,
             Func<int, int, string, TToken> tokenSelector,
