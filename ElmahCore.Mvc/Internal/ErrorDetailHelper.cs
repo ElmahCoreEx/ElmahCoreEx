@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
 
 namespace ElmahCore.Mvc
 {
@@ -20,6 +19,7 @@ namespace ElmahCore.Mvc
 
     internal static class ErrorDetailHelper
     {
+        //TODO: Dangerous no expiration policy. Should be replaced with LRU cache
         private static readonly Dictionary<string, StackFrameSourceCodeInfo> Cache =
             new Dictionary<string, StackFrameSourceCodeInfo>();
 
@@ -27,10 +27,18 @@ namespace ElmahCore.Mvc
         internal static StackFrameSourceCodeInfo GetStackFrameSourceCodeInfo(string[] sourcePath, string method,
             string type, string filePath, int lineNumber)
         {
+            bool useCache = false;
+
             var key = $"{method}:{type}:{filePath}:{lineNumber}";
-            lock (Cache)
+            
+            if (useCache)
             {
-                if (Cache.TryGetValue(key, out var info)) return info;
+                
+                
+                lock (Cache)
+                {
+                    if (Cache.TryGetValue(key, out var info)) return info;
+                }
             }
 
             var stackFrame = new StackFrameSourceCodeInfo
@@ -51,9 +59,12 @@ namespace ElmahCore.Mvc
 
             if (lines != null) ReadFrameContent(stackFrame, lines, stackFrame.Line, stackFrame.Line);
 
-            lock (Cache)
+            if (useCache)
             {
-                if (!Cache.ContainsKey(key)) Cache.Add(key, stackFrame);
+                lock (Cache)
+                {
+                    if (!Cache.ContainsKey(key)) Cache.Add(key, stackFrame);
+                }
             }
 
             return stackFrame;
@@ -112,19 +123,19 @@ namespace ElmahCore.Mvc
         {
             var list = new List<SourceInfo>();
 
-            (HtmlChunk File, HtmlChunk Line) SourceLocationSelector(HtmlChunk f, HtmlChunk l)
+            (HtmlChunk File, HtmlChunk Line) SourceLocationSelector(HtmlChunk file, HtmlChunk lineSrc)
             {
-                if (int.TryParse(l.Html, out var line))
+                if (int.TryParse(lineSrc.Html, out var line))
                 {
-                    list.Add(new SourceInfo { Source = f.Html, Line = line });
+                    list.Add(new SourceInfo { Source = file.Html, Line = line });
                 }
 
                 return (
-                    File: f.Html?.Length > 0
-                        ? new HtmlChunk(f.Index, f.End, $"<span class='st-file'>{f.Html}</span>")
+                    File: file.Html?.Length > 0
+                        ? new HtmlChunk(file.Index, file.End, $"<span class='st-file'>{file.Html}</span>")
                         : new HtmlChunk(),
-                    Line: l.Html?.Length > 0
-                        ? new HtmlChunk(l.Index, l.End, $"<span class='st-line'>{l.Html}</span>")
+                    Line: lineSrc.Html?.Length > 0
+                        ? new HtmlChunk(lineSrc.Index, lineSrc.End, $"<span class='st-line'>{lineSrc.Html}</span>")
                         : new HtmlChunk()
                 );
             }
@@ -162,7 +173,7 @@ namespace ElmahCore.Mvc
                 Selector);
 
             var markups = Enumerable.Repeat(new HtmlChunk(0, 0, string.Empty), 1)
-                .Concat(from tokens in frames from token in tokens select token)
+                .Concat(frames.SelectMany(tokens => tokens))
                 .Pairwise((prev, curr) => new { Previous = prev, Current = curr })
                 .SelectMany(
                     token => new[]
@@ -172,13 +183,7 @@ namespace ElmahCore.Mvc
                     }, (token, m) => m)
                 .Where(m => m.Length > 0);
 
-            var sb = new StringBuilder();
-            foreach (var markup in markups)
-            {
-                sb.Append(markup);
-            }
-
-            return (sb.ToString(), list);
+            return (string.Join(string.Empty, markups), list);
         }
 
         private static (HtmlChunk List, (HtmlChunk Type, HtmlChunk Name)[] Parameters) ParametersSelector(HtmlChunk p,
