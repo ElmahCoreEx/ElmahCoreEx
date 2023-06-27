@@ -22,12 +22,14 @@ namespace ElmahCore
         public static Error DecodeString(string xml)
         {
             using var sr = new StringReader(xml);
-            using var reader = XmlReader.Create(sr, new XmlReaderSettings { CheckCharacters = false });
+            using var reader = XmlReader.Create(sr, XmlReaderSettings);
             if (!reader.IsStartElement("error"))
                 throw new ApplicationException("The error XML is not in the expected format.");
 
             return Decode(reader);
         }
+
+        private static XmlReaderSettings XmlReaderSettings => new XmlReaderSettings { CheckCharacters = false };
 
         /// <summary>
         ///     Decodes an <see cref="Error" /> object from its XML representation.
@@ -49,13 +51,11 @@ namespace ElmahCore
             var isEmpty = reader.IsEmptyElement;
             reader.Read();
 
-            if (!isEmpty)
-            {
-                ReadInnerXml(reader, error);
-                while (reader.NodeType != XmlNodeType.EndElement)
-                    reader.Skip();
-                reader.ReadEndElement();
-            }
+            if (isEmpty) return error;
+            ReadInnerXml(reader, error);
+            while (reader.NodeType != XmlNodeType.EndElement)
+                reader.Skip();
+            reader.ReadEndElement();
 
             return error;
         }
@@ -150,6 +150,14 @@ namespace ElmahCore
             }
         }
 
+        private static readonly XmlWriterSettings XmlWriterSettings = new XmlWriterSettings
+        {
+            Indent = true,
+            NewLineOnAttributes = true,
+            CheckCharacters = false,
+            OmitXmlDeclaration = true // see issue #120: http://code.google.com/p/elmah/issues/detail?id=120
+        };
+        
         /// <summary>
         ///     Encodes the default XML representation of an <see cref="Error" />
         ///     object to a string.
@@ -158,13 +166,7 @@ namespace ElmahCore
         {
             var sw = new StringWriter();
 
-            using var writer = XmlWriter.Create(sw, new XmlWriterSettings
-            {
-                Indent = true,
-                NewLineOnAttributes = true,
-                CheckCharacters = false,
-                OmitXmlDeclaration = true // see issue #120: http://code.google.com/p/elmah/issues/detail?id=120
-            });
+            using var writer = XmlWriter.Create(sw,XmlWriterSettings);
             writer.WriteStartElement("error");
             Encode(error, writer);
             writer.WriteEndElement();
@@ -442,16 +444,14 @@ namespace ElmahCore
             {
                 if (reader.IsStartElement("message"))
                 {
-                    var entry = new ElmahLogMessageEntry
+                    log.Add(new ElmahLogMessageEntry
                     {
                         Level = GetLogLevel(reader.GetAttribute("level")),
                         Exception = reader.GetAttribute("exception"),
                         TimeStamp = LoadTime(reader.GetAttribute("time-stamp") ?? string.Empty),
                         Scope = reader.GetAttribute("scope"),
                         Message = reader.GetAttribute("message")
-                    };
-
-                    log.Add(entry);
+                    });
 
                     reader.Read(); // <item>
                 }
@@ -539,15 +539,13 @@ namespace ElmahCore
             {
                 if (reader.IsStartElement("sql"))
                 {
-                    var entry = new ElmahLogSqlEntry
+                    log.Add(new ElmahLogSqlEntry
                     {
                         CommandType = reader.GetAttribute("command-type"),
                         SqlText = reader.GetAttribute("sql-text"),
                         TimeStamp = LoadTime(reader.GetAttribute("time-stamp") ?? string.Empty),
                         DurationMs = int.Parse(reader.GetAttribute("duration") ?? "0")
-                    };
-
-                    log.Add(entry);
+                    });
 
                     reader.Read(); // <item>
                 }
