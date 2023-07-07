@@ -57,12 +57,12 @@ namespace ElmahCore.Sql
         /// <summary>
         /// Gets the Schema name to be used for the error table
         /// </summary>
-        public virtual string DatabaseSchemaName { get; }
+        protected virtual string DatabaseSchemaName { get; }
 
         /// <summary>
         /// Gets the Table name to be used for the error table
         /// </summary>
-        public virtual string DatabaseTableName { get; }
+        protected virtual string DatabaseTableName { get; }
 
         public override string Log(Error error)
         {
@@ -163,20 +163,16 @@ namespace ElmahCore.Sql
         /// </summary>
         private void CreateTableIfNotExists()
         {
-            using (var connection = new SqlConnection(ConnectionString))
-            {
-                connection.Open();
-                using (var cmdCheck = Commands.CheckTable(DatabaseSchemaName, DatabaseTableName))
-                {
-                    cmdCheck.Connection = connection;
-                    // ReSharper disable once PossibleNullReferenceException
-                    var exists = (int?)cmdCheck.ExecuteScalar();
+            using var connection = new SqlConnection(ConnectionString);
+            connection.Open();
+            using var cmdCheck = Commands.CheckTable(DatabaseSchemaName, DatabaseTableName);
+            cmdCheck.Connection = connection;
+            // ReSharper disable once PossibleNullReferenceException
+            var exists = (int?)cmdCheck.ExecuteScalar();
 
-                    if (!exists.HasValue)
-                        ExecuteBatchNonQuery(Commands.CreateTableSql(DatabaseSchemaName, DatabaseTableName),
-                            connection);
-                }
-            }
+            if (!exists.HasValue)
+                ExecuteBatchNonQuery(Commands.CreateTableSql(DatabaseSchemaName, DatabaseTableName),
+                    connection);
         }
 
         private static void ExecuteBatchNonQuery(string sql, SqlConnection conn)

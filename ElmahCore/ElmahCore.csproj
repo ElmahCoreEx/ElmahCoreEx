@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>default</LangVersion>
 	  <Version>2.1.2</Version>
     <PackageProjectUrl>https://github.com/ElmahCoreEx/ElmahCoreEx</PackageProjectUrl>
 	  <AssemblyVersion>2.1.2.0</AssemblyVersion>

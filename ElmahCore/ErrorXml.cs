@@ -374,11 +374,8 @@ namespace ElmahCore
             Debug.Assert(!reader.IsEmptyElement);
             reader.Read();
 
-            //
             // Add entries into the collection as <item> elements
             // with child <value> elements are found.
-            //
-
             while (reader.NodeType != XmlNodeType.EndElement)
             {
                 if (reader.IsStartElement("item"))

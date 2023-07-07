@@ -42,7 +42,7 @@ namespace ElmahCore.MySql
         /// <summary>
         ///     Gets the connection string used by the log to connect to the database.
         /// </summary>
-        public virtual string ConnectionString { get; }
+        protected virtual string ConnectionString { get; }
 
         public override string Log(Error error)
         {
@@ -129,7 +129,7 @@ namespace ElmahCore.MySql
         }
 
         /// <summary>
-        ///     Creates the neccessary tables used by this implementation
+        ///     Creates the necessary tables used by this implementation
         /// </summary>
         private void CreateTableIfNotExist()
         {

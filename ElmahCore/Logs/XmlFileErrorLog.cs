@@ -116,12 +116,9 @@ namespace ElmahCore
                 return 0;
 
             var files = infos.Where(info => IsUserFile(info.Attributes))
-                .OrderByDescending(info => info.Name, StringComparer.OrdinalIgnoreCase)
-                //.Select(info => Path.Combine(LogPath, info.Name))
-                //.Reverse()
-                .ToList();
+                .OrderByDescending(info => info.Name, StringComparer.OrdinalIgnoreCase);
 
-            if (errorEntryList == null) return files.Count; // Return total
+            if (errorEntryList == null) return files.Count(); // Return total
 
             var entries = files.Skip(errorIndex)
                 .Take(pageSize)
@@ -130,7 +127,7 @@ namespace ElmahCore
             foreach (var entry in entries)
                 errorEntryList.Add(entry);
 
-            return files.Count; // Return total
+            return files.Count(); // Return total
         }
 
         private ErrorLogEntry LoadErrorLogEntry(string path)
