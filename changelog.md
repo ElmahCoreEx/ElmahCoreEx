@@ -8,6 +8,8 @@ Drop in replacement for existing ElmahCore with collection of outstanding PR's m
 
 ### Changes
 
+- Fix to improve memory usage with large Serialization payload (#4)
+
 #### 2.1.3-alpha.2
 
 - refactor: Refactoring to statics, parser.
