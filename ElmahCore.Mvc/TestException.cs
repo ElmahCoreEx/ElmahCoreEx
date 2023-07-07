@@ -3,10 +3,6 @@ using System.Runtime.Serialization;
 
 namespace ElmahCore.Mvc
 {
-    #region Imports
-
-    #endregion
-
     /// <summary>
     ///     The exception that is thrown when to test the error logging
     ///     subsystem. This exception is used for testing purposes only and

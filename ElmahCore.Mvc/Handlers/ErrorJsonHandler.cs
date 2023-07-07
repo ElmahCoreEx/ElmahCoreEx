@@ -16,11 +16,7 @@ namespace ElmahCore.Mvc.Handlers
             var response = context.Response;
             response.ContentType = "application/json";
 
-            //
-            // Retrieve the ID of the requested error and read it from 
-            // the store.
-            //
-
+            // Retrieve the ID of the requested error and read it from the store. 
             var errorId = context.Request.Query["id"].FirstOrDefault();
 
             if (string.IsNullOrEmpty(errorId))
@@ -28,22 +24,13 @@ namespace ElmahCore.Mvc.Handlers
 
             var entry = await errorLog.GetErrorAsync(errorId);
 
-            //
             // Perhaps the error has been deleted from the store? Whatever
             // the reason, pretend it does not exist.
-            //
-
             if (entry == null) context.Response.StatusCode = 404;
 
-            // 
             // Stream out the error as formatted JSON.
-            //
-            var jsonSerializerOptions = new JsonSerializerOptions
-            {
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault 
-            };
-            var err = new ErrorWrapper(entry?.Error, errorLog.SourcePaths) {HtmlMessage = null};
-            var jsonString = JsonSerializer.Serialize(err, jsonSerializerOptions);
+            var err = new ErrorWrapper(entry?.Error, errorLog.SourcePaths) { HtmlMessage = null };
+            var jsonString = JsonSerializer.Serialize(err, JsonSerializerHelper.DefaultJsonSerializerOptions);
             await response.WriteAsync(jsonString);
         }
     }

@@ -21,15 +21,15 @@ namespace ElmahCore
         /// </summary>
         public static Error DecodeString(string xml)
         {
-            using (var sr = new StringReader(xml))
-            using (var reader = XmlReader.Create(sr, new XmlReaderSettings() { CheckCharacters = false }))
-            {
-                if (!reader.IsStartElement("error"))
-                    throw new ApplicationException("The error XML is not in the expected format.");
+            using var sr = new StringReader(xml);
+            using var reader = XmlReader.Create(sr, XmlReaderSettings);
+            if (!reader.IsStartElement("error"))
+                throw new ApplicationException("The error XML is not in the expected format.");
 
-                return Decode(reader);
-            }
+            return Decode(reader);
         }
+
+        private static XmlReaderSettings XmlReaderSettings => new XmlReaderSettings { CheckCharacters = false };
 
         /// <summary>
         ///     Decodes an <see cref="Error" /> object from its XML representation.
@@ -40,30 +40,22 @@ namespace ElmahCore
             if (!reader.IsStartElement())
                 throw new ArgumentException("Reader is not positioned at the start of an element.", nameof(reader));
 
-            //
             // Read out the attributes that contain the simple
             // typed state.
-            //
-
             var error = new Error();
             ReadXmlAttributes(reader, error);
 
-            //
             // Move past the element. If it's not empty, then
             // read also the inner XML that contains complex
             // types like collections.
-            //
-
             var isEmpty = reader.IsEmptyElement;
             reader.Read();
 
-            if (!isEmpty)
-            {
-                ReadInnerXml(reader, error);
-                while (reader.NodeType != XmlNodeType.EndElement)
-                    reader.Skip();
-                reader.ReadEndElement();
-            }
+            if (isEmpty) return error;
+            ReadInnerXml(reader, error);
+            while (reader.NodeType != XmlNodeType.EndElement)
+                reader.Skip();
+            reader.ReadEndElement();
 
             return error;
         }
@@ -100,72 +92,72 @@ namespace ElmahCore
         {
             if (reader == null) throw new ArgumentNullException(nameof(reader));
 
-            //
             // Loop through the elements, reading those that we
             // recognize. If an unknown element is found then
             // this method bails out immediately without
             // consuming it, assuming that it belongs to a subclass.
-            //
-
             while (reader.IsStartElement())
             {
-                //
-                // Optimization Note: This block could be re-wired slightly 
-                // to be more efficient by not causing a collection to be
-                // created if the element is going to be empty.
-                //
-
-                NameValueCollection collection;
-                if (reader.Name == "paramsLog")
+                switch (reader.Name)
                 {
-                    if (reader.IsEmptyElement)
+                    case "paramsLog" when reader.IsEmptyElement:
                         reader.Read();
-                    else
+                        break;
+                    case "paramsLog":
                         UpcodeToParams(reader, error.Params);
-                }
-                if (reader.Name == "sqlLog")
-                {
-                    if (reader.IsEmptyElement)
+                        break;
+                    case "sqlLog" when reader.IsEmptyElement:
                         reader.Read();
-                    else
+                        break;
+                    case "sqlLog":
                         UpcodeToSqlLog(reader, error.SqlLog);
-                }
-                else if (reader.Name == "messageLog")
-                {
-                    if (reader.IsEmptyElement)
+                        break;
+                    case "messageLog" when reader.IsEmptyElement:
                         reader.Read();
-                    else
+                        break;
+                    case "messageLog":
                         UpcodeToLog(reader, error.MessageLog);
-                }
-                else
-                {
-                    switch (reader.Name)
+                        break;
+                    default:
                     {
-                        case "serverVariables":
-                            collection = error.ServerVariables;
-                            break;
-                        case "queryString":
-                            collection = error.QueryString;
-                            break;
-                        case "form":
-                            collection = error.Form;
-                            break;
-                        case "cookies":
-                            collection = error.Cookies;
-                            break;
-                        default:
-                            reader.Skip();
-                            continue;
-                    }
+                        NameValueCollection collection;
+                        switch (reader.Name)
+                        {
+                            case "serverVariables":
+                                collection = error.ServerVariables;
+                                break;
+                            case "queryString":
+                                collection = error.QueryString;
+                                break;
+                            case "form":
+                                collection = error.Form;
+                                break;
+                            case "cookies":
+                                collection = error.Cookies;
+                                break;
+                            default:
+                                reader.Skip();
+                                continue;
+                        }
 
-                    if (reader.IsEmptyElement)
-                        reader.Read();
-                    else
-                        UpcodeTo(reader, collection);
+                        if (reader.IsEmptyElement)
+                            reader.Read();
+                        else
+                            UpcodeTo(reader, collection);
+                        break;
+                    }
                 }
             }
         }
 
+        private static readonly XmlWriterSettings XmlWriterSettings = new XmlWriterSettings
+        {
+            Indent = true,
+            NewLineOnAttributes = true,
+            CheckCharacters = false,
+            OmitXmlDeclaration = true // see issue #120: http://code.google.com/p/elmah/issues/detail?id=120
+        };
+        
         /// <summary>
         ///     Encodes the default XML representation of an <see cref="Error" />
         ///     object to a string.
@@ -174,18 +166,11 @@ namespace ElmahCore
         {
             var sw = new StringWriter();
 
-            using var writer = XmlWriter.Create(sw, new XmlWriterSettings
-            {
-                Indent = true,
-                NewLineOnAttributes = true,
-                CheckCharacters = false,
-                OmitXmlDeclaration = true // see issue #120: http://code.google.com/p/elmah/issues/detail?id=120
-            });
+            using var writer = XmlWriter.Create(sw,XmlWriterSettings);
             writer.WriteStartElement("error");
             Encode(error, writer);
             writer.WriteEndElement();
             writer.Flush();
-
             return sw.ToString();
         }
 
@@ -198,11 +183,8 @@ namespace ElmahCore
             if (writer.WriteState != WriteState.Element)
                 throw new ArgumentException("Writer is not in the expected Element state.", nameof(writer));
 
-            //
             // Write out the basic typed information in attributes
             // followed by collections as inner elements.
-            //
-
             WriteXmlAttributes(error, writer);
             WriteInnerXml(error, writer);
         }
@@ -350,7 +332,6 @@ namespace ElmahCore
             if (collection.Count == 0)
                 return;
 
-            //
             // Write out a named multi-value collection as follows 
             // (example here is the ServerVariables collection):
             //
@@ -361,7 +342,6 @@ namespace ElmahCore
             //          <value string="a=1&amp;b=2" />
             //      </item>
             //      ...
-            //
 
             foreach (string key in collection.Keys)
             {
@@ -394,11 +374,8 @@ namespace ElmahCore
             Debug.Assert(!reader.IsEmptyElement);
             reader.Read();
 
-            //
             // Add entries into the collection as <item> elements
             // with child <value> elements are found.
-            //
-
             while (reader.NodeType != XmlNodeType.EndElement)
             {
                 if (reader.IsStartElement("item"))
@@ -458,24 +435,20 @@ namespace ElmahCore
         {
             if (reader == null) throw new ArgumentNullException(nameof(reader));
             if (log == null) throw new ArgumentNullException(nameof(log));
-
-            Debug.Assert(!reader.IsEmptyElement);
             reader.Read();
 
             while (reader.NodeType != XmlNodeType.EndElement)
             {
                 if (reader.IsStartElement("message"))
                 {
-                    var entry = new ElmahLogMessageEntry
+                    log.Add(new ElmahLogMessageEntry
                     {
                         Level = GetLogLevel(reader.GetAttribute("level")),
                         Exception = reader.GetAttribute("exception"),
                         TimeStamp = LoadTime(reader.GetAttribute("time-stamp") ?? string.Empty),
                         Scope = reader.GetAttribute("scope"),
                         Message = reader.GetAttribute("message")
-                    };
-
-                    log.Add(entry);
+                    });
 
                     reader.Read(); // <item>
                 }
@@ -559,21 +532,17 @@ namespace ElmahCore
             Debug.Assert(!reader.IsEmptyElement);
             reader.Read();
 
-
-
             while (reader.NodeType != XmlNodeType.EndElement)
             {
                 if (reader.IsStartElement("sql"))
                 {
-                    var entry = new ElmahLogSqlEntry
+                    log.Add(new ElmahLogSqlEntry
                     {
                         CommandType = reader.GetAttribute("command-type"),
                         SqlText = reader.GetAttribute("sql-text"),
                         TimeStamp = LoadTime(reader.GetAttribute("time-stamp") ?? string.Empty),
                         DurationMs = int.Parse(reader.GetAttribute("duration") ?? "0")
-                    };
-
-                    log.Add(entry);
+                    });
 
                     reader.Read(); // <item>
                 }

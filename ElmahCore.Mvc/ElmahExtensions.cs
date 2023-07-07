@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using ElmahCore.Mvc;
 using ElmahCore.Mvc.Exceptions;
+using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http;
 
 // ReSharper disable once CheckNamespace
@@ -24,6 +25,7 @@ namespace ElmahCore
             return RaiseError(ctx, ex, onError);
         }
 
+        // ReSharper disable once MemberCanBePrivate.Global
         public static Task RaiseError(this HttpContext ctx, Exception ex, Func<HttpContext, Error, Task> onError)
         {
             GuardForNullMiddleware();
@@ -36,6 +38,7 @@ namespace ElmahCore
             return RaiseError(ctx, ex);
         }
 
+        // ReSharper disable once MemberCanBePrivate.Global
         public static Task RaiseError(this HttpContext ctx, Exception ex)
         {
             GuardForNullMiddleware();
@@ -48,17 +51,20 @@ namespace ElmahCore
             RaiseError(ex);
         }
 
+        // ReSharper disable once MemberCanBePrivate.Global
         public static void RaiseError(Exception ex, Func<HttpContext, Error, Task> onError)
         {
             LogMiddleware?.LogException(ex, InternalHttpContext.Current ?? new DefaultHttpContext(),
                 onError);
         }
 
+        // ReSharper disable once MemberCanBePrivate.Global
         public static void RaiseError(Exception ex)
         {
             RaiseError(ex, (context, error) => Task.CompletedTask);
         }
 
+        [UsedImplicitly]
         public static void LogParams(this object source,
             (string name, object value) param1 = default,
             (string name, object value) param2 = default,
@@ -83,7 +89,6 @@ namespace ElmahCore
 
                 var typeName = source.GetType().ToString();
                 feature.LogParameters(list, typeName, memberName, file, line);
-
             }
             catch
             {

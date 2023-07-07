@@ -1,0 +1,78 @@
+name: release
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+  NUGET_PUSH_SOURCE: https://api.nuget.org/v3/index.json
+  NUGET_DIR: ${{ github.workspace}}/nuget
+
+defaults:
+  run:
+    shell: pwsh
+    working-directory: ./
+
+on:
+  push:
+    # matched against refs/heads
+    # branches-ignore:
+    # - develop
+    # matched against ref/tags
+    tags:
+      - 1.*
+      - 2.*
+  workflow_dispatch: # Allow running the workflow manually from the GitHub UI
+  release:
+    types:
+      - published # Run the workflow when a new GitHub release is published
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dotnet-version: ["6.0.x"]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # get all history to allow MinVer to work.
+      - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+      - name: Install dependencies
+
+        run: dotnet restore
+      - name: Build
+        # Create the NuGet package in the folder from the environment variable NuGetDirectory
+        run: |
+          dotnet build ElmahCore.MsSql\ElmahCore.Sql.csproj --configuration Release --output ${{ env.NUGET_DIR }}
+          dotnet build ElmahCore.Postgresql\ElmahCore.Postgresql.csproj --configuration Release --output ${{ env.NUGET_DIR }}
+          dotnet build ElmahCore.MySql\ElmahCore.MySql.csproj --configuration Release --output ${{ env.NUGET_DIR }}
+          dotnet build ElmahCore.Mvc\ElmahCore.Mvc.csproj --configuration Release --output ${{ env.NUGET_DIR }}
+          dotnet build ElmahCore\ElmahCore.csproj --configuration Release --output ${{ env.NUGET_DIR }}
+      - uses: actions/upload-artifact@v3
+        with:
+          name: nuget
+          if-no-files-found: error
+          retention-days: 7
+          path: ${{ env.NUGET_DIR }}/*.*nupkg
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      # Download the NuGet package created in the previous job
+      - uses: actions/download-artifact@v3
+        with:
+          name: nuget
+          path: ${{ env.NUGET_DIR }}
+      # Install the .NET SDK indicated in the global.json file
+      # - name: Setup .NET Core
+      #   uses: actions/setup-dotnet@v3
+      - name: Publish
+        env:
+          API_KEY: ${{ secrets.NUGET_APIKEY }}
+        # run: nuget push **/*.nupkg -Source ${{ env.NUGET_PUSH_SOURCE }} -ApiKey ${{ env.API_KEY }} -SkipDuplicate
+        run: |
+          foreach($file in (Get-ChildItem "${{ env.NUGET_DIR }}" -Recurse -Include *.nupkg)) {
+            dotnet nuget push $file --api-key "${{ secrets.NUGET_APIKEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          }

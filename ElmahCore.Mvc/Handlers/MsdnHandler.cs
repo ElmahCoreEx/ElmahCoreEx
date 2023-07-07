@@ -13,11 +13,15 @@ namespace ElmahCore.Mvc.Handlers
 
         public static async Task ProcessRequestException(HttpContext context, string path)
         {
+            var useCache = false;
             context.Response.ContentType = "application/json";
             string json = null;
-            lock (Cache)
+            if (useCache)
             {
-                if (Cache.ContainsKey(path)) json = Cache[path];
+                lock (Cache)
+                {
+                    if (Cache.TryGetValue(path, out var value)) json = value;
+                }
             }
 
             if (json != null)
@@ -65,15 +69,13 @@ namespace ElmahCore.Mvc.Handlers
             {
                 Path = url,
                 Html = html
-            }, new JsonSerializerOptions
+            }, JsonSerializerHelper.DefaultJsonSerializerOptions);
+            if (useCache)
             {
-                DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                MaxDepth = 0
-            });
-            lock (Cache)
-            {
-                if (!Cache.ContainsKey(path)) Cache.Add(path, json);
+                lock (Cache)
+                {
+                    if (!Cache.ContainsKey(path)) Cache.Add(path, json);
+                }
             }
 
             await context.Response.WriteAsync(json);
@@ -139,12 +141,7 @@ namespace ElmahCore.Mvc.Handlers
             {
                 Path = url,
                 Html = html
-            }, new JsonSerializerOptions
-            {
-                DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                MaxDepth = 0
-            });
+            }, JsonSerializerHelper.DefaultJsonSerializerOptions);
             lock (Cache)
             {
                 if (!Cache.ContainsKey("status-" + statusStr)) Cache.Add("status-" + statusStr, json);

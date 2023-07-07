@@ -1,34 +1,36 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
     <Version>2.1.2</Version>
-    <PackageProjectUrl>https://github.com/ElmahCore/ElmahCore</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/ElmahCoreEx/ElmahCoreEx</PackageProjectUrl>
     <AssemblyVersion>2.1.2.0</AssemblyVersion>
     <FileVersion>2.1.2.0</FileVersion>
     <AssemblyName>ElmahCore.Postgresql</AssemblyName>
-    <PackageId>ElmahCore.Postgresql</PackageId>
-    <Authors>ElmahCore</Authors>
+    <PackageId>ElmahCoreEx.Postgresql</PackageId>
+    <Authors>ElmahCoreEx</Authors>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <Company>ElmahCore</Company>
+    <Company>ElmahCoreEx</Company>
     <Product>ElmahCore.Postgresql</Product>
     <NeutralLanguage>en-001</NeutralLanguage>
-    <RepositoryUrl>https://www.nuget.org/packages/ElmahCore</RepositoryUrl>
+    <RepositoryUrl>https://www.nuget.org/packages/ElmahCoreEx</RepositoryUrl>
     <PackageTags>net-core elmah mvc-core asp-net-core asp-net-core-mvc elmah-core netcore netcore2 netcore20 mvc mvc6 aspnetcore aspnetcoremvc</PackageTags>
-    <Description>ELMAH for ASP.NET Core</Description>
-    <Copyright>ElmahCore</Copyright>
+    <Description>ELMAH for ASP.NET Core Postgres SQL Adapter</Description>
+    <Copyright>ElmahCoreEx</Copyright>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <LangVersion>default</LangVersion>
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
   </PropertyGroup>
 
 <PropertyGroup>
-  <MinVerDefaultPreReleasePhase>preview</MinVerDefaultPreReleasePhase>
+  <MinVerDefaultPreReleaseIdentifiers>alpha.0</MinVerDefaultPreReleaseIdentifiers>
 </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="JetBrains.Annotations" Version="2023.2.0" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
-    <PackageReference Include="MinVer" Version="2.5.0">
+    <PackageReference Include="MinVer" Version="4.3.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -36,11 +38,20 @@
 
 
   <ItemGroup>
-    <PackageReference Include="Npgsql" Version="5.0.1.1" />
+    <PackageReference Include="Npgsql" Version="5.0.16" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ElmahCore\ElmahCore.csproj" />
   </ItemGroup>
+<PropertyGroup>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+</PropertyGroup>
+
+<ItemGroup>
+    <None Include="..\LICENSE.txt" Pack="true" PackagePath="" />
+    <None Include="..\README.md" Pack="true" PackagePath="" />
+</ItemGroup>
 
 </Project>

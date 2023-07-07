@@ -1,30 +1,36 @@
 using System;
 using System.Diagnostics;
 using ElmahCore.Mvc.Logger;
+using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace ElmahCore.Mvc
 {
     public static class BuilderHelper
     {
+        [UsedImplicitly]
         public static IApplicationBuilder UseElmahExceptionPage(this IApplicationBuilder app)
         {
             ErrorLogMiddleware.ShowDebugPage = true;
             return app;
         }
 
+        [UsedImplicitly]
         public static IApplicationBuilder UseElmah(this IApplicationBuilder app)
         {
             app.UseStaticHttpContext();
 
-            DiagnosticListener.AllListeners.Subscribe(new ElmahDiagnosticObserver(app.ApplicationServices));
+            var elmahOptions = app.ApplicationServices.GetService<IOptions<ElmahOptions>>();
+            if (elmahOptions == null || elmahOptions.Value.EnableDiagnosticObserver)
+            {
+                DiagnosticListener.AllListeners.Subscribe(new ElmahDiagnosticObserver(app.ApplicationServices));
+            }
 
             app.UseMiddleware<ErrorLogMiddleware>();
-
-
             return app;
         }
 
@@ -33,6 +39,7 @@ namespace ElmahCore.Mvc
             return AddElmah<MemoryErrorLog>(services);
         }
 
+        // ReSharper disable once MemberCanBePrivate.Global
         public static IServiceCollection AddElmah<T>(this IServiceCollection services) where T : ErrorLog
         {
             services.AddHttpContextAccessor();
@@ -48,11 +55,13 @@ namespace ElmahCore.Mvc
             return services;
         }
 
+        [UsedImplicitly]
         public static IServiceCollection AddElmah(this IServiceCollection services, Action<ElmahOptions> setupAction)
         {
             return AddElmah<MemoryErrorLog>(services, setupAction);
         }
 
+        // ReSharper disable once MemberCanBePrivate.Global
         public static IServiceCollection AddElmah<T>(this IServiceCollection services, Action<ElmahOptions> setupAction)
             where T : ErrorLog
         {
@@ -63,33 +72,6 @@ namespace ElmahCore.Mvc
             var builder = services.AddElmah<T>();
             builder.Configure(setupAction);
             return builder;
-        }
-    }
-
-    internal static class InternalHttpContext
-    {
-        private static IHttpContextAccessor _contextAccessor;
-
-        public static HttpContext Current => _contextAccessor.HttpContext;
-
-        internal static void Configure(IHttpContextAccessor contextAccessor)
-        {
-            _contextAccessor = contextAccessor;
-        }
-    }
-
-    internal static class StaticHttpContextExtensions
-    {
-        public static void AddHttpContextAccessor(this IServiceCollection services)
-        {
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-        }
-
-        public static IApplicationBuilder UseStaticHttpContext(this IApplicationBuilder app)
-        {
-            var httpContextAccessor = app.ApplicationServices.GetRequiredService<IHttpContextAccessor>();
-            InternalHttpContext.Configure(httpContextAccessor);
-            return app;
         }
     }
 }

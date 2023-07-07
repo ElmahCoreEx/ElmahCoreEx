@@ -18,7 +18,7 @@ namespace ElmahCore.Mvc.Tests
 
         public ErrorLogMiddlewareTests()
         {
-            _requestDelegate = httpContext => Task.CompletedTask;
+            _requestDelegate = _ => Task.CompletedTask;
             _options = Substitute.For<IOptions<ElmahOptions>>();
             _loggerFactory = Substitute.For<ILoggerFactory>();
             _errorLog = new MemoryErrorLog();
@@ -35,8 +35,7 @@ namespace ElmahCore.Mvc.Tests
         public void RiseErrorOkWhenMiddlewareInitialized()
         {
             var _ = new ErrorLogMiddleware(_requestDelegate, _errorLog, _loggerFactory, _options);
-            var httpContext = new DefaultHttpContext();
-            Func<Task> act = async () => await ElmahExtensions.RaiseError(httpContext, new Exception());
+            var act = async () => await ElmahExtensions.RaiseError(new DefaultHttpContext(), new Exception());
             act.Should().NotThrowAsync();
         }
     }

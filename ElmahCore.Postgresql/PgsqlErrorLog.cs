@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 using Npgsql;
 using NpgsqlTypes;
@@ -10,6 +11,7 @@ namespace ElmahCore.Postgresql
     ///     An <see cref="ErrorLog" /> implementation that uses PostgreSQL
     ///     as its backing store.
     /// </summary>
+    [UsedImplicitly]
     public class PgsqlErrorLog : ErrorLog
     {
         private const int MaxAppNameLength = 60;
@@ -29,7 +31,7 @@ namespace ElmahCore.Postgresql
         public PgsqlErrorLog(string connectionString, bool createTablesIfNotExist)
         {
             if (string.IsNullOrEmpty(connectionString))
-                throw new ArgumentNullException("connectionString");
+                throw new ArgumentNullException(nameof(connectionString));
 
             ConnectionString = connectionString;
 
@@ -59,7 +61,7 @@ namespace ElmahCore.Postgresql
         public override void Log(Guid id, Error error)
         {
             if (error == null)
-                throw new ArgumentNullException("error");
+                throw new ArgumentNullException(nameof(error));
 
             var errorXml = ErrorXml.EncodeString(error);
 
@@ -75,8 +77,8 @@ namespace ElmahCore.Postgresql
 
         public override ErrorLogEntry GetError(string id)
         {
-            if (id == null) throw new ArgumentNullException("id");
-            if (id.Length == 0) throw new ArgumentException(null, "id");
+            if (id == null) throw new ArgumentNullException(nameof(id));
+            if (id.Length == 0) throw new ArgumentException(null, nameof(id));
 
             Guid errorGuid;
 
@@ -86,7 +88,7 @@ namespace ElmahCore.Postgresql
             }
             catch (FormatException e)
             {
-                throw new ArgumentException(e.Message, "id", e);
+                throw new ArgumentException(e.Message, nameof(id), e);
             }
 
             string errorXml;
@@ -108,39 +110,37 @@ namespace ElmahCore.Postgresql
 
         public override int GetErrors(int errorIndex, int pageSize, ICollection<ErrorLogEntry> errorEntryList)
         {
-            if (errorIndex < 0) throw new ArgumentOutOfRangeException("errorIndex", errorIndex, null);
-            if (pageSize < 0) throw new ArgumentOutOfRangeException("pageSize", pageSize, null);
+            if (errorIndex < 0) throw new ArgumentOutOfRangeException(nameof(errorIndex), errorIndex, null);
+            if (pageSize < 0) throw new ArgumentOutOfRangeException(nameof(pageSize), pageSize, null);
 
-            using (var connection = new NpgsqlConnection(ConnectionString))
+            using var connection = new NpgsqlConnection(ConnectionString);
+            connection.Open();
+
+            using (var command = Commands.GetErrorsXml(ApplicationName, errorIndex, pageSize))
             {
-                connection.Open();
+                command.Connection = connection;
 
-                using (var command = Commands.GetErrorsXml(ApplicationName, errorIndex, pageSize))
+                using (var reader = command.ExecuteReader())
                 {
-                    command.Connection = connection;
-
-                    using (var reader = command.ExecuteReader())
+                    while (reader.Read())
                     {
-                        while (reader.Read())
-                        {
-                            var id = reader.GetGuid(0);
-                            var xml = reader.GetString(1);
-                            var error = ErrorXml.DecodeString(xml);
-                            errorEntryList.Add(new ErrorLogEntry(this, id.ToString(), error));
-                        }
+                        var id = reader.GetGuid(0);
+                        var xml = reader.GetString(1);
+                        var error = ErrorXml.DecodeString(xml);
+                        errorEntryList.Add(new ErrorLogEntry(this, id.ToString(), error));
                     }
                 }
+            }
 
-                using (var command = Commands.GetErrorsXmlTotal(ApplicationName))
-                {
-                    command.Connection = connection;
-                    return Convert.ToInt32(command.ExecuteScalar());
-                }
+            using (var command = Commands.GetErrorsXmlTotal(ApplicationName))
+            {
+                command.Connection = connection;
+                return Convert.ToInt32(command.ExecuteScalar());
             }
         }
 
         /// <summary>
-        ///     Creates the neccessary tables and sequences used by this implementation
+        ///     Creates the necessary tables and sequences used by this implementation
         /// </summary>
         private void CreateTableIfNotExists()
         {
@@ -255,7 +255,8 @@ VALUES (@ErrorId, @Application, @Host, @Type, @Source, @Message, @User, @StatusC
 
                 command.CommandText =
                     @"
-SELECT AllXml FROM Elmah_Error 
+SELECT AllXml 
+FROM Elmah_Error 
 WHERE 
     Application = @Application 
     AND ErrorId = @ErrorId

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 using MySql.Data.MySqlClient;
 
@@ -9,6 +10,7 @@ namespace ElmahCore.MySql
     ///     An <see cref="ErrorLog" /> implementation that uses MySQL
     ///     as its backing store.
     /// </summary>
+    [UsedImplicitly]
     public class MySqlErrorLog : ErrorLog
     {
         /// <summary>
@@ -26,7 +28,7 @@ namespace ElmahCore.MySql
         public MySqlErrorLog(string connectionString)
         {
             if (string.IsNullOrEmpty(connectionString))
-                throw new ArgumentNullException("connectionString");
+                throw new ArgumentNullException(nameof(connectionString));
 
             ConnectionString = connectionString;
             CreateTableIfNotExist();
@@ -40,7 +42,7 @@ namespace ElmahCore.MySql
         /// <summary>
         ///     Gets the connection string used by the log to connect to the database.
         /// </summary>
-        public virtual string ConnectionString { get; }
+        protected virtual string ConnectionString { get; }
 
         public override string Log(Error error)
         {
@@ -54,24 +56,22 @@ namespace ElmahCore.MySql
         public override void Log(Guid id, Error error)
         {
             if (error == null)
-                throw new ArgumentNullException("error");
+                throw new ArgumentNullException(nameof(error));
 
             var errorXml = ErrorXml.EncodeString(error);
 
-            using (var connection = new MySqlConnection(ConnectionString))
-            using (var command = CommandExtension.LogError(id, ApplicationName, error.HostName, error.Type,
-                error.Source, error.Message, error.User, error.StatusCode, error.Time, errorXml))
-            {
-                connection.Open();
-                command.Connection = connection;
-                command.ExecuteNonQuery();
-            }
+            using var connection = new MySqlConnection(ConnectionString);
+            using var command = CommandExtension.LogError(id, ApplicationName, error.HostName, error.Type,
+                error.Source, error.Message, error.User, error.StatusCode, error.Time, errorXml);
+            connection.Open();
+            command.Connection = connection;
+            command.ExecuteNonQuery();
         }
 
         public override ErrorLogEntry GetError(string id)
         {
-            if (id == null) throw new ArgumentNullException("id");
-            if (id.Length == 0) throw new ArgumentException(null, "id");
+            if (id == null) throw new ArgumentNullException(nameof(id));
+            if (id.Length == 0) throw new ArgumentException(null, nameof(id));
 
             Guid errorGuid;
 
@@ -81,7 +81,7 @@ namespace ElmahCore.MySql
             }
             catch (FormatException e)
             {
-                throw new ArgumentException(e.Message, "id", e);
+                throw new ArgumentException(e.Message, nameof(id), e);
             }
 
             string errorXml;
@@ -103,65 +103,57 @@ namespace ElmahCore.MySql
 
         public override int GetErrors(int errorIndex, int pageSize, ICollection<ErrorLogEntry> errorEntryList)
         {
-            if (errorIndex < 0) throw new ArgumentOutOfRangeException("errorIndex", errorIndex, null);
-            if (pageSize < 0) throw new ArgumentOutOfRangeException("pageSize", pageSize, null);
+            if (errorIndex < 0) throw new ArgumentOutOfRangeException(nameof(errorIndex), errorIndex, null);
+            if (pageSize < 0) throw new ArgumentOutOfRangeException(nameof(pageSize), pageSize, null);
 
-            using (var connection = new MySqlConnection(ConnectionString))
+            using var connection = new MySqlConnection(ConnectionString);
+            connection.Open();
+
+            using (var command = CommandExtension.GetErrorsXml(ApplicationName, errorIndex, pageSize))
             {
-                connection.Open();
+                command.Connection = connection;
 
-                using (var command = CommandExtension.GetErrorsXml(ApplicationName, errorIndex, pageSize))
+                using (var reader = command.ExecuteReader())
                 {
-                    command.Connection = connection;
-
-                    using (var reader = command.ExecuteReader())
+                    while (reader.Read())
                     {
-                        while (reader.Read())
-                        {
-                            var id = reader.GetGuid(0);
-                            var xml = reader.GetString(1);
-                            var error = ErrorXml.DecodeString(xml);
-                            errorEntryList.Add(new ErrorLogEntry(this, id.ToString(), error));
-                        }
+                        var id = reader.GetGuid(0);
+                        var xml = reader.GetString(1);
+                        var error = ErrorXml.DecodeString(xml);
+                        errorEntryList.Add(new ErrorLogEntry(this, id.ToString(), error));
                     }
                 }
-
-                return GetTotalErrorsXml(connection);
             }
+
+            return GetTotalErrorsXml(connection);
         }
 
         /// <summary>
-        ///     Creates the neccessary tables used by this implementation
+        ///     Creates the necessary tables used by this implementation
         /// </summary>
         private void CreateTableIfNotExist()
         {
-            using (var connection = new MySqlConnection(ConnectionString))
+            using var connection = new MySqlConnection(ConnectionString);
+            connection.Open();
+            var databaseName = connection.Database;
+
+            using var commandCheck = CommandExtension.CheckTable(databaseName);
+            commandCheck.Connection = connection;
+            var exists = Convert.ToBoolean(commandCheck.ExecuteScalar());
+
+            if (!exists)
             {
-                connection.Open();
-                var databaseName = connection.Database;
-
-                using (var commandCheck = CommandExtension.CheckTable(databaseName))
-                {
-                    commandCheck.Connection = connection;
-                    var exists = Convert.ToBoolean(commandCheck.ExecuteScalar());
-
-                    if (!exists)
-                        using (var commandCreate = CommandExtension.CreateTable())
-                        {
-                            commandCreate.Connection = connection;
-                            commandCreate.ExecuteNonQuery();
-                        }
-                }
+                using var commandCreate = CommandExtension.CreateTable();
+                commandCreate.Connection = connection;
+                commandCreate.ExecuteNonQuery();
             }
         }
 
         private int GetTotalErrorsXml(MySqlConnection connection)
         {
-            using (var command = CommandExtension.GetTotalErrorsXml(ApplicationName))
-            {
-                command.Connection = connection;
-                return Convert.ToInt32(command.ExecuteScalar());
-            }
+            using var command = CommandExtension.GetTotalErrorsXml(ApplicationName);
+            command.Connection = connection;
+            return Convert.ToInt32(command.ExecuteScalar());
         }
     }
 }

@@ -1,47 +1,54 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
 	  <Version>2.1.2</Version>
-	  <PackageProjectUrl>https://github.com/ElmahCore/ElmahCore</PackageProjectUrl>
+	  <PackageProjectUrl>https://github.com/ElmahCoreEx/ElmahCoreEx</PackageProjectUrl>
 	  <AssemblyVersion>2.1.2.0</AssemblyVersion>
 	  <FileVersion>2.1.2.0</FileVersion>
 	  <AssemblyName>ElmahCore.Sql</AssemblyName>
-	  <PackageId>ElmahCore.Sql</PackageId>
-	  <Authors>ElmahCore</Authors>
-	  <Company>ElmahCore</Company>
+	  <PackageId>ElmahCoreEx.Sql</PackageId>
+	  <Authors>ElmahCoreEx</Authors>
+	  <Company>ElmahCoreEx</Company>
 	  <Product>ElmahCore.Sql</Product>
 	  <NeutralLanguage>en-001</NeutralLanguage>
-	  <RepositoryUrl>https://www.nuget.org/packages/ElmahCore</RepositoryUrl>
-	  <PackageTags>net-core elmah mvc-core asp-net-core asp-net-core-mvc elmah-core netcore netcore2 netcore20 mvc mvc6 aspnetcore aspnetcoremvc</PackageTags>
-	  <Description>ELMAH for ASP.NET Core</Description>
-	  <Copyright>ElmahCore</Copyright>
+	  <RepositoryUrl>https://www.nuget.org/packages/ElmahCoreEx</RepositoryUrl>
+	  <PackageTags>net-core elmah mvc-core asp-net-core asp-net-core-mvc elmah-core netcore aspnetcore aspnetcoremvc</PackageTags>
+	  <Description>ELMAH for ASP.NET Core Microsoft SQL Adapter</Description>
+	  <Copyright>ElmahCoreEx</Copyright>
 	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	  
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <LangVersion>default</LangVersion>
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
   </PropertyGroup>
 
 <PropertyGroup>
-  <MinVerDefaultPreReleasePhase>preview</MinVerDefaultPreReleasePhase>
+  <MinVerDefaultPreReleaseIdentifiers>alpha.0</MinVerDefaultPreReleaseIdentifiers>
 </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.1" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
-    <PackageReference Include="MinVer" Version="2.5.0">
+    <PackageReference Include="MinVer" Version="4.3.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-  </ItemGroup>
-
-
-  <ItemGroup>
-    <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="6.0.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ElmahCore\ElmahCore.csproj" />
   </ItemGroup>
 
+<PropertyGroup>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+</PropertyGroup>
+
+<ItemGroup>
+    <None Include="..\LICENSE.txt" Pack="true" PackagePath="" />
+    <None Include="..\README.md" Pack="true" PackagePath="" />
+</ItemGroup>
 </Project>
