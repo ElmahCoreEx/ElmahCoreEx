@@ -16,7 +16,7 @@ Drop in replacement for existing ElmahCore with collection of outstanding PR's m
 - refactor: Drop Dictionary cache (No LRU)
 - perf: Set regex to compiled.
 - chore: Bump HtmlAgility to 1.11.48, system.Text.Json 6.0.8
-- fix: UserAgent < 3 characters will not throw exception.
+- fix: UserAgent < 3 characters will not throw exception. [#60](https://github.com/ElmahCore/ElmahCore/issues/168)
 
 
 #### 2.1.3-alpha.1
