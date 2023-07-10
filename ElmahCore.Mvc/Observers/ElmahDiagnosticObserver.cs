@@ -28,7 +28,7 @@ namespace ElmahCore.Mvc
 
         public void OnNext(DiagnosticListener value)
         {
-            //TODO: Should we really be subscribing in OnNext?  (Logic from original elmah).
+            // TODO: Should we really be subscribing in OnNext?  (Logic from original elmah).
             var x = _provider.GetService<IElmahDiagnosticObserver>();
             var diagnosticObservers = _provider.GetServices<IElmahDiagnosticObserver>();
             foreach (var diagnosticObserver in diagnosticObservers)

@@ -4,7 +4,7 @@ namespace ElmahCore.Mvc
 {
     public static class UserAgentHelper
     {
-        private static readonly Regex Codes = new Regex(
+        private static readonly Regex Codes = new(
             @"(android|bb\d+|meego).+mobile|avantgo|bada\/|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|xda|xiino",
             RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.Compiled);
 
@@ -15,7 +15,7 @@ namespace ElmahCore.Mvc
         public static bool IsMobile(string u)
         {
             if (string.IsNullOrEmpty(u) || u.Length < 4) return false;
-            return Codes.IsMatch(u) || Keys.IsMatch(u.Substring(0, 4));
+            return Codes.IsMatch(u) || Keys.IsMatch(u[..4]);
         }
     }
 }

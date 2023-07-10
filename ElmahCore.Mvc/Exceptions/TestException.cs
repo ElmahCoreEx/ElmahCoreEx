@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace ElmahCore.WebUI
+namespace ElmahCore.Mvc
 {
     /// <summary>
     ///     The exception that is thrown when to test the error logging
@@ -9,7 +9,7 @@ namespace ElmahCore.WebUI
     ///     should not be used for any other purpose.
     /// </summary>
     [Serializable]
-    internal sealed class TestException : System.ApplicationException
+    public sealed class TestException : System.ApplicationException
     {
         /// <summary>
         ///     Initializes a new instance of the <see cref="TestException" /> class.

@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using ElmahCore.Assertions;
+using ElmahCore.Mvc;
 using ElmahCore.WebUI.Handlers;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
@@ -17,38 +16,38 @@ using Microsoft.Extensions.Options;
 
 namespace ElmahCore.WebUI
 {
-    internal sealed class ErrorLogWebUIMiddleware : IErrorLogMiddleware
+    internal sealed class ErrorLogWebUiMiddleware : IErrorLogMiddleware
     {
         public delegate void ErrorLoggedEventHandler(object sender, ErrorLoggedEventArgs args);
 
         internal static bool ShowDebugPage = false;
 
-        private static readonly string[] SupportedContentTypes =
-        {
-            "application/json",
-            "application/x-www-form-urlencoded",
-            "application/javascript",
-            "application/soap+xml",
-            "application/xhtml+xml",
-            "application/xml",
-            "text/html",
-            "text/javascript",
-            "text/plain",
-            "text/xml",
-            "text/markdown"
-        };
+        // private static readonly string[] SupportedContentTypes =
+        // {
+        //     "application/json",
+        //     "application/x-www-form-urlencoded",
+        //     "application/javascript",
+        //     "application/soap+xml",
+        //     "application/xhtml+xml",
+        //     "application/xml",
+        //     "text/html",
+        //     "text/javascript",
+        //     "text/plain",
+        //     "text/xml",
+        //     "text/markdown"
+        // };
 
         private readonly Func<HttpContext, bool> _checkPermissionAction = context => true;
         private readonly string _elmahRoot = @"~/elmah";
         private readonly ErrorLog _errorLog;
         private readonly List<IErrorFilter> _filters = new List<IErrorFilter>();
         private readonly ILogger _logger;
-        private readonly bool _logRequestBody = true;
+        //private readonly bool _logRequestBody = true;
         private readonly RequestDelegate _next;
         private readonly IEnumerable<IErrorNotifier> _notifiers;
         private readonly Func<HttpContext, Error, Task> _onError = (context, error) => Task.CompletedTask;
 
-        public ErrorLogWebUIMiddleware(RequestDelegate next, ErrorLog errorLog, ILoggerFactory loggerFactory,
+        public ErrorLogWebUiMiddleware(RequestDelegate next, ErrorLog errorLog, ILoggerFactory loggerFactory,
             IOptions<ElmahOptions> elmahOptions)
         {
             ElmahExtensions.LogMiddleware = this;
@@ -56,7 +55,7 @@ namespace ElmahCore.WebUI
             _errorLog = errorLog ?? throw new ArgumentNullException(nameof(errorLog));
             var lf = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
 
-            _logger = lf.CreateLogger<ErrorLogWebUIMiddleware>();
+            _logger = lf.CreateLogger<ErrorLogWebUiMiddleware>();
 
             //return here if the elmah options is not provided
             if (elmahOptions?.Value == null)
@@ -74,7 +73,7 @@ namespace ElmahCore.WebUI
             _filters = elmahOptions.Value?.Filters.ToList();
             foreach (var errorFilter in options.Filters) Filtering += errorFilter.OnErrorModuleFiltering;
 
-            _logRequestBody = elmahOptions.Value?.LogRequestBody == true;
+            //_logRequestBody = elmahOptions.Value?.LogRequestBody == true;
 
             if (!string.IsNullOrEmpty(options.FiltersConfig))
                 try
@@ -165,21 +164,21 @@ namespace ElmahCore.WebUI
                     return;
                 }
 
-                var ct = context.Request.ContentType?.ToLower();
-                var tEnc = string.Join(",", context.Request.Headers["Transfer-Encoding"].ToArray());
-                if (_logRequestBody && !string.IsNullOrEmpty(ct) && SupportedContentTypes.Any(i => ct.Contains(ct))
-                    && !tEnc.Contains("chunked"))
-                    body = await GetBody(context.Request);
+                // var ct = context.Request.ContentType?.ToLower();
+                // var tEnc = string.Join(",", context.Request.Headers["Transfer-Encoding"].ToArray());
+                // if (_logRequestBody && !string.IsNullOrEmpty(ct) && SupportedContentTypes.Any(i => ct.Contains(ct))
+                //     && !tEnc.Contains("chunked"))
+                //     body = await GetBody(context.Request);
 
                 await _next(context);
 
-                if (context.Response.HasStarted
-                    || context.Response.StatusCode < 400
-                    || context.Response.StatusCode >= 600
-                    || context.Response.ContentLength.HasValue
-                    || !string.IsNullOrEmpty(context.Response.ContentType))
-                    return;
-                await LogException(new HttpException(context.Response.StatusCode), context, _onError, body);
+                // if (context.Response.HasStarted
+                //     || context.Response.StatusCode < 400
+                //     || context.Response.StatusCode >= 600
+                //     || context.Response.ContentLength.HasValue
+                //     || !string.IsNullOrEmpty(context.Response.ContentType))
+                //     return;
+                // await LogException(new HttpException(context.Response.StatusCode), context, _onError, body);
             }
             catch (Exception exception)
             {
@@ -195,19 +194,19 @@ namespace ElmahCore.WebUI
             }
         }
 
-        private static async Task<string> GetBody(HttpRequest request)
-        {
-            request.EnableBuffering();
-            var body = request.Body;
-            var buffer = new byte[Convert.ToInt32(request.ContentLength)];
-            // ReSharper disable once MustUseReturnValue
-            await request.Body.ReadAsync(buffer, 0, buffer.Length);
-            var bodyAsText = Encoding.UTF8.GetString(buffer);
-            body.Seek(0, SeekOrigin.Begin);
-            request.Body = body;
-
-            return bodyAsText;
-        }
+        // private static async Task<string> GetBody(HttpRequest request)
+        // {
+        //     request.EnableBuffering();
+        //     var body = request.Body;
+        //     var buffer = new byte[Convert.ToInt32(request.ContentLength)];
+        //     // ReSharper disable once MustUseReturnValue
+        //     await request.Body.ReadAsync(buffer, 0, buffer.Length);
+        //     var bodyAsText = Encoding.UTF8.GetString(buffer);
+        //     body.Seek(0, SeekOrigin.Begin);
+        //     request.Body = body;
+        //
+        //     return bodyAsText;
+        // }
 
         private async Task ProcessElmahRequest(HttpContext context, string resource)
         {
@@ -304,7 +303,7 @@ namespace ElmahCore.WebUI
                 var id = await log.LogAsync(error);
                 entry = new ErrorLogEntry(log, id, error);
 
-                //Send notification
+                // Send notification
                 foreach (var notifier in _notifiers)
                     if (!args.DismissedNotifiers.Any(i =>
                             i.Equals(notifier.Name, StringComparison.InvariantCultureIgnoreCase)))

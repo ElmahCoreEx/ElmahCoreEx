@@ -11,6 +11,7 @@ namespace ElmahCore.Mvc
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         }
 
+        // ReSharper disable once UnusedMethodReturnValue.Global
         public static IApplicationBuilder UseStaticHttpContext(this IApplicationBuilder app)
         {
             var httpContextAccessor = app.ApplicationServices.GetRequiredService<IHttpContextAccessor>();

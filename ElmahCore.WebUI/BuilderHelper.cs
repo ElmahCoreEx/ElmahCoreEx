@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using ElmahCore.WebUI.Logger;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
@@ -15,7 +14,7 @@ namespace ElmahCore.WebUI
         [UsedImplicitly]
         public static IApplicationBuilder UseElmahExceptionPage(this IApplicationBuilder app)
         {
-            ErrorLogWebUIMiddleware.ShowDebugPage = true;
+            ErrorLogWebUiMiddleware.ShowDebugPage = true;
             return app;
         }
 
@@ -30,7 +29,7 @@ namespace ElmahCore.WebUI
             //     DiagnosticListener.AllListeners.Subscribe(new ElmahDiagnosticObserver(app.ApplicationServices));
             // }
 
-            app.UseMiddleware<ErrorLogWebUIMiddleware>();
+            app.UseMiddleware<ErrorLogWebUiMiddleware>();
             return app;
         }
 

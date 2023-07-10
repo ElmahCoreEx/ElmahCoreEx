@@ -7,8 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using ElmahCore.Assertions;
-using ElmahCore.Mvc.Handlers;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -38,10 +36,9 @@ namespace ElmahCore.Mvc
             "text/markdown"
         };
 
-        private readonly Func<HttpContext, bool> _checkPermissionAction = context => true;
         private readonly string _elmahRoot = @"~/elmah";
         private readonly ErrorLog _errorLog;
-        private readonly List<IErrorFilter> _filters = new List<IErrorFilter>();
+        private readonly List<IErrorFilter> _filters = new();
         private readonly ILogger _logger;
         private readonly bool _logRequestBody = true;
         private readonly RequestDelegate _next;
@@ -62,15 +59,13 @@ namespace ElmahCore.Mvc
             if (elmahOptions?.Value == null)
                 return;
             var options = elmahOptions.Value;
-
-            _checkPermissionAction = options.PermissionCheck;
             _onError = options.Error;
 
-            //Notifiers
+            // Notifiers
             if (options.Notifiers != null)
                 _notifiers = elmahOptions.Value.Notifiers.ToList();
 
-            //Filters
+            // Filters
             _filters = elmahOptions.Value?.Filters.ToList();
             foreach (var errorFilter in options.Filters) Filtering += errorFilter.OnErrorModuleFiltering;
 
@@ -152,16 +147,16 @@ namespace ElmahCore.Mvc
                 if (sourcePath.Equals(elmahRoot, StringComparison.InvariantCultureIgnoreCase)
                     || sourcePath.StartsWith(elmahRoot + "/", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    if (!_checkPermissionAction(context))
-                    {
-                        await context.ChallengeAsync();
-                        return;
-                    }
-
-                    var path = sourcePath.Substring(elmahRoot.Length, sourcePath.Length - elmahRoot.Length);
-                    if (path.StartsWith("/")) path = path.Substring(1);
-                    if (path.Contains('?')) path = path.Substring(0, path.IndexOf('?'));
-                    await ProcessElmahRequest(context, path);
+                    // if (!_checkPermissionAction(context))
+                    // {
+                    //     await context.ChallengeAsync();
+                    //     return;
+                    // }
+                    //
+                    // var path = sourcePath.Substring(elmahRoot.Length, sourcePath.Length - elmahRoot.Length);
+                    // if (path.StartsWith("/")) path = path.Substring(1);
+                    // if (path.Contains('?')) path = path.Substring(0, path.IndexOf('?'));
+                    // await ProcessElmahRequest(context, path);
                     return;
                 }
 
@@ -188,9 +183,9 @@ namespace ElmahCore.Mvc
 
                 context.Features.Set<IElmahFeature>(new ElmahFeature(id, location));
 
-                //To next middleware
+                // To next middleware
                 if (!ShowDebugPage) throw;
-                //Show Debug page
+                // Show Debug page
                 context.Response.Redirect(location);
             }
         }
@@ -209,65 +204,65 @@ namespace ElmahCore.Mvc
             return bodyAsText;
         }
 
-        private async Task ProcessElmahRequest(HttpContext context, string resource)
-        {
-            try
-            {
-                var elmahRoot = _elmahRoot.StartsWith("~/")
-                    ? context.Request.PathBase + _elmahRoot.Substring(1)
-                    : _elmahRoot;
-
-                if (resource.StartsWith("api/"))
-                {
-                    await ErrorApiHandler.ProcessRequest(context, _errorLog, resource);
-                    return;
-                }
-
-                if (resource.StartsWith("exception/"))
-                {
-                    await MsdnHandler.ProcessRequestException(context, resource.Substring("exception/".Length));
-                    return;
-                }
-
-                if (resource.StartsWith("status/"))
-                {
-                    await MsdnHandler.ProcessRequestStatus(context, resource.Substring("status/".Length));
-                    return;
-                }
-
-                switch (resource)
-                {
-                    case "xml":
-                        await ErrorXmlHandler.ProcessRequest(context, _errorLog);
-                        break;
-                    case "json":
-                        await ErrorJsonHandler.ProcessRequest(context, _errorLog);
-                        break;
-                    case "rss":
-                        await ErrorRssHandler.ProcessRequest(context, _errorLog, elmahRoot);
-                        break;
-                    case "digestrss":
-                        await ErrorDigestRssHandler.ProcessRequest(context, _errorLog, elmahRoot);
-                        return;
-                    case "download":
-                        await ErrorLogDownloadHandler.ProcessRequestAsync(_errorLog, context);
-                        return;
-                    case "test":
-                        throw new TestException();
-                    default:
-                        await ErrorResourceHandler.ProcessRequest(context, resource, elmahRoot);
-                        break;
-                }
-            }
-            catch (TestException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Elmah request processing error");
-            }
-        }
+        // private async Task ProcessElmahRequest(HttpContext context, string resource)
+        // {
+        //     try
+        //     {
+        //         var elmahRoot = _elmahRoot.StartsWith("~/")
+        //             ? context.Request.PathBase + _elmahRoot.Substring(1)
+        //             : _elmahRoot;
+        //
+        //         if (resource.StartsWith("api/"))
+        //         {
+        //             await ErrorApiHandler.ProcessRequest(context, _errorLog, resource);
+        //             return;
+        //         }
+        //
+        //         if (resource.StartsWith("exception/"))
+        //         {
+        //             await MsdnHandler.ProcessRequestException(context, resource.Substring("exception/".Length));
+        //             return;
+        //         }
+        //
+        //         if (resource.StartsWith("status/"))
+        //         {
+        //             await MsdnHandler.ProcessRequestStatus(context, resource.Substring("status/".Length));
+        //             return;
+        //         }
+        //
+        //         switch (resource)
+        //         {
+        //             case "xml":
+        //                 await ErrorXmlHandler.ProcessRequest(context, _errorLog);
+        //                 break;
+        //             case "json":
+        //                 await ErrorJsonHandler.ProcessRequest(context, _errorLog);
+        //                 break;
+        //             case "rss":
+        //                 await ErrorRssHandler.ProcessRequest(context, _errorLog, elmahRoot);
+        //                 break;
+        //             case "digestrss":
+        //                 await ErrorDigestRssHandler.ProcessRequest(context, _errorLog, elmahRoot);
+        //                 return;
+        //             case "download":
+        //                 await ErrorLogDownloadHandler.ProcessRequestAsync(_errorLog, context);
+        //                 return;
+        //             case "test":
+        //                 throw new TestException();
+        //             default:
+        //                 await ErrorResourceHandler.ProcessRequest(context, resource, elmahRoot);
+        //                 break;
+        //         }
+        //     }
+        //     catch (TestException)
+        //     {
+        //         throw;
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         _logger.LogError(ex, "Elmah request processing error");
+        //     }
+        // }
 
         public async Task<string> LogException(Exception e, HttpContext context,
             Func<HttpContext, Error, Task> onError, string body = null)

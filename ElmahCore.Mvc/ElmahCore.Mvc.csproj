@@ -44,6 +44,7 @@
 
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack" Version="1.11.49" />
+    <PackageReference Include="IndexRange" Version="1.0.2" />
     <PackageReference Include="JetBrains.Annotations" Version="2023.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Abstractions" Version="2.2.0" />
@@ -70,6 +71,7 @@
     <None Include="..\LICENSE.txt" Pack="true" PackagePath="" />
     <None Include="..\README.md" Pack="true" PackagePath="" />
 </ItemGroup>
+
 
 
 </Project>
