@@ -6,10 +6,10 @@
     <AssemblyVersion>2.1.2.0</AssemblyVersion>
     <FileVersion>2.1.2.0</FileVersion>
     <AssemblyName>ElmahCore.Mvc</AssemblyName>
-    <PackageId>ElmahCoreEx</PackageId>
+    <PackageId>ElmahCoreEx.Mvc</PackageId>
     <Authors>ElmahCoreEx</Authors>
     <Company>ElmahCoreEx</Company>
-    <Product>ElmahCoreEx</Product>
+    <Product>ElmahCoreEx.Mvc</Product>
     <NeutralLanguage>en-001</NeutralLanguage>
     <RepositoryUrl>https://www.nuget.org/packages/ElmahCoreEx</RepositoryUrl>
     <PackageTags>net-core elmah mvc-core asp-net-core asp-net-core-mvc elmah-core netcore netcore2 netcore20 mvc mvc6 aspnetcore aspnetcoremvc</PackageTags>

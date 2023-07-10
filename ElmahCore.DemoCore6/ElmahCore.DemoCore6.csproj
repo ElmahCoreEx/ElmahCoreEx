@@ -9,7 +9,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ElmahCore.Diagnostics.Mssql\ElmahCore.Diagnostics.Mssql.csproj" />
-    <ProjectReference Include="..\ElmahCore.Mvc\ElmahCore.Mvc.csproj" />
     <ProjectReference Include="..\ElmahCore.WebUI\ElmahCore.WebUI.csproj" />
   </ItemGroup>
 
