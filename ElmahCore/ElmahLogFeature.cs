@@ -5,7 +5,7 @@ using System.Linq;
 namespace ElmahCore
 {
     // ReSharper disable once ClassNeverInstantiated.Global
-    internal class ElmahLogFeature
+    public class ElmahLogFeature
     {
         private readonly Dictionary<Guid, ElmahLogSqlEntry> _map = new Dictionary<Guid, ElmahLogSqlEntry>();
         public readonly List<ElmahLogMessageEntry> Log = new List<ElmahLogMessageEntry>();

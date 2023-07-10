@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ElmahCore.Mvc
 {
-    internal sealed class ElmahDiagnosticObserver : IObserver<DiagnosticListener>
+    public sealed class ElmahDiagnosticObserver : IObserver<DiagnosticListener>
     {
         private readonly IServiceProvider _provider;
         private readonly List<IDisposable> _subscriptions = new();
@@ -27,10 +28,14 @@ namespace ElmahCore.Mvc
 
         public void OnNext(DiagnosticListener value)
         {
-            if (value.Name != "SqlClientDiagnosticListener") return;
-
-            var subscription = value.Subscribe(new ElmahDiagnosticSqlObserver(_provider));
-            _subscriptions.Add(subscription);
+            //TODO: Should we really be subscribing in OnNext?  (Logic from original elmah).
+            var x = _provider.GetService<IElmahDiagnosticObserver>();
+            var diagnosticObservers = _provider.GetServices<IElmahDiagnosticObserver>();
+            foreach (var diagnosticObserver in diagnosticObservers)
+            {
+                var subscription = value.Subscribe(diagnosticObserver);
+                _subscriptions.Add(subscription);
+            }
         }
     }
 }

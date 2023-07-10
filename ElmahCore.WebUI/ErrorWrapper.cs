@@ -4,11 +4,13 @@ using System.Linq;
 using System.Xml.Serialization;
 using Microsoft.Extensions.Logging;
 
-namespace ElmahCore.Mvc
+namespace ElmahCore.WebUI
 {
     [Serializable]
     public class ErrorWrapper
     {
+       
+
         private static readonly List<string> Crawlers = new List<string>
         {
             "googlebot", "bingbot", "yandexbot", "ahrefsbot", "msnbot", "linkedinbot", "exabot", "compspybot",

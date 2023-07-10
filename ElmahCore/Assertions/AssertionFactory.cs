@@ -20,7 +20,7 @@ namespace ElmahCore.Assertions
     /// <summary>
     ///     Holds factory methods for creating configured assertion objects.
     /// </summary>
-    internal static class AssertionFactory
+    public static class AssertionFactory
     {
         private static readonly string[]
             Truths = { "true", "yes", "on", "1" }; // TODO Remove duplication with SecurityConfiguration

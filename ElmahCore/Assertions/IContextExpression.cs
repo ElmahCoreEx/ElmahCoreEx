@@ -1,6 +1,6 @@
 namespace ElmahCore.Assertions
 {
-    internal interface IContextExpression
+    public interface IContextExpression
     {
         object Evaluate(object context);
     }

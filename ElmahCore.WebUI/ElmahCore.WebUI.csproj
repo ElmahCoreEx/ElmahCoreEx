@@ -5,7 +5,7 @@
     <PackageProjectUrl>https://github.com/ElmahCoreEx/ElmahCoreEx</PackageProjectUrl>
     <AssemblyVersion>2.1.2.0</AssemblyVersion>
     <FileVersion>2.1.2.0</FileVersion>
-    <AssemblyName>ElmahCore.Mvc</AssemblyName>
+    <AssemblyName>ElmahCore.WebUI</AssemblyName>
     <PackageId>ElmahCoreEx</PackageId>
     <Authors>ElmahCoreEx</Authors>
     <Company>ElmahCoreEx</Company>
@@ -13,7 +13,7 @@
     <NeutralLanguage>en-001</NeutralLanguage>
     <RepositoryUrl>https://www.nuget.org/packages/ElmahCoreEx</RepositoryUrl>
     <PackageTags>net-core elmah mvc-core asp-net-core asp-net-core-mvc elmah-core netcore netcore2 netcore20 mvc mvc6 aspnetcore aspnetcoremvc</PackageTags>
-    <Description>ELMAH for ASP.NET Core MVC</Description>
+    <Description>ELMAH WebUI for ASP.NET Core MVC</Description>
     <Copyright>ElmahCoreEx</Copyright>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
@@ -36,6 +36,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="wwwroot\index.html" />
     <EmbeddedResource Include="wwwroot\js\*.js" />
     <EmbeddedResource Include="wwwroot\img\*.svg" />
     <EmbeddedResource Include="wwwroot\css\*.css" />
@@ -45,6 +46,7 @@
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack" Version="1.11.49" />
     <PackageReference Include="JetBrains.Annotations" Version="2023.2.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.1" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
@@ -58,6 +60,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ElmahCore.Mvc\ElmahCore.Mvc.csproj" />
     <ProjectReference Include="..\ElmahCore\ElmahCore.csproj" />
   </ItemGroup>
 
@@ -71,5 +74,8 @@
     <None Include="..\README.md" Pack="true" PackagePath="" />
 </ItemGroup>
 
+<ItemGroup>
+  <Folder Include="Observers\" />
+</ItemGroup>
 
 </Project>

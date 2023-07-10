@@ -4,7 +4,7 @@ namespace ElmahCore.Assertions
     ///     Provides evaluation of a context to determine whether it matches
     ///     certain criteria or not.
     /// </summary>
-    internal interface IAssertion
+    public interface IAssertion
     {
         /// <remarks>
         ///     The context is typed generically as System.Object when it could have

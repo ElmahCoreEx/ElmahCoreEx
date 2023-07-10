@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <RootNamespace>ElmahCore.Observer.Mssql</RootNamespace>
+        <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+        <LangVersion>default</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\ElmahCore.Mvc\ElmahCore.Mvc.csproj" />
+      <ProjectReference Include="..\ElmahCore\ElmahCore.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.1" />
+    </ItemGroup>
+
+</Project>

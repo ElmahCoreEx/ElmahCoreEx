@@ -13,11 +13,11 @@ namespace ElmahCore
 
     // ReSharper disable once UnusedMember.Global
     // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global
-    internal class ErrorFilter : IErrorFilter, INotifierProvider
+    public class ErrorFilter : IErrorFilter, INotifierProvider
     {
         private readonly List<string> _notifiers;
 
-        internal ErrorFilter(IAssertion assertion, List<string> notList)
+        public ErrorFilter(IAssertion assertion, List<string> notList)
         {
             Assertion = assertion;
             _notifiers = notList;

@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
 
 [assembly: InternalsVisibleTo("ElmahCore.Mvc")]
+[assembly: InternalsVisibleTo("ElmahCore.WebUI")]
 
 namespace ElmahCore
 {
