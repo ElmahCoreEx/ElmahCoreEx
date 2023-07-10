@@ -11,7 +11,7 @@ namespace ElmahCore
 {
     public static class ElmahExtensions
     {
-        internal static ErrorLogMiddleware LogMiddleware;
+        public static IErrorLogMiddleware LogMiddleware;
 
         private static void GuardForNullMiddleware()
         {

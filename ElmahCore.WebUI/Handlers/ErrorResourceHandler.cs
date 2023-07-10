@@ -10,7 +10,7 @@ namespace ElmahCore.WebUI.Handlers
     internal static class ErrorResourceHandler
     {
         private static readonly string[] ResourceNames =
-            typeof(ErrorLogMiddleware).GetTypeInfo().Assembly.GetManifestResourceNames();
+            typeof(ErrorLogWebUIMiddleware).GetTypeInfo().Assembly.GetManifestResourceNames();
 
         public static async Task ProcessRequest(HttpContext context, string path, string elmahRoot)
         {

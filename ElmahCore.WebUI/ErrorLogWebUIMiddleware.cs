@@ -17,7 +17,7 @@ using Microsoft.Extensions.Options;
 
 namespace ElmahCore.WebUI
 {
-    internal sealed class ErrorLogMiddleware
+    internal sealed class ErrorLogWebUIMiddleware : IErrorLogMiddleware
     {
         public delegate void ErrorLoggedEventHandler(object sender, ErrorLoggedEventArgs args);
 
@@ -48,7 +48,7 @@ namespace ElmahCore.WebUI
         private readonly IEnumerable<IErrorNotifier> _notifiers;
         private readonly Func<HttpContext, Error, Task> _onError = (context, error) => Task.CompletedTask;
 
-        public ErrorLogMiddleware(RequestDelegate next, ErrorLog errorLog, ILoggerFactory loggerFactory,
+        public ErrorLogWebUIMiddleware(RequestDelegate next, ErrorLog errorLog, ILoggerFactory loggerFactory,
             IOptions<ElmahOptions> elmahOptions)
         {
             ElmahExtensions.LogMiddleware = this;
@@ -56,7 +56,7 @@ namespace ElmahCore.WebUI
             _errorLog = errorLog ?? throw new ArgumentNullException(nameof(errorLog));
             var lf = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
 
-            _logger = lf.CreateLogger<ErrorLogMiddleware>();
+            _logger = lf.CreateLogger<ErrorLogWebUIMiddleware>();
 
             //return here if the elmah options is not provided
             if (elmahOptions?.Value == null)
@@ -269,7 +269,7 @@ namespace ElmahCore.WebUI
             }
         }
 
-        internal async Task<string> LogException(Exception e, HttpContext context,
+        public async Task<string> LogException(Exception e, HttpContext context,
             Func<HttpContext, Error, Task> onError, string body = null)
         {
             if (e == null)

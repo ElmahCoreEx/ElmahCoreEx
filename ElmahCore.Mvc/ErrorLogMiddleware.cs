@@ -17,7 +17,7 @@ using Microsoft.Extensions.Options;
 
 namespace ElmahCore.Mvc
 {
-    internal sealed class ErrorLogMiddleware
+    internal sealed class ErrorLogMiddleware : IErrorLogMiddleware
     {
         public delegate void ErrorLoggedEventHandler(object sender, ErrorLoggedEventArgs args);
 
@@ -269,7 +269,7 @@ namespace ElmahCore.Mvc
             }
         }
 
-        internal async Task<string> LogException(Exception e, HttpContext context,
+        public async Task<string> LogException(Exception e, HttpContext context,
             Func<HttpContext, Error, Task> onError, string body = null)
         {
             if (e == null)

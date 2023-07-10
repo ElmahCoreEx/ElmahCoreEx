@@ -15,7 +15,7 @@ namespace ElmahCore.WebUI
         [UsedImplicitly]
         public static IApplicationBuilder UseElmahExceptionPage(this IApplicationBuilder app)
         {
-            ErrorLogMiddleware.ShowDebugPage = true;
+            ErrorLogWebUIMiddleware.ShowDebugPage = true;
             return app;
         }
 
@@ -30,7 +30,7 @@ namespace ElmahCore.WebUI
             //     DiagnosticListener.AllListeners.Subscribe(new ElmahDiagnosticObserver(app.ApplicationServices));
             // }
 
-            app.UseMiddleware<ErrorLogMiddleware>();
+            app.UseMiddleware<ErrorLogWebUIMiddleware>();
             return app;
         }
 
