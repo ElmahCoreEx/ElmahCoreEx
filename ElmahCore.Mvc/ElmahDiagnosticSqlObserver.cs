@@ -11,7 +11,7 @@ namespace ElmahCore.Mvc
     {
         private readonly IServiceProvider _provider;
 
-        public ElmahDiagnosticSqlObserver(IServiceProvider provider)
+        public ElmahDiagnosticSqlObserver(IServiceProvider provider) 
         {
             _provider = provider;
         }

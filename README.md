@@ -26,7 +26,6 @@ This project is licensed under the terms of the Apache license 2.0.
 
 The source code for the front end appears non-existent, in ElmahCore the front end Vue SPA files are all [minified](https://github.com/ElmahCore/ElmahCore/issues/77). Consider this a warning sign for the continuation of the front end without a rewrite WITH SOURCE. Source-maps may have enough content to obtain the code but this has not be investigated.
 
-
 # Using ElmahCore
 
 ELMAH for Net.Standard 2.0 and .Net 6
@@ -39,9 +38,8 @@ Add NuGet package [ElmahCoreEx](https://www.nuget.org/packages?q=elmahcoreex)
 // Startup.cs
 services.AddElmah() //in ConfigureServices
 // ...
-app.UseElmah(); //in Configure, must be set after initializing other exception handlers
-    //such as UseExceptionHandler and UseDeveloperExceptionPage
-
+app.UseElmah(); // in Configure, must be positioned after initializing other exception handlers
+                // such as UseExceptionHandler and UseDeveloperExceptionPage
 ```
 
 Default ELMAH endpoint path `~/elmah`.
@@ -62,16 +60,17 @@ services.AddElmah(options =>
 ```
 
 ```csharp
+// startup.cs
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseElmah(); //needs to be placed after `UseAuthentication` and `UseAuthorization`
+//...
+app.UseElmah(); // needs to be positioned after `UseAuthentication` and `UseAuthorization`
 ```
-
 or the user will be redirected to the sign in screen even if they are authenticated.
 
 ## Change Error Log type
 
-You can create your own error log, which will store errors anywhere.
+You can implement a custom error log adapter, to write logs to alternate locations.
 
 ```csharp
 public class MyErrorLog: ErrorLog {
@@ -79,48 +78,53 @@ public class MyErrorLog: ErrorLog {
 }    
 ```
 
-The ErrorLog adapters:
+The ErrorLog adapters available:
 
 - **MemoryErrorLog** – store errors in memory (by default)
-- **XmlFileErrorLog** – store errors in XML files
+- **XmlFileErrorLog** – store errors in XML files.
 - **SqlErrorLog** - store errors in MS SQL (add reference to [ElmahCoreEx.Sql](https://www.nuget.org/packages/ElmahCoreEx.Sql))
 - **MysqlErrorLog** - store errors in MySQL (add reference to [ElmahCoreEx.MySql](https://www.nuget.org/packages/ElmahCoreEx.MySql))
 - **PgsqlErrorLog** - store errors in PostgreSQL (add reference to [ElmahCoreEx.Postgresql](https://www.nuget.org/packages/ElmahCoreEx.Postgresql))
 
+Example to configure for XML:
+
 ```csharp
 services.AddElmah<XmlFileErrorLog>(options =>
 {
-    options.LogPath = "~/log"; // OR options.LogPath = "с:\errors";
+  options.LogPath = "~/log"; // OR options.LogPath = "с:\errors";
 });
 ```
+
+Example to configure For MSSQL
 
 ```csharp
 services.AddElmah<SqlErrorLog>(options =>
 {
-    options.ConnectionString = "connection_string";
-    options.SqlServerDatabaseSchemaName = "Errors"; //Defaults to dbo if not set
-    options.SqlServerDatabaseTableName = "ElmahError"; //Defaults to ELMAH_Error if not set
+  options.ConnectionString = "connection_string";
+  options.SqlServerDatabaseSchemaName = "Errors"; // Defaults to dbo if not set
+  options.SqlServerDatabaseTableName = "ElmahError"; // Defaults to ELMAH_Error if not set
 });
 ```
 
 ## Raise exception
 
+To raise a custom exception to log:
+
 ```csharp
-public IActionResult Test()
+public IActionResult RaiseCustomExceptionExample()
 {
     HttpContext.RaiseError(new InvalidOperationException("Test"));
-    ...
 }
 ```
 
 ## Microsoft.Extensions.Logging support
 
-Since version 2.0 ElmahCore support Microsoft.Extensions.Logging
+ElmahCoreEx support `Microsoft.Extensions.Logging`
 
 ## Source Preview
 
-Since version 2.0.1 ElmahCore support source preview.
-Just add paths to source files.
+ElmahCoreEx support source preview.
+Add paths to source files example:
 
 ```csharp
 services.AddElmah(options =>
@@ -134,17 +138,17 @@ services.AddElmah(options =>
 });
 ```
 
-## Log the request body
+## Logging request body
 
-Since version 2.0.5 ElmahCore can log the request body.
+V2.0.5+ ElmahCoreEx can log the request body.
 
 ## Logging SQL request body
 
-Since version 2.0.6 ElmahCore can log the SQL request body.
+v2.0.6+ ElmahCoreEx can log the SQL request body.
 
 ## Logging method parameters
 
-Since version 2.0.6 ElmahCore can log method parameters.
+V2.0.6+ ElmahCoreEx can log method parameters.
 
 ```csharp
 using ElmahCore;
@@ -156,12 +160,11 @@ public void TestMethod(string p1, int p2)
     this.LogParams((nameof(p1), p1), (nameof(p2), p2));
     ...
 }
-
 ```
 
 ## Using UseElmahExceptionPage
 
-You can replace UseDeveloperExceptionPage to UseElmahExceptionPage
+You can replace `UseDeveloperExceptionPage` to `UseElmahExceptionPage`
 
 ```csharp
 if (env.IsDevelopment())
@@ -173,7 +176,7 @@ if (env.IsDevelopment())
 
 ## Using Notifiers
 
-You can create your own notifiers by implement IErrorNotifier or IErrorNotifierWithId interface and add notifier to Elmah options:
+You can create custom notifiers by implementing `IErrorNotifier` or `IErrorNotifierWithId` interface and add notifier to Elmah options:
 
 ```csharp
 services.AddElmah<XmlFileErrorLog>(options =>
@@ -183,12 +186,11 @@ services.AddElmah<XmlFileErrorLog>(options =>
     options.Notifiers.Add(new ErrorMailNotifier("Email",emailOptions));
 });
 ```
-
 Each notifier must have unique name.
 
 ## Using Filters
 
-You can use Elmah XML filter configuration in separate file, create and add custom filters:
+You can use Elmah XML filter configuration in a separate file, create and add custom filters:
 
 ```csharp
 services.AddElmah<XmlFileErrorLog>(options =>
@@ -197,9 +199,8 @@ services.AddElmah<XmlFileErrorLog>(options =>
     options.Filters.Add(new MyFilter());
 })
 ```
-
-Custom filter must implement IErrorFilter.
-XML filter config example:
+Custom filter must implement `IErrorFilter`.
+An XML filter config example:
 
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
@@ -220,7 +221,7 @@ XML filter config example:
 
 see more [here](https://elmah.github.io/a/error-filtering/examples/)
 
-JavaScript filters not yet implemented
+JavaScript filters have not been implemented
 
 Add notifiers to errorFilter node if you do not want to send notifications
 Filtered errors will be logged, but will not be sent.
