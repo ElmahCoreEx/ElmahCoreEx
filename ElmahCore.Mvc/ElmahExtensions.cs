@@ -19,7 +19,7 @@ namespace ElmahCore
                 throw new MiddlewareNotInitializedException("Elmah Middleware Not initialized");
         }
 
-        [Obsolete("Prefer RaiseError")]
+        [Obsolete("Prefer RaiseError, will be removed in next major version")] 
         public static Task RiseError(this HttpContext ctx, Exception ex, Func<HttpContext, Error, Task> onError)
         {
             return RaiseError(ctx, ex, onError);
@@ -32,7 +32,7 @@ namespace ElmahCore
             return LogMiddleware.LogException(ex, ctx, onError);
         }
 
-        [Obsolete("Prefer RaiseError")]
+        [Obsolete("Prefer RaiseError, will be removed in next major version")]
         public static Task RiseError(this HttpContext ctx, Exception ex)
         {
             return RaiseError(ctx, ex);
