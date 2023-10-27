@@ -27,11 +27,13 @@ namespace ElmahCore.Mvc.Xml
             Debug.Assert(obj != null);
             Debug.Assert(output != null);
 
-            var settings = new XmlWriterSettings();
-            settings.Indent = true;
-            settings.NewLineOnAttributes = true;
-            settings.CheckCharacters = false;
-            settings.OmitXmlDeclaration = true;
+            var settings = new XmlWriterSettings
+            {
+                Indent = true,
+                NewLineOnAttributes = true,
+                CheckCharacters = false,
+                OmitXmlDeclaration = true
+            };
             var writer = XmlWriter.Create(output, settings);
 
             try

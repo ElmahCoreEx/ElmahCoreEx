@@ -22,23 +22,14 @@ namespace ElmahCore.Mvc.Handlers
             var request = context.Request;
             var query = request.Query;
 
-            //
             // Limit the download by some maximum # of records?
-            //
-
             var maxDownloadCount = Math.Max(0, Convert.ToInt32(query["limit"], CultureInfo.InvariantCulture));
 
-            //
             // Determine the desired output format.
-            //
-
             var format = GetFormat(context, query["format"].ToString().ToLowerInvariant());
             Debug.Assert(format != null);
 
-            //
             // Emit format header, initialize and then fetch results.
-            //
-
             return resultor(format, maxDownloadCount);
         }
 

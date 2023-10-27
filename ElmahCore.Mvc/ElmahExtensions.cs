@@ -16,7 +16,7 @@ namespace ElmahCore
         private static void GuardForNullMiddleware()
         {
             if (LogMiddleware == null)
-                throw new MiddlewareNotInitializedException("Elmah Middleware Not initialized");
+                throw new MiddlewareNotInitializedException("Elmah Middleware not initialized");
         }
 
         [Obsolete("Prefer RaiseError, will be removed in next major version")] 
