@@ -7,7 +7,7 @@ namespace ElmahCore.Mvc;
 internal sealed class ElmahDiagnosticObserver : IObserver<DiagnosticListener>
 {
     private readonly IServiceProvider _provider;
-    private readonly List<IDisposable> _subscriptions = new();
+    private readonly List<IDisposable> _subscriptions = [];
 
     public ElmahDiagnosticObserver(IServiceProvider provider)
     {

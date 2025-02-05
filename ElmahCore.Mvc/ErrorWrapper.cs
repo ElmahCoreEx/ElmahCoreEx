@@ -34,7 +34,7 @@ public class ErrorWrapper
     public ErrorWrapper(Error error, string[] sourcePath)
     {
         _error = error ?? throw new ArgumentNullException(nameof(error));
-        bool markUpStackTrace = true; //may want to config toggle this in future, possible memory leak?
+        var markUpStackTrace = true; //may want to config toggle this in future, possible memory leak?
         if (markUpStackTrace)
         {
             var (markup, srcList) = ErrorDetailHelper.MarkupStackTrace(_error.Detail);
@@ -72,7 +72,7 @@ public class ErrorWrapper
 
     [XmlElement("Time")] public DateTime Time => _error.Time;
 
-    [XmlElement("StatusCode")] public int? StatusCode => _error.StatusCode == 0 ? (int?)null : _error.StatusCode;
+    [XmlElement("StatusCode")] public int? StatusCode => _error.StatusCode == 0 ? null : _error.StatusCode;
 
     [XmlIgnore] public string HtmlMessage { get; set; }
 
@@ -182,34 +182,34 @@ public class ErrorWrapper
         get
         {
             return _error.ServerVariables.AllKeys.Where(i => i.StartsWith("Header_"))
-                .ToSerializableDictionary(k => k.Substring("Header_".Length), k => _error.ServerVariables[k]);
+                .ToSerializableDictionary(k => k["Header_".Length..], k => _error.ServerVariables[k]);
         }
     }
 
     public SerializableDictionary<string, string> Connection => _error.ServerVariables.AllKeys
         .Where(i => i.StartsWith("Connection_"))
         .Where(i => i.Contains("Port") && _error.ServerVariables[i] != "0") //ignore empty
-        .ToSerializableDictionary(k => k.Substring("Connection_".Length), k => _error.ServerVariables[k]);
+        .ToSerializableDictionary(k => k["Connection_".Length..], k => _error.ServerVariables[k]);
 
     public SerializableDictionary<string, string> Items => _error.ServerVariables.AllKeys
         .Where(i => i.StartsWith("Items_"))
-        .ToSerializableDictionary(k => k.Substring("Items_".Length), k => _error.ServerVariables[k]);
+        .ToSerializableDictionary(k => k["Items_".Length..], k => _error.ServerVariables[k]);
 
     public SerializableDictionary<string, string> Session => _error.ServerVariables.AllKeys
         .Where(i => i.StartsWith("Session_"))
-        .ToSerializableDictionary(k => k.Substring("Session_".Length), k => _error.ServerVariables[k]);
+        .ToSerializableDictionary(k => k["Session_".Length..], k => _error.ServerVariables[k]);
 
     public SerializableDictionary<string, string> UserData => _error.ServerVariables.AllKeys
         .Where(i => i.StartsWith("User_"))
-        .ToSerializableDictionary(k => k.Substring("User_".Length), k => _error.ServerVariables[k]);
+        .ToSerializableDictionary(k => k["User_".Length..], k => _error.ServerVariables[k]);
 
-    private static string[] keyWords = { "User_", "Header_", "Connection_", "Items_", "Session_" };
+    private static string[] _keyWords = { "User_", "Header_", "Connection_", "Items_", "Session_" };
 
     public SerializableDictionary<string, string> ServerVariables
     {
         get
         {
-            return _error.ServerVariables.AllKeys.Where(i => !keyWords.Any(i.StartsWith))
+            return _error.ServerVariables.AllKeys.Where(i => !_keyWords.Any(i.StartsWith))
                 .ToSerializableDictionary(k => k, k => _error.ServerVariables[k]);
         }
     }

@@ -121,9 +121,8 @@ public static class CommandExtension
                 OFFSET @offset
             ";
 
-        var offset = errorIndex;
         command.Parameters.Add("@Application", MySqlDbType.String).Value = appName;
-        command.Parameters.Add("@offset", MySqlDbType.Int32).Value = offset;
+        command.Parameters.Add("@offset", MySqlDbType.Int32).Value = errorIndex;
         command.Parameters.Add("@limit", MySqlDbType.Int32).Value = pageSize;
         return command;
     }

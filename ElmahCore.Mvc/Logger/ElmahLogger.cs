@@ -38,7 +38,7 @@ public class ElmahLogger : ILogger
     {
         if (!IsEnabled(logLevel)) return;
 
-        if (formatter == null) throw new ArgumentNullException(nameof(formatter));
+        ArgumentNullException.ThrowIfNull(formatter);
 
         var message = formatter(state, exception);
 
@@ -104,7 +104,7 @@ public class NullScope : IDisposable
     {
     }
 
-    public static NullScope Instance { get; } = new NullScope();
+    public static NullScope Instance { get; } = new();
 
     /// <inheritdoc />
     public void Dispose()

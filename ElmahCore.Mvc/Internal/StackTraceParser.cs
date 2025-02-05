@@ -25,16 +25,16 @@ static class StackTraceParser
     const string Space = @"[\x20\t]";
     const string NotSpace = @"[^\x20\t]";
 
-    static readonly Regex Regex = new Regex(@"
+    static readonly Regex Regex = new(@"
             ^
             " + Space + @"*
             \w+ " + Space + @"+
             (?<frame>
                 (?<type> " + NotSpace + @"+ ) \.
-                (?<method> " + NotSpace + @"+? ) " + Space + @"*
+                (?<method> " + NotSpace + "+? ) " + Space + @"*
                 (?<params>  \( ( " + Space + @"* \)
                                |                    (?<pt> .+?) " + Space + @"+ (?<pn> .+?)
-                                 (, " + Space + @"* (?<pt> .+?) " + Space + @"+ (?<pn> .+?) )* \) ) )
+                                 (, " + Space + "* (?<pt> .+?) " + Space + @"+ (?<pn> .+?) )* \) ) )
                 ( " + Space + @"+
                     ( # Microsoft .NET stack traces
                     \w+ " + Space + @"+
@@ -72,12 +72,12 @@ static class StackTraceParser
         Func<TToken, TToken, TSourceLocation> sourceLocationSelector,
         Func<TToken, TMethod, TParameters, TSourceLocation, TFrame> selector)
     {
-        if (tokenSelector == null) throw new ArgumentNullException(nameof(tokenSelector));
-        if (methodSelector == null) throw new ArgumentNullException(nameof(methodSelector));
-        if (parameterSelector == null) throw new ArgumentNullException(nameof(parameterSelector));
-        if (parametersSelector == null) throw new ArgumentNullException(nameof(parametersSelector));
-        if (sourceLocationSelector == null) throw new ArgumentNullException(nameof(sourceLocationSelector));
-        if (selector == null) throw new ArgumentNullException(nameof(selector));
+        ArgumentNullException.ThrowIfNull(tokenSelector);
+        ArgumentNullException.ThrowIfNull(methodSelector);
+        ArgumentNullException.ThrowIfNull(parameterSelector);
+        ArgumentNullException.ThrowIfNull(parametersSelector);
+        ArgumentNullException.ThrowIfNull(sourceLocationSelector);
+        ArgumentNullException.ThrowIfNull(selector);
 
         return from Match m in Regex.Matches(text)
             select m.Groups into groups

@@ -71,10 +71,10 @@ internal sealed class ErrorLogMiddleware
             _notifiers = elmahOptions.Value.Notifiers.ToList();
 
         //Filters
-        _filters = elmahOptions.Value?.Filters.ToList();
+        _filters = elmahOptions.Value.Filters.ToList();
         foreach (var errorFilter in options.Filters) Filtering += errorFilter.OnErrorModuleFiltering;
 
-        _logRequestBody = elmahOptions.Value?.LogRequestBody == true;
+        _logRequestBody = elmahOptions.Value.LogRequestBody;
 
         if (!string.IsNullOrEmpty(options.FiltersConfig))
             try
@@ -92,12 +92,12 @@ internal sealed class ErrorLogMiddleware
             {
                 _elmahRoot = elmahOptions.Value.Path.ToLower();
                 if (!_elmahRoot.StartsWith("/") && !_elmahRoot.StartsWith("~/")) _elmahRoot = "/" + _elmahRoot;
-                if (_elmahRoot.EndsWith("/")) _elmahRoot = _elmahRoot.Substring(0, _elmahRoot.Length - 1);
+                if (_elmahRoot.EndsWith("/")) _elmahRoot = _elmahRoot[..^1];
             }
 
             if (!string.IsNullOrWhiteSpace(options.ApplicationName))
                 _errorLog.ApplicationName = elmahOptions.Value.ApplicationName;
-            if (options.SourcePaths != null && options.SourcePaths.Any())
+            if (options.SourcePaths != null && options.SourcePaths.Length != 0)
                 _errorLog.SourcePaths = elmahOptions.Value.SourcePaths;
         }
     }
@@ -159,8 +159,8 @@ internal sealed class ErrorLogMiddleware
                 }
 
                 var path = sourcePath.Substring(elmahRoot.Length, sourcePath.Length - elmahRoot.Length);
-                if (path.StartsWith("/")) path = path.Substring(1);
-                if (path.Contains('?')) path = path.Substring(0, path.IndexOf('?'));
+                if (path.StartsWith("/")) path = path[1..];
+                if (path.Contains('?')) path = path[..path.IndexOf('?')];
                 await ProcessElmahRequest(context, path);
                 return;
             }
@@ -201,7 +201,7 @@ internal sealed class ErrorLogMiddleware
         var body = request.Body;
         var buffer = new byte[Convert.ToInt32(request.ContentLength)];
         // ReSharper disable once MustUseReturnValue
-        await request.Body.ReadAsync(buffer, 0, buffer.Length);
+        await request.Body.ReadExactlyAsync(buffer, 0, buffer.Length);
         var bodyAsText = Encoding.UTF8.GetString(buffer);
         body.Seek(0, SeekOrigin.Begin);
         request.Body = body;
@@ -214,7 +214,7 @@ internal sealed class ErrorLogMiddleware
         try
         {
             var elmahRoot = _elmahRoot.StartsWith("~/")
-                ? context.Request.PathBase + _elmahRoot.Substring(1)
+                ? context.Request.PathBase + _elmahRoot[1..]
                 : _elmahRoot;
 
             if (resource.StartsWith("api/"))
@@ -225,13 +225,13 @@ internal sealed class ErrorLogMiddleware
 
             if (resource.StartsWith("exception/"))
             {
-                await MsdnHandler.ProcessRequestException(context, resource.Substring("exception/".Length));
+                await MsdnHandler.ProcessRequestException(context, resource["exception/".Length..]);
                 return;
             }
 
             if (resource.StartsWith("status/"))
             {
-                await MsdnHandler.ProcessRequestStatus(context, resource.Substring("status/".Length));
+                await MsdnHandler.ProcessRequestStatus(context, resource["status/".Length..]);
                 return;
             }
 
@@ -299,10 +299,9 @@ internal sealed class ErrorLogMiddleware
             var error = new Error(e, context, body);
 
             await onError(context, error);
-            var log = _errorLog;
-            error.ApplicationName = log.ApplicationName;
-            var id = await log.LogAsync(error);
-            entry = new ErrorLogEntry(log, id, error);
+            error.ApplicationName = _errorLog.ApplicationName;
+            var id = await _errorLog.LogAsync(error);
+            entry = new ErrorLogEntry(_errorLog, id, error);
 
             //Send notification
             foreach (var notifier in _notifiers)

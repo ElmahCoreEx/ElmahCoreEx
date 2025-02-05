@@ -55,8 +55,7 @@ public class MySqlErrorLog : ErrorLog
 
     public override void Log(Guid id, Error error)
     {
-        if (error == null)
-            throw new ArgumentNullException(nameof(error));
+        ArgumentNullException.ThrowIfNull(error);
 
         var errorXml = ErrorXml.EncodeString(error);
 
@@ -70,7 +69,7 @@ public class MySqlErrorLog : ErrorLog
 
     public override ErrorLogEntry GetError(string id)
     {
-        if (id == null) throw new ArgumentNullException(nameof(id));
+        ArgumentNullException.ThrowIfNull(id);
         if (id.Length == 0) throw new ArgumentException(null, nameof(id));
 
         Guid errorGuid;

@@ -31,7 +31,6 @@ using System.Net.Mail;
 using System.Text;
 using System.Threading;
 using JetBrains.Annotations;
-using ApplicationException = ElmahCore.ApplicationException;
 
 namespace ElmahCore.Mvc.Notifiers;
 
@@ -261,27 +260,19 @@ public class ErrorMailNotifier : IErrorNotifier
         formatter.Format(bodyWriter, error);
         mail.Body = bodyWriter.ToString();
 
-        switch (formatter.MimeType)
+        mail.IsBodyHtml = formatter.MimeType switch
         {
-            case "text/html":
-                mail.IsBodyHtml = true;
-                break;
-            case "text/plain":
-                mail.IsBodyHtml = false;
-                break;
-
-            default:
-            {
-                throw new ApplicationException(string.Format(
-                    "The error mail module does not know how to handle the {1} media type that is created by the {0} formatter.",
-                    formatter.GetType().FullName, formatter.MimeType));
-            }
-        }
+            "text/html" => true,
+            "text/plain" => false,
+            _ => throw new ApplicationException(string.Format(
+                "The error mail module does not know how to handle the {1} media type that is created by the {0} formatter.",
+                formatter.GetType().FullName, formatter.MimeType))
+        };
 
         try
         {
-            // If an HTML message was supplied by the web host then attach 
-            // it to the mail if not explicitly told not to do so.
+            // If the web host supplies an HTML message, then attach 
+            // it to the mail if not explicitly told to not do so.
 
             if (!NoYsod && error.WebHostHtmlMessage.Length > 0)
             {
@@ -338,9 +329,8 @@ public class ErrorMailNotifier : IErrorNotifier
             client.DeliveryMethod = SmtpDeliveryMethod.Network;
         }
 
-        var port = SmtpPort;
-        if (port > 0)
-            client.Port = port;
+        if (SmtpPort > 0)
+            client.Port = SmtpPort;
 
         var userName = AuthUserName ?? string.Empty;
         var password = AuthPassword ?? string.Empty;

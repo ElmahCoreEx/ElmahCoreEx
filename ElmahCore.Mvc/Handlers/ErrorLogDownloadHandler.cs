@@ -92,13 +92,12 @@ internal static class ErrorLogDownloadHandler
     private static Format GetFormat(HttpContext context, string format)
     {
         Debug.Assert(context != null);
-        switch (format)
+        return format switch
         {
-            case "jsonp": return new JsonPaddingFormat(context);
-            case "html-jsonp": return new JsonPaddingFormat(context, /* wrapped */ true);
-            default:
-                return new CsvFormat(context);
-        }
+            "jsonp" => new JsonPaddingFormat(context),
+            "html-jsonp" => new JsonPaddingFormat(context, /* wrapped */ true),
+            _ => new CsvFormat(context)
+        };
     }
 
     private abstract class Format

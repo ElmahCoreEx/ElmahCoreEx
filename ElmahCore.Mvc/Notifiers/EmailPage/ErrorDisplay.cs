@@ -61,7 +61,7 @@ internal static class ErrorDisplay
         var lastDotIndex = CultureInfo.InvariantCulture.CompareInfo.LastIndexOf(type, '.');
 
         if (lastDotIndex > 0)
-            type = type.Substring(lastDotIndex + 1);
+            type = type[(lastDotIndex + 1)..];
 
         const string conventionalSuffix = "Exception";
 
@@ -71,7 +71,7 @@ internal static class ErrorDisplay
 
             if (string.Compare(type, suffixIndex, conventionalSuffix, 0,
                     conventionalSuffix.Length, true, CultureInfo.InvariantCulture) == 0)
-                type = type.Substring(0, suffixIndex);
+                type = type[..suffixIndex];
         }
 
         return type;

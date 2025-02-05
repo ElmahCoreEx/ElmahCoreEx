@@ -60,19 +60,16 @@ public class PgsqlErrorLog : ErrorLog
 
     public override void Log(Guid id, Error error)
     {
-        if (error == null)
-            throw new ArgumentNullException(nameof(error));
+        ArgumentNullException.ThrowIfNull(error);
 
         var errorXml = ErrorXml.EncodeString(error);
 
-        using (var connection = new NpgsqlConnection(ConnectionString))
-        using (var command = Commands.LogError(id, ApplicationName, error.HostName, error.Type, error.Source,
-                   error.Message, error.User, error.StatusCode, error.Time, errorXml))
-        {
-            command.Connection = connection;
-            connection.Open();
-            command.ExecuteNonQuery();
-        }
+        using var connection = new NpgsqlConnection(ConnectionString);
+        using var command = Commands.LogError(id, ApplicationName, error.HostName, error.Type, error.Source,
+            error.Message, error.User, error.StatusCode, error.Time, errorXml);
+        command.Connection = connection;
+        connection.Open();
+        command.ExecuteNonQuery();
     }
 
     public override ErrorLogEntry GetError(string id)
@@ -144,24 +141,18 @@ public class PgsqlErrorLog : ErrorLog
     /// </summary>
     private void CreateTableIfNotExists()
     {
-        using (var connection = new NpgsqlConnection(ConnectionString))
-        {
-            connection.Open();
+        using var connection = new NpgsqlConnection(ConnectionString);
+        connection.Open();
 
-            using (var cmdCheck = Commands.CheckTable())
-            {
-                cmdCheck.Connection = connection;
-                // ReSharper disable once PossibleNullReferenceException
-                var exists = (bool) cmdCheck.ExecuteScalar();
+        using var cmdCheck = Commands.CheckTable();
+        cmdCheck.Connection = connection;
+        // ReSharper disable once PossibleNullReferenceException
+        var exists = (bool) cmdCheck.ExecuteScalar();
 
-                if (!exists)
-                    using (var cmdCreate = Commands.CreateTable())
-                    {
-                        cmdCreate.Connection = connection;
-                        cmdCreate.ExecuteNonQuery();
-                    }
-            }
-        }
+        if (exists) return;
+        using var cmdCreate = Commands.CreateTable();
+        cmdCreate.Connection = connection;
+        cmdCreate.ExecuteNonQuery();
     }
 
 

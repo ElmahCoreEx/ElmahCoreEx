@@ -19,18 +19,16 @@ internal static class ErrorResourceHandler
         var assembly = typeof(ErrorResourceHandler).GetTypeInfo().Assembly;
 
         var resName = $"{assembly.GetName().Name}.wwwroot.{path.Replace('/', '.').Replace('\\', '.')}";
-        if (!path.Contains("."))
+        if (!path.Contains('.'))
         {
             resName = $"{assembly.GetName().Name}.wwwroot.index.html";
-            using (var stream2 = assembly.GetManifestResourceStream(resName))
-            using (var reader = new StreamReader(stream2 ?? throw new InvalidOperationException()))
-            {
-                var html = await reader.ReadToEndAsync();
-                html = html.Replace("ELMAH_ROOT", elmahRoot);
-                context.Response.ContentType = "text/html";
-                await context.Response.WriteAsync(html);
-                return;
-            }
+            await using var stream2 = assembly.GetManifestResourceStream(resName);
+            using var reader = new StreamReader(stream2 ?? throw new InvalidOperationException());
+            var html = await reader.ReadToEndAsync();
+            html = html.Replace("ELMAH_ROOT", elmahRoot);
+            context.Response.ContentType = "text/html";
+            await context.Response.WriteAsync(html);
+            return;
         }
 
         if (!((IList) ResourceNames).Contains(resName))
@@ -48,7 +46,7 @@ internal static class ErrorResourceHandler
             _ => context.Response.ContentType
         };
 
-        using var resource = assembly.GetManifestResourceStream(resName);
+        await using var resource = assembly.GetManifestResourceStream(resName);
         if (resource != null) await resource.CopyToAsync(context.Response.Body);
     }
 }

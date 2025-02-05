@@ -27,14 +27,12 @@ internal static class ErrorDetailHelper
     internal static StackFrameSourceCodeInfo GetStackFrameSourceCodeInfo(string[] sourcePath, string method,
         string type, string filePath, int lineNumber)
     {
-        bool useCache = false;
+        var useCache = false;
 
         var key = $"{method}:{type}:{filePath}:{lineNumber}";
             
         if (useCache)
         {
-                
-                
             lock (Cache)
             {
                 if (Cache.TryGetValue(key, out var info)) return info;
@@ -63,7 +61,7 @@ internal static class ErrorDetailHelper
         {
             lock (Cache)
             {
-                if (!Cache.ContainsKey(key)) Cache.Add(key, stackFrame);
+                Cache.TryAdd(key, stackFrame);
             }
         }
 
@@ -72,7 +70,7 @@ internal static class ErrorDetailHelper
 
     private static string GetPath(string[] sourcePaths, string filePath)
     {
-        sourcePaths ??= new[] { "" };
+        sourcePaths ??= [""];
         foreach (var source in sourcePaths)
         {
             var sourcePath = source;
@@ -145,19 +143,17 @@ internal static class ErrorDetailHelper
             (HtmlChunk File, HtmlChunk Line) fl) =>
             new[]
                 {
-                    new[]
-                    {
+                    [
                         new HtmlChunk(f.Index, f.Index, "<span class='st-frame'>"),
                         tm.Type,
                         tm.Method,
                         new HtmlChunk(p.List.Index, p.List.Index, "<span class='params'>")
-                    },
+                    ],
                     from pe in p.Parameters from e in new[] { pe.Type, pe.Name } select e,
-                    new[]
-                    {
+                    [
                         new HtmlChunk(p.List.End, p.List.End, "</span>"), fl.File, fl.Line,
                         new HtmlChunk(f.End, f.End, "</span>")
-                    }
+                    ]
                 }.SelectMany(tokens => tokens, (tokens, token) => new { tokens, token })
                 .Where(t => t.token.Html != null)
                 .Select(t => t.token);

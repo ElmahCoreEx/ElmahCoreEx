@@ -23,7 +23,7 @@ internal static class ErrorRssHandler
         var response = context.Response;
         response.ContentType = "application/xml";
 
-        var title = $@"Error log of {log.ApplicationName} on {Environment.MachineName}";
+        var title = $"Error log of {log.ApplicationName} on {Environment.MachineName}";
 
         var link = $"{context.Request.Scheme}://{context.Request.PathBase.ToString().TrimEnd('/')}{elmahRoot}";
         var baseUrl = new Uri(link.TrimEnd('/') + "/");
