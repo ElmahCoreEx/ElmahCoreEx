@@ -31,6 +31,7 @@ using System.Net.Mail;
 using System.Text;
 using System.Threading;
 using JetBrains.Annotations;
+using ApplicationException = ElmahCore.ApplicationException;
 
 namespace ElmahCore.Mvc.Notifiers
 {

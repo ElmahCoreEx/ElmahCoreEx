@@ -1,4 +1,4 @@
-﻿<error errorId="20ab5101-e838-47d5-b412-7cd72068d227" application="ElmahCore.DemoCore6" host="AERO" type="System.Exception" message="test2" detail="# caller: @C:\Sources\ElmahCore\ElmahCore\ElmahCore\Internal$\CallerInfo.cs:9&#xD;&#xA;System.Exception: test2" time="2022-01-19T06:23:09.0985042Z" statusCode="500">
+﻿<error errorId="40de1982-3398-48a6-9d8e-290277662066" application="ElmahCore.Demo" host="AERO" type="System.Exception" message="test2" detail="# caller: @C:\Sources\ElmahCore\ElmahCore\ElmahCore\Internal$\CallerInfo.cs:9&#xD;&#xA;System.Exception: test2" time="2022-01-19T06:22:09.7991673Z" statusCode="500">
   <serverVariables>
     <item name="StreamId">
       <value string="1" />
@@ -16,7 +16,7 @@
       <value string="False" />
     </item>
     <item name="ConnectionIdFeature">
-      <value string="0HMER2GKJ5SQJ" />
+      <value string="0HMER2G2S0MEG" />
     </item>
     <item name="HasStartedConsumingRequestBody">
       <value string="False" />
@@ -31,7 +31,7 @@
       <value string="False" />
     </item>
     <item name="TraceIdentifier">
-      <value string="0HMER2GKJ5SQJ:00000001" />
+      <value string="0HMER2G2S0MEG:00000001" />
     </item>
     <item name="IsUpgradableRequest">
       <value string="False" />
@@ -43,7 +43,7 @@
       <value string="::1" />
     </item>
     <item name="RemotePort">
-      <value string="59857" />
+      <value string="50885" />
     </item>
     <item name="LocalIpAddress">
       <value string="::1" />
@@ -136,13 +136,13 @@
       <value string="False" />
     </item>
     <item name="Connection_Id">
-      <value string="0HMER2GKJ5SQJ" />
+      <value string="0HMER2G2S0MEG" />
     </item>
     <item name="Connection_RemoteIpAddress">
       <value string="::1" />
     </item>
     <item name="Connection_RemotePort">
-      <value string="59857" />
+      <value string="50885" />
     </item>
     <item name="Connection_LocalIpAddress">
       <value string="::1" />
@@ -163,9 +163,9 @@
     </item>
   </cookies>
   <messageLog>
-    <message level="Error" time-stamp="2022-01-19T06:23:09.0892805Z" message="Test" />
-    <message level="Information" time-stamp="2022-01-19T06:23:09.0911090Z" message="Test" />
-    <message level="Warning" time-stamp="2022-01-19T06:23:09.0928185Z" message="Test" />
-    <message level="Critical" exception="System.InvalidOperationException: Test" time-stamp="2022-01-19T06:23:09.0945870Z" message="Test" />
+    <message level="Error" time-stamp="2022-01-19T06:22:09.7898024Z" message="Test" />
+    <message level="Information" time-stamp="2022-01-19T06:22:09.7916744Z" message="Test" />
+    <message level="Warning" time-stamp="2022-01-19T06:22:09.7933882Z" message="Test" />
+    <message level="Critical" exception="System.InvalidOperationException: Test" time-stamp="2022-01-19T06:22:09.7950917Z" message="Test" />
   </messageLog>
 </error>

@@ -179,8 +179,8 @@ namespace ElmahCore.Sql
         {
             var sqlBatch = string.Empty;
             using var cmd = new SqlCommand(string.Empty, conn);
-            sql += "\nGO"; // make sure last batch is executed.
-            foreach (var line in sql.Split(new[] { "\n", "\r" },
+            sql += "\nGO"; // make sure the last batch is executed.
+            foreach (var line in sql.Split(["\n", "\r"],
                          StringSplitOptions.RemoveEmptyEntries))
                 if (line.ToUpperInvariant().Trim() == "GO")
                 {

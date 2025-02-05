@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace ElmahCore.DemoCore6;
+namespace ElmahCore.Demo;
 
 public class MyNotifier : IErrorNotifier
 {

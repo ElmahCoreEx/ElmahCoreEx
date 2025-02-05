@@ -1,5 +1,5 @@
 using ElmahCore;
-using ElmahCore.DemoCore6;
+using ElmahCore.Demo;
 using ElmahCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);

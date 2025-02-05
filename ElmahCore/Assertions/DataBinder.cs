@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 
 // ReSharper disable MemberCanBePrivate.Global
@@ -197,11 +196,6 @@ namespace ElmahCore.Assertions
 
         public DataBindingException(string message, Exception inner) :
             base(message, inner)
-        {
-        }
-
-        protected DataBindingException(SerializationInfo info, StreamingContext context) :
-            base(info, context)
         {
         }
     }

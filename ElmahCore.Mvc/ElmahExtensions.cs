@@ -19,7 +19,7 @@ namespace ElmahCore
                 throw new MiddlewareNotInitializedException("Elmah Middleware not initialized");
         }
 
-        [Obsolete("Prefer RaiseError, will be removed in next major version")] 
+        [Obsolete("Prefer RaiseError, will be removed in next major version")]
         public static Task RiseError(this HttpContext ctx, Exception ex, Func<HttpContext, Error, Task> onError)
         {
             return RaiseError(ctx, ex, onError);
@@ -85,7 +85,7 @@ namespace ElmahCore
                 var feature = InternalHttpContext.Current.Features.Get<ElmahLogFeature>();
                 if (feature == null) return;
 
-                var list = new[] {param1, param2, param3, param4, param5, param6, param7, param8, param9, param10};
+                var list = new[] { param1, param2, param3, param4, param5, param6, param7, param8, param9, param10 };
 
                 var typeName = source.GetType().ToString();
                 feature.LogParameters(list, typeName, memberName, file, line);

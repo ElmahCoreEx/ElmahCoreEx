@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.Serialization;
 
 namespace ElmahCore.Mvc
 {
@@ -35,15 +34,6 @@ namespace ElmahCore.Mvc
         /// </summary>
         public TestException(string message, Exception innerException) :
             base(message, innerException)
-        {
-        }
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="TestException" /> class
-        ///     with serialized data.
-        /// </summary>
-        private TestException(SerializationInfo info, StreamingContext context) :
-            base(info, context)
         {
         }
     }

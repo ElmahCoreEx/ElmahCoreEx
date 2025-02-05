@@ -1,4 +1,4 @@
-﻿namespace ElmahCore.DemoCore6
+﻿namespace ElmahCore.Demo
 {
     public class CmsErrorLogFilter : IErrorFilter
     {

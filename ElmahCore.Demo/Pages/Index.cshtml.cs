@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace ElmahCore.DemoCore6.Pages
+namespace ElmahCore.Demo.Pages
 {
     public class IndexModel : PageModel
     {
