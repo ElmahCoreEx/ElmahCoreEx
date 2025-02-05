@@ -18,14 +18,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace ElmahCore.Mvc
-{
-    static class StackTraceParser
-    {
-        const string Space = @"[\x20\t]";
-        const string NotSpace = @"[^\x20\t]";
+namespace ElmahCore.Mvc;
 
-        static readonly Regex Regex = new Regex(@"
+static class StackTraceParser
+{
+    const string Space = @"[\x20\t]";
+    const string NotSpace = @"[^\x20\t]";
+
+    static readonly Regex Regex = new Regex(@"
             ^
             " + Space + @"*
             \w+ " + Space + @"+
@@ -52,53 +52,52 @@ namespace ElmahCore.Mvc
             )
             \s*
             $",
-            RegexOptions.IgnoreCase
-            | RegexOptions.Multiline
-            | RegexOptions.ExplicitCapture
-            | RegexOptions.CultureInvariant
-            | RegexOptions.IgnorePatternWhitespace
-            | RegexOptions.Compiled,
-            // Cap the evaluation time to make it obvious should the expression
-            // fall into the "catastrophic backtracking" trap due to over generalization.
-            // https://github.com/atifaziz/StackTraceParser/issues/4
-            TimeSpan.FromSeconds(5));
+        RegexOptions.IgnoreCase
+        | RegexOptions.Multiline
+        | RegexOptions.ExplicitCapture
+        | RegexOptions.CultureInvariant
+        | RegexOptions.IgnorePatternWhitespace
+        | RegexOptions.Compiled,
+        // Cap the evaluation time to make it obvious should the expression
+        // fall into the "catastrophic backtracking" trap due to over generalization.
+        // https://github.com/atifaziz/StackTraceParser/issues/4
+        TimeSpan.FromSeconds(5));
 
-        public static IEnumerable<TFrame> Parse<TToken, TMethod, TParameters, TParameter, TSourceLocation, TFrame>(
-            string text,
-            Func<int, int, string, TToken> tokenSelector,
-            Func<TToken, TToken, TMethod> methodSelector,
-            Func<TToken, TToken, TParameter> parameterSelector,
-            Func<TToken, IEnumerable<TParameter>, TParameters> parametersSelector,
-            Func<TToken, TToken, TSourceLocation> sourceLocationSelector,
-            Func<TToken, TMethod, TParameters, TSourceLocation, TFrame> selector)
-        {
-            if (tokenSelector == null) throw new ArgumentNullException(nameof(tokenSelector));
-            if (methodSelector == null) throw new ArgumentNullException(nameof(methodSelector));
-            if (parameterSelector == null) throw new ArgumentNullException(nameof(parameterSelector));
-            if (parametersSelector == null) throw new ArgumentNullException(nameof(parametersSelector));
-            if (sourceLocationSelector == null) throw new ArgumentNullException(nameof(sourceLocationSelector));
-            if (selector == null) throw new ArgumentNullException(nameof(selector));
+    public static IEnumerable<TFrame> Parse<TToken, TMethod, TParameters, TParameter, TSourceLocation, TFrame>(
+        string text,
+        Func<int, int, string, TToken> tokenSelector,
+        Func<TToken, TToken, TMethod> methodSelector,
+        Func<TToken, TToken, TParameter> parameterSelector,
+        Func<TToken, IEnumerable<TParameter>, TParameters> parametersSelector,
+        Func<TToken, TToken, TSourceLocation> sourceLocationSelector,
+        Func<TToken, TMethod, TParameters, TSourceLocation, TFrame> selector)
+    {
+        if (tokenSelector == null) throw new ArgumentNullException(nameof(tokenSelector));
+        if (methodSelector == null) throw new ArgumentNullException(nameof(methodSelector));
+        if (parameterSelector == null) throw new ArgumentNullException(nameof(parameterSelector));
+        if (parametersSelector == null) throw new ArgumentNullException(nameof(parametersSelector));
+        if (sourceLocationSelector == null) throw new ArgumentNullException(nameof(sourceLocationSelector));
+        if (selector == null) throw new ArgumentNullException(nameof(selector));
 
-            return from Match m in Regex.Matches(text)
-                   select m.Groups into groups
-                   let pt = groups["pt"].Captures
-                   let pn = groups["pn"].Captures
-                   select selector(Token(groups["frame"], tokenSelector),
-                                   methodSelector(
-                                       Token(groups["type"], tokenSelector),
-                                       Token(groups["method"], tokenSelector)),
-                                   parametersSelector(
-                                       Token(groups["params"], tokenSelector),
-                                       from i in Enumerable.Range(0, pt.Count)
-                                       select parameterSelector(Token(pt[i], tokenSelector),
-                                                                Token(pn[i], tokenSelector))),
-                                   sourceLocationSelector(Token(groups["file"], tokenSelector),
-                                                          Token(groups["line"], tokenSelector)));
-        }
+        return from Match m in Regex.Matches(text)
+            select m.Groups into groups
+            let pt = groups["pt"].Captures
+            let pn = groups["pn"].Captures
+            select selector(Token(groups["frame"], tokenSelector),
+                methodSelector(
+                    Token(groups["type"], tokenSelector),
+                    Token(groups["method"], tokenSelector)),
+                parametersSelector(
+                    Token(groups["params"], tokenSelector),
+                    from i in Enumerable.Range(0, pt.Count)
+                    select parameterSelector(Token(pt[i], tokenSelector),
+                        Token(pn[i], tokenSelector))),
+                sourceLocationSelector(Token(groups["file"], tokenSelector),
+                    Token(groups["line"], tokenSelector)));
+    }
 
-        static T Token<T>(Capture capture, Func<int, int, string, T> tokenSelector)
-        {
-            return tokenSelector(capture.Index, capture.Length, capture.Value);
-        }
+    static T Token<T>(Capture capture, Func<int, int, string, T> tokenSelector)
+    {
+        return tokenSelector(capture.Index, capture.Length, capture.Value);
     }
 }

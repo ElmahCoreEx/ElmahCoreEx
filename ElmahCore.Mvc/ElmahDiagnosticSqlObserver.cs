@@ -5,80 +5,79 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace ElmahCore.Mvc
+namespace ElmahCore.Mvc;
+
+public class ElmahDiagnosticSqlObserver : IObserver<KeyValuePair<string, object>>
 {
-    public class ElmahDiagnosticSqlObserver : IObserver<KeyValuePair<string, object>>
+    private readonly IServiceProvider _provider;
+
+    public ElmahDiagnosticSqlObserver(IServiceProvider provider) 
     {
-        private readonly IServiceProvider _provider;
+        _provider = provider;
+    }
 
-        public ElmahDiagnosticSqlObserver(IServiceProvider provider) 
+    public void OnError(Exception error)
+    {
+    }
+
+    public void OnNext(KeyValuePair<string, object> value)
+    {
+        if (value.Value == null || value.Key != "Microsoft.Data.SqlClient.WriteCommandBefore" &&
+            value.Key != "Microsoft.Data.SqlClient.WriteCommandAfter")
         {
-            _provider = provider;
+            return;
         }
 
-        public void OnError(Exception error)
+        ElmahLogFeature sqlLog;
+        try
         {
+            sqlLog = _provider.GetService<IHttpContextAccessor>()?.HttpContext?.Features.Get<ElmahLogFeature>();
+        }
+        catch (ObjectDisposedException)
+        {
+            return;
         }
 
-        public void OnNext(KeyValuePair<string, object> value)
+        if (sqlLog == null) return;
+
+        var id = GetValueFromAnonymousType<Guid>(value.Value, "OperationId");
+
+        switch (value.Key)
         {
-            if (value.Value == null || value.Key != "Microsoft.Data.SqlClient.WriteCommandBefore" &&
-                value.Key != "Microsoft.Data.SqlClient.WriteCommandAfter")
+            case "Microsoft.Data.SqlClient.WriteCommandAfter":
+                sqlLog.SetSqlDuration(id);
+                break;
+            case "Microsoft.Data.SqlClient.WriteCommandBefore":
             {
-                return;
-            }
+                var cmd = GetValueFromAnonymousType<SqlCommand>(value.Value, "Command");
 
-            ElmahLogFeature sqlLog;
-            try
-            {
-                sqlLog = _provider.GetService<IHttpContextAccessor>()?.HttpContext?.Features.Get<ElmahLogFeature>();
-            }
-            catch (ObjectDisposedException)
-            {
-                return;
-            }
+                var query = cmd.Parameters.Cast<SqlParameter>().Aggregate(cmd.CommandText, (current, p) =>
+                    current.Replace(p.ParameterName, p.Value?.ToString()));
 
-            if (sqlLog == null) return;
-
-            var id = GetValueFromAnonymousType<Guid>(value.Value, "OperationId");
-
-            switch (value.Key)
-            {
-                case "Microsoft.Data.SqlClient.WriteCommandAfter":
-                    sqlLog.SetSqlDuration(id);
-                    break;
-                case "Microsoft.Data.SqlClient.WriteCommandBefore":
+                if (!query.Contains("/* elmah */"))
                 {
-                    var cmd = GetValueFromAnonymousType<SqlCommand>(value.Value, "Command");
-
-                    var query = cmd.Parameters.Cast<SqlParameter>().Aggregate(cmd.CommandText, (current, p) =>
-                        current.Replace(p.ParameterName, p.Value?.ToString()));
-
-                    if (!query.Contains("/* elmah */"))
+                    sqlLog.AddSql(id, new ElmahLogSqlEntry
                     {
-                        sqlLog.AddSql(id, new ElmahLogSqlEntry
-                        {
-                            CommandType = cmd.CommandType.ToString(),
-                            SqlText = query,
-                            TimeStamp = DateTime.Now,
-                            DurationMs = 0
-                        });
-                    }
-
-                    break;
+                        CommandType = cmd.CommandType.ToString(),
+                        SqlText = query,
+                        TimeStamp = DateTime.Now,
+                        DurationMs = 0
+                    });
                 }
+
+                break;
             }
         }
+    }
 
-        public void OnCompleted()
-        {
-        }
+    public void OnCompleted()
+    {
+    }
 
-        private static T GetValueFromAnonymousType<T>(object dataItem, string itemKey)
-        {
-            var type = dataItem.GetType();
-            var value = (T)type.GetProperty(itemKey)?.GetValue(dataItem, null);
-            return value;
-        }
+    private static T GetValueFromAnonymousType<T>(object dataItem, string itemKey)
+    {
+        var type = dataItem.GetType();
+        var value = (T)type.GetProperty(itemKey)?.GetValue(dataItem, null);
+        return value;
     }
 }

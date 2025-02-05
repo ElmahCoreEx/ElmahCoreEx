@@ -26,67 +26,66 @@
 using System;
 using System.Globalization;
 
-namespace ElmahCore.Mvc.Notifiers
+namespace ElmahCore.Mvc.Notifiers;
+
+/// <summary>
+///     Provides miscellaneous formatting methods for
+/// </summary>
+internal static class ErrorDisplay
 {
     /// <summary>
-    ///     Provides miscellaneous formatting methods for
+    ///     Formats the type of an error, typically supplied as the
+    ///     <see cref="Error.Type" /> value, in a short and human-
+    ///     readable form.
     /// </summary>
-    internal static class ErrorDisplay
+    /// <remarks>
+    ///     Typically, exception type names can be long to display and
+    ///     complex to consume. The essential part can usually be found in
+    ///     the start of an exception type name minus its namespace. For
+    ///     example, a human reading the string,
+    ///     "System.Runtime.InteropServices.COMException", will usually
+    ///     considers "COM" as the most useful component of the entire
+    ///     type name. This method does exactly that. It assumes that the
+    ///     the input type is a .NET Framework exception type name where
+    ///     the namespace and class will be separated by the last
+    ///     period (.) and where the type name ends in "Exception". If
+    ///     these conditions are method then a string like,
+    ///     "System.Web.HttpException" will be transformed into simply
+    ///     "Html".
+    /// </remarks>
+    public static string HumaneExceptionErrorType(string type)
     {
-        /// <summary>
-        ///     Formats the type of an error, typically supplied as the
-        ///     <see cref="Error.Type" /> value, in a short and human-
-        ///     readable form.
-        /// </summary>
-        /// <remarks>
-        ///     Typically, exception type names can be long to display and
-        ///     complex to consume. The essential part can usually be found in
-        ///     the start of an exception type name minus its namespace. For
-        ///     example, a human reading the string,
-        ///     "System.Runtime.InteropServices.COMException", will usually
-        ///     considers "COM" as the most useful component of the entire
-        ///     type name. This method does exactly that. It assumes that the
-        ///     the input type is a .NET Framework exception type name where
-        ///     the namespace and class will be separated by the last
-        ///     period (.) and where the type name ends in "Exception". If
-        ///     these conditions are method then a string like,
-        ///     "System.Web.HttpException" will be transformed into simply
-        ///     "Html".
-        /// </remarks>
-        public static string HumaneExceptionErrorType(string type)
+        if (string.IsNullOrEmpty(type))
+            return string.Empty;
+
+        var lastDotIndex = CultureInfo.InvariantCulture.CompareInfo.LastIndexOf(type, '.');
+
+        if (lastDotIndex > 0)
+            type = type.Substring(lastDotIndex + 1);
+
+        const string conventionalSuffix = "Exception";
+
+        if (type.Length > conventionalSuffix.Length)
         {
-            if (string.IsNullOrEmpty(type))
-                return string.Empty;
+            var suffixIndex = type.Length - conventionalSuffix.Length;
 
-            var lastDotIndex = CultureInfo.InvariantCulture.CompareInfo.LastIndexOf(type, '.');
-
-            if (lastDotIndex > 0)
-                type = type.Substring(lastDotIndex + 1);
-
-            const string conventionalSuffix = "Exception";
-
-            if (type.Length > conventionalSuffix.Length)
-            {
-                var suffixIndex = type.Length - conventionalSuffix.Length;
-
-                if (string.Compare(type, suffixIndex, conventionalSuffix, 0,
+            if (string.Compare(type, suffixIndex, conventionalSuffix, 0,
                     conventionalSuffix.Length, true, CultureInfo.InvariantCulture) == 0)
-                    type = type.Substring(0, suffixIndex);
-            }
-
-            return type;
+                type = type.Substring(0, suffixIndex);
         }
 
-        /// <summary>
-        ///     Formats the error type of an <see cref="Error" /> object in a
-        ///     short and human-readable form.
-        /// </summary>
-        public static string HumaneExceptionErrorType(Error error)
-        {
-            if (error == null)
-                throw new ArgumentNullException(nameof(error));
+        return type;
+    }
 
-            return HumaneExceptionErrorType(error.Type);
-        }
+    /// <summary>
+    ///     Formats the error type of an <see cref="Error" /> object in a
+    ///     short and human-readable form.
+    /// </summary>
+    public static string HumaneExceptionErrorType(Error error)
+    {
+        if (error == null)
+            throw new ArgumentNullException(nameof(error));
+
+        return HumaneExceptionErrorType(error.Type);
     }
 }

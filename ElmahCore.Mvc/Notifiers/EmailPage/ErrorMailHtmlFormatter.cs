@@ -27,32 +27,31 @@ using System;
 using System.IO;
 using ElmahCore.Mvc.Notifiers.ErrorMailHtml;
 
-namespace ElmahCore.Mvc.Notifiers
+namespace ElmahCore.Mvc.Notifiers;
+
+/// <summary>
+///     Formats the HTML to display the details of a given error that is
+///     suitable for sending as the body of an e-mail message.
+/// </summary>
+internal class ErrorMailHtmlFormatter : ErrorTextFormatter
 {
     /// <summary>
-    ///     Formats the HTML to display the details of a given error that is
-    ///     suitable for sending as the body of an e-mail message.
+    ///     Returns the text/html MIME type that is the format provided
+    ///     by this <see cref="ErrorTextFormatter" /> implementation.
     /// </summary>
-    internal class ErrorMailHtmlFormatter : ErrorTextFormatter
+
+    public override string MimeType => "text/html";
+
+    /// <summary>
+    ///     Formats a complete HTML document describing the given
+    ///     <see cref="Error" /> instance.
+    /// </summary>
+    public override void Format(TextWriter writer, Error error)
     {
-        /// <summary>
-        ///     Returns the text/html MIME type that is the format provided
-        ///     by this <see cref="ErrorTextFormatter" /> implementation.
-        /// </summary>
+        if (writer == null) throw new ArgumentNullException(nameof(writer));
+        if (error == null) throw new ArgumentNullException(nameof(error));
 
-        public override string MimeType => "text/html";
-
-        /// <summary>
-        ///     Formats a complete HTML document describing the given
-        ///     <see cref="Error" /> instance.
-        /// </summary>
-        public override void Format(TextWriter writer, Error error)
-        {
-            if (writer == null) throw new ArgumentNullException(nameof(writer));
-            if (error == null) throw new ArgumentNullException(nameof(error));
-
-            var page = new ErrorMailHtmlPage(error);
-            writer.Write(page.TransformText());
-        }
+        var page = new ErrorMailHtmlPage(error);
+        writer.Write(page.TransformText());
     }
 }

@@ -26,20 +26,19 @@
 
 using System;
 
-namespace ElmahCore.Mvc.Notifiers.ErrorMailHtml
-{
-    /// <summary>
-    ///     Renders an HTML page displaying details about an error from the
-    ///     error log ready for emailing.
-    /// </summary>
-    internal partial class ErrorMailHtmlPage
-    {
-        public ErrorMailHtmlPage(Error error)
-        {
-            if (error == null) throw new ArgumentNullException(nameof(error));
-            Error = error;
-        }
+namespace ElmahCore.Mvc.Notifiers.ErrorMailHtml;
 
-        public Error Error { get; }
+/// <summary>
+///     Renders an HTML page displaying details about an error from the
+///     error log ready for emailing.
+/// </summary>
+internal partial class ErrorMailHtmlPage
+{
+    public ErrorMailHtmlPage(Error error)
+    {
+        if (error == null) throw new ArgumentNullException(nameof(error));
+        Error = error;
     }
+
+    public Error Error { get; }
 }

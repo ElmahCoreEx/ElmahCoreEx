@@ -4,88 +4,86 @@ using System.Net;
 using FluentAssertions;
 using Xunit;
 
-namespace ElmahCore.Mvc.Tests.StacktraceParser
+namespace ElmahCore.Mvc.Tests.StacktraceParser;
+
+public class ParseStackTrace
 {
-    public class ParseStackTrace
+    private List<SourceInfo> list = new ();
+
+    [Fact]
+    public void CanParseStackTraceString()
     {
-        private List<SourceInfo> list = new ();
+        var frames = StackTraceParser.Parse
+        (
+            GetTestStackStringIssue158_HighCPULoop(),
+            (idx, len, txt) => new
+            {
+                Index = idx,
+                End = idx + len,
+                Html = txt.Length > 0
+                    ? WebUtility.HtmlEncode(txt)
+                    : string.Empty
+            },
+            (t, m) => new
+            {
+                Type = new { t.Index, t.End, Html = $"<span class='st-type'>{t.Html}</span>" },
+                Method = new { m.Index, m.End, Html = $"<span class='st-method'>{m.Html}</span>" }
+            },
+            (t, n) => new
+            {
+                Type = new { t.Index, t.End, Html = $"<span class='st-param-type'>{t.Html}</span>" },
+                Name = new { n.Index, n.End, Html = $"<span class='st-param-name'>{n.Html}</span>" }
+            },
+            (p, ps) => new { List = p, Parameters = ps.ToArray() },
+            (f, l) =>
 
-        [Fact]
-        public void CanParseStackTraceString()
-        {
-            var frames = StackTraceParser.Parse
-            (
-                GetTestStackStringIssue158_HighCPULoop(),
-                (idx, len, txt) => new
-                {
-                    Index = idx,
-                    End = idx + len,
-                    Html = txt.Length > 0
-                        ? WebUtility.HtmlEncode(txt)
-                        : string.Empty
-                },
-                (t, m) => new
-                {
-                    Type = new { t.Index, t.End, Html = $"<span class='st-type'>{t.Html}</span>" },
-                    Method = new { m.Index, m.End, Html = $"<span class='st-method'>{m.Html}</span>" }
-                },
-                (t, n) => new
-                {
-                    Type = new { t.Index, t.End, Html = $"<span class='st-param-type'>{t.Html}</span>" },
-                    Name = new { n.Index, n.End, Html = $"<span class='st-param-name'>{n.Html}</span>" }
-                },
-                (p, ps) => new { List = p, Parameters = ps.ToArray() },
-                (f, l) =>
-
-                {
-                    if (int.TryParse(l.Html, out var line))
-                        list.Add(new SourceInfo
-                        {
-                            Source = f.Html,
-                            Line = line
-                        });
-                    return new
+            {
+                if (int.TryParse(l.Html, out var line))
+                    list.Add(new SourceInfo
                     {
-                        File = f.Html.Length > 0
-                            ? new { f.Index, f.End, Html = $"<span class='st-file'>{f.Html}</span>" }
-                            : null,
-                        Line = l.Html.Length > 0
-                            ? new { l.Index, l.End, Html = $"<span class='st-line'>{l.Html}</span>" }
-                            : null
-                    };
-                },
-                (f, tm, p, fl) =>
-                    from tokens in new[]
-                    {
-                        new[]
-                        {
-                            new { f.Index, End = f.Index, Html = "<span class='st-frame'>" },
-                            tm.Type,
-                            tm.Method,
-                            new { p.List.Index, End = p.List.Index, Html = "<span class='params'>" }
-                        },
-                        from pe in p.Parameters
-                        from e in new[] { pe.Type, pe.Name }
-                        select e,
-                        new[]
-                        {
-                            new { Index = p.List.End, p.List.End, Html = "</span>" },
-                            fl.File,
-                            fl.Line,
-                            new { Index = f.End, f.End, Html = "</span>" }
-                        }
-                    }
-                    from token in tokens
-                    where token != null
-                    select token
-            );
+                        Source = f.Html,
+                        Line = line
+                    });
+                return new
+                {
+                    File = f.Html.Length > 0
+                        ? new { f.Index, f.End, Html = $"<span class='st-file'>{f.Html}</span>" }
+                        : null,
+                    Line = l.Html.Length > 0
+                        ? new { l.Index, l.End, Html = $"<span class='st-line'>{l.Html}</span>" }
+                        : null
+                };
+            },
+            (f, tm, p, fl) =>
+                from tokens in new[]
+                {
+                    [
+                        new { f.Index, End = f.Index, Html = "<span class='st-frame'>" },
+                        tm.Type,
+                        tm.Method,
+                        new { p.List.Index, End = p.List.Index, Html = "<span class='params'>" }
+                    ],
+                    from pe in p.Parameters
+                    from e in new[] { pe.Type, pe.Name }
+                    select e,
+                    [
+                        new { Index = p.List.End, p.List.End, Html = "</span>" },
+                        fl.File,
+                        fl.Line,
+                        new { Index = f.End, f.End, Html = "</span>" }
+                    ]
+                }
+                from token in tokens
+                where token != null
+                select token
+        );
 
-            frames.Should().NotBeNull();
-        }
+        frames.Should().NotBeNull();
+    }
 
-        private static string GetTestStackStringIssue158_HighCPULoop()
-        {
-            return @"
+    private static string GetTestStackStringIssue158_HighCPULoop()
+    {
+        return @"
 # caller: @C:\Sources\ElmahCore\ElmahCore\ElmahCore\Internal$\CallerInfo.cs:9
 MySqlConnector.MySqlException (0x80004005): Column 'OrganizationNodeName' cannot be null
    at MySqlConnector.Core.ResultSet.ReadResultSetHeaderAsync(IOBehavior ioBehavior) in /_/src/MySqlConnector/Core/ResultSet.cs:line 43
@@ -114,6 +112,5 @@ MySqlConnector.MySqlException (0x80004005): Column 'OrganizationNodeName' cannot
    at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
    at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|6_0(Endpoint endpoint, Task requestTask, ILogger logger)
    at ElmahCore.Mvc.ErrorLogMiddleware.InvokeAsync(HttpContext context)";
-        }
     }
 }

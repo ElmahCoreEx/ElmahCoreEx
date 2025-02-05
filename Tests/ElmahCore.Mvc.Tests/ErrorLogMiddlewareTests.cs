@@ -7,36 +7,35 @@ using Microsoft.Extensions.Options;
 using NSubstitute;
 using Xunit;
 
-namespace ElmahCore.Mvc.Tests
+namespace ElmahCore.Mvc.Tests;
+
+public class ErrorLogMiddlewareTests
 {
-    public class ErrorLogMiddlewareTests
+    private readonly RequestDelegate _requestDelegate;
+    private readonly ErrorLog _errorLog;
+    private readonly ILoggerFactory _loggerFactory;
+    private readonly IOptions<ElmahOptions> _options;
+
+    public ErrorLogMiddlewareTests()
     {
-        private readonly RequestDelegate _requestDelegate;
-        private readonly ErrorLog _errorLog;
-        private readonly ILoggerFactory _loggerFactory;
-        private readonly IOptions<ElmahOptions> _options;
+        _requestDelegate = _ => Task.CompletedTask;
+        _options = Substitute.For<IOptions<ElmahOptions>>();
+        _loggerFactory = Substitute.For<ILoggerFactory>();
+        _errorLog = new MemoryErrorLog();
+    }
 
-        public ErrorLogMiddlewareTests()
-        {
-            _requestDelegate = _ => Task.CompletedTask;
-            _options = Substitute.For<IOptions<ElmahOptions>>();
-            _loggerFactory = Substitute.For<ILoggerFactory>();
-            _errorLog = new MemoryErrorLog();
-        }
+    [Fact]
+    public void WhenInitMiddlewareSetsStaticExtension()
+    {
+        _ = new ErrorLogMiddleware(_requestDelegate, _errorLog, _loggerFactory, _options);
+        ElmahExtensions.LogMiddleware.Should().NotBeNull();
+    }
 
-        [Fact]
-        public void WhenInitMiddlewareSetsStaticExtension()
-        {
-            var _ = new ErrorLogMiddleware(_requestDelegate, _errorLog, _loggerFactory, _options);
-            ElmahExtensions.LogMiddleware.Should().NotBeNull();
-        }
-
-        [Fact]
-        public void RiseErrorOkWhenMiddlewareInitialized()
-        {
-            var _ = new ErrorLogMiddleware(_requestDelegate, _errorLog, _loggerFactory, _options);
-            var act = async () => await ElmahExtensions.RaiseError(new DefaultHttpContext(), new Exception());
-            act.Should().NotThrowAsync();
-        }
+    [Fact]
+    public void RiseErrorOkWhenMiddlewareInitialized()
+    {
+        _ = new ErrorLogMiddleware(_requestDelegate, _errorLog, _loggerFactory, _options);
+        var act = async () => await ElmahExtensions.RaiseError(new DefaultHttpContext(), new Exception());
+        act.Should().NotThrowAsync();
     }
 }
