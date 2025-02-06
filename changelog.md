@@ -1,5 +1,23 @@
 # Release Notes
 
+
+## 2.1.4-beta 1
+
+## Summary
+
+### Breaking changes
+
+- Upgrade to net8 dependencies
+
+### Maintenance
+
+- Bump packages to current releases
+
+### Fixes
+
+- Fix minor concurrency bug.
+
+
 ## 2.1.3 -- Changes from ElmahCore 2.1.2
 
 ### Summary

@@ -44,10 +44,9 @@ internal static class ErrorLogDownloadHandler
         int maxDownloadCount)
     {
         var response = context.Response;
-        var output = response;
 
         foreach (var text in format.Header())
-            await output.WriteAsync(text);
+            await response.WriteAsync(text);
 
         var errorEntryList = new List<ErrorLogEntry>(PageSize);
         var downloadCount = 0;
@@ -71,11 +70,8 @@ internal static class ErrorLogDownloadHandler
 
             await response.Body.FlushAsync();
 
-            //
             // Done if either the end of the list (no more errors found) or
             // the requested limit has been reached.
-            //
-
             if (count == 0 || downloadCount == maxDownloadCount)
             {
                 if (count > 0)
@@ -84,7 +80,7 @@ internal static class ErrorLogDownloadHandler
                 break;
             }
 
-            // Fetch next page of results.
+            // Fetch the next page of results.
             errorEntryList.Clear();
         }
     }
