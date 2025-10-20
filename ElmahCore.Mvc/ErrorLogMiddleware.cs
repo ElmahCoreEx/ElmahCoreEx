@@ -201,7 +201,7 @@ internal sealed class ErrorLogMiddleware
         var body = request.Body;
         var buffer = new byte[Convert.ToInt32(request.ContentLength)];
         // ReSharper disable once MustUseReturnValue
-        await request.Body.ReadExactlyAsync(buffer, 0, buffer.Length);
+        await request.Body.ReadAsync(buffer, 0, buffer.Length);
         var bodyAsText = Encoding.UTF8.GetString(buffer);
         body.Seek(0, SeekOrigin.Begin);
         request.Body = body;
