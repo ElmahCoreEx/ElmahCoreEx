@@ -1,49 +1,49 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <Version>2.1.2</Version>
-    <PackageProjectUrl>https://github.com/ElmahCoreEx/ElmahCoreEx</PackageProjectUrl>
-    <AssemblyVersion>2.1.2.0</AssemblyVersion>
-    <FileVersion>2.1.2.0</FileVersion>
-    <AssemblyName>ElmahCore.MySql</AssemblyName>
-    <PackageId>ElmahCoreEx.MySql</PackageId>
-    <NeutralLanguage>en-001</NeutralLanguage>
-    <RepositoryUrl>https://www.nuget.org/packages/ElmahCoreEx</RepositoryUrl>
-    <PackageTags>net-core elmah mvc-core asp-net-core asp-net-core-mvc elmah-core netcore netcore2 netcore20 mvc mvc6 aspnetcore aspnetcoremvc</PackageTags>
-    <Description>ELMAH for ASP.NET Core MySQL Adapter</Description>
-    <RootNamespace>ElmahCore.MySql</RootNamespace>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <LangVersion>default</LangVersion>
-    <TargetFramework>net8.0</TargetFramework>
-  </PropertyGroup>
+    <PropertyGroup>
+        <Version>2.1.5</Version>
+        <PackageProjectUrl>https://github.com/ElmahCoreEx/ElmahCoreEx</PackageProjectUrl>
+        <AssemblyVersion>2.1.5.0</AssemblyVersion>
+        <FileVersion>2.1.5.0</FileVersion>
+        <AssemblyName>ElmahCore.MySql</AssemblyName>
+        <PackageId>ElmahCoreEx.MySql</PackageId>
+        <NeutralLanguage>en-001</NeutralLanguage>
+        <RepositoryUrl>https://www.nuget.org/packages/ElmahCoreEx</RepositoryUrl>
+        <PackageTags>net-core elmah mvc-core asp-net-core asp-net-core-mvc elmah-core netcore netcore2 netcore20 mvc mvc6 aspnetcore aspnetcoremvc</PackageTags>
+        <Description>ELMAH for ASP.NET Core MySQL Adapter</Description>
+        <RootNamespace>ElmahCore.MySql</RootNamespace>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <LangVersion>default</LangVersion>
+        <TargetFramework>net10.0</TargetFramework>
+    </PropertyGroup>
 
-<PropertyGroup>
-  <MinVerDefaultPreReleaseIdentifiers>alpha.0</MinVerDefaultPreReleaseIdentifiers>
-</PropertyGroup>
+    <PropertyGroup>
+        <MinVerDefaultPreReleaseIdentifiers>alpha.0</MinVerDefaultPreReleaseIdentifiers>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" Version="2024.3.0" />
-    <PackageReference Include="MinVer" Version="4.3.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="MySql.Data" Version="9.2.0" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
+        <PackageReference Include="MinVer" Version="7.0.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="MySql.Data" Version="9.6.0" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\ElmahCore\ElmahCore.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\ElmahCore\ElmahCore.csproj"/>
+    </ItemGroup>
 
-<PropertyGroup>
-    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-</PropertyGroup>
+    <PropertyGroup>
+        <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
 
-<ItemGroup>
-    <None Include="..\LICENSE.txt" Pack="true" PackagePath="" />
-    <None Include="..\README.md" Pack="true" PackagePath="" />
-</ItemGroup>
+    <ItemGroup>
+        <None Include="..\LICENSE.txt" Pack="true" PackagePath=""/>
+        <None Include="..\README.md" Pack="true" PackagePath=""/>
+    </ItemGroup>
 
 </Project>

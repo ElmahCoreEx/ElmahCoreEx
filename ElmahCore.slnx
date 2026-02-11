@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/Demo/">
+    <Project Path="ElmahCore.Demo/ElmahCore.Demo.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/ElmahCore.Mvc.Tests/ElmahCore.Mvc.Tests.csproj" />
+  </Folder>
+  <Project Path="ElmahCore.MsSql/ElmahCore.Sql.csproj" />
+  <Project Path="ElmahCore.Mvc/ElmahCore.Mvc.csproj" />
+  <Project Path="ElmahCore.MySql/ElmahCore.MySql.csproj" />
+  <Project Path="ElmahCore.Postgresql/ElmahCore.Postgresql.csproj" />
+  <Project Path="ElmahCore/ElmahCore.csproj" />
+</Solution>
