@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 
@@ -160,6 +162,103 @@ public class SqlErrorLog : ErrorLog
         {
             command.Connection = connection;
             return int.Parse(command.ExecuteScalar().ToString());
+        }
+    }
+
+    /// <inheritdoc />
+    public override async Task<string> LogAsync(Error error, CancellationToken cancellationToken)
+    {
+        var id = Guid.NewGuid();
+
+        try
+        {
+            var errorXml = _logAllXml
+                ? ErrorXml.EncodeString(error)
+                : "<error message=\"AllXml logging disabled\" />";
+
+            await using var connection = new SqlConnection(ConnectionString);
+            await using var command = Commands.LogError(id, ApplicationName, error.HostName, error.Type, error.Source,
+                error.Message, error.User, error.StatusCode, error.Time, errorXml,
+                DatabaseSchemaName, DatabaseTableName);
+            command.Connection = connection;
+            await connection.OpenAsync(cancellationToken);
+            await command.ExecuteNonQueryAsync(cancellationToken);
+        }
+        catch
+        {
+            //guard: silently fail, this can't bubble up or it will create a stack overflow from errors attempting to log errors....
+        }
+
+        return id.ToString();
+    }
+
+    /// <inheritdoc />
+    public override async Task<ErrorLogEntry> GetErrorAsync(string id, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(id);
+        if (id.Length == 0) throw new ArgumentException(null, nameof(id));
+
+        Guid errorGuid;
+
+        try
+        {
+            errorGuid = new Guid(id);
+        }
+        catch (FormatException e)
+        {
+            throw new ArgumentException(e.Message, nameof(id), e);
+        }
+
+        string errorXml;
+
+        await using (var connection = new SqlConnection(ConnectionString))
+        await using (var command = Commands.GetErrorXml(ApplicationName, errorGuid,
+                         DatabaseSchemaName, DatabaseTableName))
+        {
+            command.Connection = connection;
+            await connection.OpenAsync(cancellationToken);
+            errorXml = (string)await command.ExecuteScalarAsync(cancellationToken);
+        }
+
+        if (errorXml == null)
+            return null;
+
+        var error = ErrorXml.DecodeString(errorXml);
+        return new ErrorLogEntry(this, id, error);
+    }
+
+    /// <inheritdoc />
+    public override async Task<int> GetErrorsAsync(int errorIndex, int pageSize, ICollection<ErrorLogEntry> errorEntryList,
+        CancellationToken cancellationToken)
+    {
+        if (errorIndex < 0) throw new ArgumentOutOfRangeException(nameof(errorIndex), errorIndex, null);
+        if (pageSize < 0) throw new ArgumentOutOfRangeException(nameof(pageSize), pageSize, null);
+
+        await using var connection = new SqlConnection(ConnectionString);
+        await connection.OpenAsync(cancellationToken);
+
+        await using (var command = Commands.GetErrorsXml(ApplicationName, errorIndex, pageSize,
+                         DatabaseSchemaName, DatabaseTableName))
+        {
+            command.Connection = connection;
+
+            await using (var reader = await command.ExecuteReaderAsync(cancellationToken))
+            {
+                while (await reader.ReadAsync(cancellationToken))
+                {
+                    var id = reader.GetGuid(0);
+                    var xml = reader.GetString(1);
+                    var error = ErrorXml.DecodeString(xml);
+                    errorEntryList.Add(new ErrorLogEntry(this, id.ToString(), error));
+                }
+            }
+        }
+
+        await using (var command = Commands.GetErrorsXmlTotal(ApplicationName,
+                         DatabaseSchemaName, DatabaseTableName))
+        {
+            command.Connection = connection;
+            return int.Parse((await command.ExecuteScalarAsync(cancellationToken))?.ToString() ?? "0");
         }
     }
 

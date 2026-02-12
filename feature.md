@@ -185,10 +185,11 @@
     }
     ```
 
-- [ ] **MAINT-003: Add Proper Async Implementations**
+- [x] **MAINT-003: Add Proper Async Implementations**
   - **File:** `ElmahCore/ErrorLog.cs` and all implementations
   - **Issue:** Async methods wrap sync calls with `Task.Run`
   - **Action:** Implement true async with `*Async` ADO.NET methods
+  - **Status:** ✓ Completed - Added true async implementations to SqlErrorLog, MySqlErrorLog, and PgsqlErrorLog
   - **Example Fix:**
     ```csharp
     public override async Task<string> LogAsync(Error error, CancellationToken ct = default)

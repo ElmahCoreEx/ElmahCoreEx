@@ -1,5 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 using MySql.Data.MySqlClient;
@@ -133,6 +135,97 @@ public class MySqlErrorLog : ErrorLog
         }
 
         return GetTotalErrorsXml(connection);
+    }
+
+    /// <inheritdoc />
+    public override async Task<string> LogAsync(Error error, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(error);
+
+        var id = Guid.NewGuid();
+
+        var errorXml = _logAllXml
+            ? ErrorXml.EncodeString(error)
+            : "<error message=\"AllXml logging disabled\" />";
+
+        await using var connection = new MySqlConnection(ConnectionString);
+        await using var command = CommandExtension.LogError(id, ApplicationName, error.HostName, error.Type,
+            error.Source, error.Message, error.User, error.StatusCode, error.Time, errorXml);
+        await connection.OpenAsync(cancellationToken);
+        command.Connection = connection;
+        await command.ExecuteNonQueryAsync(cancellationToken);
+
+        return id.ToString();
+    }
+
+    /// <inheritdoc />
+    public override async Task<ErrorLogEntry> GetErrorAsync(string id, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(id);
+        if (id.Length == 0) throw new ArgumentException(null, nameof(id));
+
+        Guid errorGuid;
+
+        try
+        {
+            errorGuid = new Guid(id);
+        }
+        catch (FormatException e)
+        {
+            throw new ArgumentException(e.Message, nameof(id), e);
+        }
+
+        string errorXml;
+
+        await using (var connection = new MySqlConnection(ConnectionString))
+        await using (var command = CommandExtension.GetErrorXml(ApplicationName, errorGuid))
+        {
+            command.Connection = connection;
+            await connection.OpenAsync(cancellationToken);
+            errorXml = (string)await command.ExecuteScalarAsync(cancellationToken);
+        }
+
+        if (errorXml == null)
+            return null;
+
+        var error = ErrorXml.DecodeString(errorXml);
+        return new ErrorLogEntry(this, id, error);
+    }
+
+    /// <inheritdoc />
+    public override async Task<int> GetErrorsAsync(int errorIndex, int pageSize, ICollection<ErrorLogEntry> errorEntryList,
+        CancellationToken cancellationToken)
+    {
+        if (errorIndex < 0) throw new ArgumentOutOfRangeException(nameof(errorIndex), errorIndex, null);
+        if (pageSize < 0) throw new ArgumentOutOfRangeException(nameof(pageSize), pageSize, null);
+
+        await using var connection = new MySqlConnection(ConnectionString);
+        await connection.OpenAsync(cancellationToken);
+
+        await using (var command = CommandExtension.GetErrorsXml(ApplicationName, errorIndex, pageSize))
+        {
+            command.Connection = connection;
+
+            await using (var reader = await command.ExecuteReaderAsync(cancellationToken))
+            {
+                while (await reader.ReadAsync(cancellationToken))
+                {
+                    var id = reader.GetGuid(0);
+                    var xml = reader.GetString(1);
+                    var error = ErrorXml.DecodeString(xml);
+                    errorEntryList.Add(new ErrorLogEntry(this, id.ToString(), error));
+                }
+            }
+        }
+
+        return await GetTotalErrorsXmlAsync(connection, cancellationToken);
+    }
+
+    private async Task<int> GetTotalErrorsXmlAsync(MySqlConnection connection, CancellationToken cancellationToken)
+    {
+        await using var command = CommandExtension.GetTotalErrorsXml(ApplicationName);
+        command.Connection = connection;
+        return Convert.ToInt32(await command.ExecuteScalarAsync(cancellationToken));
     }
 
     /// <summary>
