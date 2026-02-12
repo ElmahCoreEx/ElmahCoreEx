@@ -100,7 +100,7 @@ public class PgsqlErrorLog : ErrorLog
         {
             command.Connection = connection;
             connection.Open();
-            errorXml = (string) command.ExecuteScalar();
+            errorXml = (string)command.ExecuteScalar();
         }
 
         if (errorXml == null)
@@ -152,7 +152,7 @@ public class PgsqlErrorLog : ErrorLog
         using var cmdCheck = Commands.CheckTable();
         cmdCheck.Connection = connection;
         // ReSharper disable once PossibleNullReferenceException
-        var exists = (bool) cmdCheck.ExecuteScalar();
+        var exists = (bool)cmdCheck.ExecuteScalar();
 
         if (exists) return;
         using var cmdCreate = Commands.CreateTable();

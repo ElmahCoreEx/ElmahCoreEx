@@ -98,7 +98,7 @@ public class MySqlErrorLog : ErrorLog
         {
             command.Connection = connection;
             connection.Open();
-            errorXml = (string) command.ExecuteScalar();
+            errorXml = (string)command.ExecuteScalar();
         }
 
         if (errorXml == null)

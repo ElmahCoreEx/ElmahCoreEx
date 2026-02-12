@@ -1,7 +1,4 @@
-using System;
 using FluentAssertions;
-using Microsoft.Extensions.Options;
-using NSubstitute;
 using Xunit;
 
 namespace ElmahCore.Tests;
