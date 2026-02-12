@@ -3,7 +3,6 @@ name: build
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: true
-  NuGetDirectory: ${{ github.workspace}}/nuget
 
 defaults:
   run:
@@ -11,40 +10,29 @@ defaults:
 
 on:
   push:
-    branches:
-      - main
-      - develop
-    tags-ignore:
-      - "**"
+    branches: [main, develop]
+    tags-ignore: ["**"]
   pull_request:
-    branches:
-      - main
-      - develop
+    branches: [main, develop]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        dotnet-version: ["8.0.x"]
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 #get all history to allow MinVer to work.
-      - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
+          fetch-depth: 0
+
+      - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: ${{ matrix.dotnet-version }}
-      - name: Install dependencies
+          dotnet-version: '10.0.x'
+
+      - name: Restore
         run: dotnet restore
+
       - name: Build
         run: dotnet build --configuration Release --no-restore
+
       - name: Test
         run: dotnet test --no-restore --verbosity normal
-      # - name: Create the package
-      #   run: dotnet pack --configuration Release <my project>
-      # - name: Publish the package to GPR
-      #   run: dotnet nuget push <my project>/bin/Release/*.nupkg
-      # - name: Publish
-      #   if: startsWith(github.ref, 'refs/heads/release')
-      #   run: nuget push **\*.nupkg -Source 'https://api.nuget.org/v3.index.json' -ApiKey ${{secrets.NUGET_APIKEY}}'
