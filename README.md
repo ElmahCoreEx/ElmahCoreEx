@@ -106,6 +106,20 @@ services.AddElmah<SqlErrorLog>(options =>
 });
 ```
 
+## Disable Full XML Logging
+
+For high-volume applications, you can disable storing the full XML representation of errors in the database to reduce storage requirements. When disabled, a minimal placeholder XML is stored instead. The basic error fields (type, message, source, user, time, statusCode) are still stored in dedicated database columns.
+
+```csharp
+services.AddElmah<SqlErrorLog>(options =>
+{
+  options.ConnectionString = "connection_string";
+  options.LogAllXml = false; // Disable full XML storage
+});
+```
+
+This option works with `SqlErrorLog`, `MySqlErrorLog`, and `PgsqlErrorLog`. Default is `true` for backward compatibility.
+
 ## Raise exception
 
 To raise a custom exception to log:

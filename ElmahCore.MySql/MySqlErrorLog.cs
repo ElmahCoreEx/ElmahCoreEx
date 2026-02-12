@@ -13,11 +13,14 @@ namespace ElmahCore.MySql;
 [UsedImplicitly]
 public class MySqlErrorLog : ErrorLog
 {
+    private readonly bool _logAllXml;
+
     /// <summary>
     ///     Initializes a new instance of the <see cref="MySqlErrorLog" /> class
     ///     using a dictionary of configured settings.
     /// </summary>
-    public MySqlErrorLog(IOptions<ElmahOptions> option) : this(option.Value.ConnectionString)
+    public MySqlErrorLog(IOptions<ElmahOptions> option) : this(option.Value.ConnectionString,
+        option.Value.CreateTablesIfNotExist, option.Value.LogAllXml)
     {
     }
 
@@ -25,13 +28,16 @@ public class MySqlErrorLog : ErrorLog
     ///     Initializes a new instance of the <see cref="MySqlErrorLog" /> class
     ///     to use a specific connection string for connecting to the database.
     /// </summary>
-    public MySqlErrorLog(string connectionString)
+    public MySqlErrorLog(string connectionString, bool createTablesIfNotExist = true, bool logAllXml = true)
     {
         if (string.IsNullOrEmpty(connectionString))
             throw new ArgumentNullException(nameof(connectionString));
 
         ConnectionString = connectionString;
-        CreateTableIfNotExist();
+        _logAllXml = logAllXml;
+
+        if (createTablesIfNotExist)
+            CreateTableIfNotExist();
     }
 
     /// <summary>
@@ -57,7 +63,9 @@ public class MySqlErrorLog : ErrorLog
     {
         ArgumentNullException.ThrowIfNull(error);
 
-        var errorXml = ErrorXml.EncodeString(error);
+        var errorXml = _logAllXml
+            ? ErrorXml.EncodeString(error)
+            : "<error message=\"AllXml logging disabled\" />";
 
         using var connection = new MySqlConnection(ConnectionString);
         using var command = CommandExtension.LogError(id, ApplicationName, error.HostName, error.Type,
@@ -90,7 +98,7 @@ public class MySqlErrorLog : ErrorLog
         {
             command.Connection = connection;
             connection.Open();
-            errorXml = (string) command.ExecuteScalar();
+            errorXml = (string)command.ExecuteScalar();
         }
 
         if (errorXml == null)

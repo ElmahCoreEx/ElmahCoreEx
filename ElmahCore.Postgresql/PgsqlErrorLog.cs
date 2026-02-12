@@ -15,12 +15,14 @@ namespace ElmahCore.Postgresql;
 public class PgsqlErrorLog : ErrorLog
 {
     private const int MaxAppNameLength = 60;
+    private readonly bool _logAllXml;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="PgsqlErrorLog" /> class
     ///     using a dictionary of configured settings.
     /// </summary>
-    public PgsqlErrorLog(IOptions<ElmahOptions> option) : this(option.Value.ConnectionString, option.Value.CreateTablesIfNotExist)
+    public PgsqlErrorLog(IOptions<ElmahOptions> option) : this(option.Value.ConnectionString, option.Value.CreateTablesIfNotExist,
+        option.Value.LogAllXml)
     {
     }
 
@@ -28,12 +30,13 @@ public class PgsqlErrorLog : ErrorLog
     ///     Initializes a new instance of the <see cref="PgsqlErrorLog" /> class
     ///     to use a specific connection string for connecting to the database.
     /// </summary>
-    public PgsqlErrorLog(string connectionString, bool createTablesIfNotExist)
+    public PgsqlErrorLog(string connectionString, bool createTablesIfNotExist, bool logAllXml = true)
     {
         if (string.IsNullOrEmpty(connectionString))
             throw new ArgumentNullException(nameof(connectionString));
 
         ConnectionString = connectionString;
+        _logAllXml = logAllXml;
 
         if (createTablesIfNotExist)
             CreateTableIfNotExists();
@@ -62,7 +65,9 @@ public class PgsqlErrorLog : ErrorLog
     {
         ArgumentNullException.ThrowIfNull(error);
 
-        var errorXml = ErrorXml.EncodeString(error);
+        var errorXml = _logAllXml
+            ? ErrorXml.EncodeString(error)
+            : "<error message=\"AllXml logging disabled\" />";
 
         using var connection = new NpgsqlConnection(ConnectionString);
         using var command = Commands.LogError(id, ApplicationName, error.HostName, error.Type, error.Source,
@@ -74,7 +79,7 @@ public class PgsqlErrorLog : ErrorLog
 
     public override ErrorLogEntry GetError(string id)
     {
-        if (id == null) throw new ArgumentNullException(nameof(id));
+        ArgumentNullException.ThrowIfNull(id);
         if (id.Length == 0) throw new ArgumentException(null, nameof(id));
 
         Guid errorGuid;
@@ -95,7 +100,7 @@ public class PgsqlErrorLog : ErrorLog
         {
             command.Connection = connection;
             connection.Open();
-            errorXml = (string) command.ExecuteScalar();
+            errorXml = (string)command.ExecuteScalar();
         }
 
         if (errorXml == null)
@@ -147,14 +152,13 @@ public class PgsqlErrorLog : ErrorLog
         using var cmdCheck = Commands.CheckTable();
         cmdCheck.Connection = connection;
         // ReSharper disable once PossibleNullReferenceException
-        var exists = (bool) cmdCheck.ExecuteScalar();
+        var exists = (bool)cmdCheck.ExecuteScalar();
 
         if (exists) return;
         using var cmdCreate = Commands.CreateTable();
         cmdCreate.Connection = connection;
         cmdCreate.ExecuteNonQuery();
     }
-
 
     private static class Commands
     {

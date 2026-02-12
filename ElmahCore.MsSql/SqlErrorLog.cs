@@ -14,6 +14,7 @@ namespace ElmahCore.Sql;
 public class SqlErrorLog : ErrorLog
 {
     private const int MaxAppNameLength = 60;
+    private readonly bool _logAllXml;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="SqlErrorLog" /> class
@@ -21,7 +22,8 @@ public class SqlErrorLog : ErrorLog
     /// </summary>
     public SqlErrorLog(IOptions<ElmahOptions> option)
         : this(option.Value.ConnectionString, option.Value.SqlServerDatabaseSchemaName,
-            option.Value.SqlServerDatabaseTableName, option.Value.CreateTablesIfNotExist)
+            option.Value.SqlServerDatabaseTableName, option.Value.CreateTablesIfNotExist,
+            option.Value.LogAllXml)
     {
     }
 
@@ -30,7 +32,7 @@ public class SqlErrorLog : ErrorLog
     ///     to use a specific connection string for connecting to the database and a specific schema and table name.
     /// </summary>
     public SqlErrorLog(string connectionString, string schemaName = null, string tableName = null,
-        bool createTablesIfNotExist = true)
+        bool createTablesIfNotExist = true, bool logAllXml = true)
     {
         if (string.IsNullOrEmpty(connectionString))
             throw new ArgumentNullException(nameof(connectionString));
@@ -38,6 +40,7 @@ public class SqlErrorLog : ErrorLog
         ConnectionString = connectionString;
         DatabaseSchemaName = !string.IsNullOrWhiteSpace(schemaName) ? schemaName : "dbo";
         DatabaseTableName = !string.IsNullOrWhiteSpace(tableName) ? tableName : "ELMAH_Error";
+        _logAllXml = logAllXml;
 
         if (createTablesIfNotExist)
             CreateTableIfNotExists();
@@ -75,7 +78,9 @@ public class SqlErrorLog : ErrorLog
     {
         try
         {
-            var errorXml = ErrorXml.EncodeString(error);
+            var errorXml = _logAllXml
+                ? ErrorXml.EncodeString(error)
+                : "<error message=\"AllXml logging disabled\" />";
 
             using var connection = new SqlConnection(ConnectionString);
             using var command = Commands.LogError(id, ApplicationName, error.HostName, error.Type, error.Source,
@@ -93,7 +98,7 @@ public class SqlErrorLog : ErrorLog
 
     public override ErrorLogEntry GetError(string id)
     {
-        if (id == null) throw new ArgumentNullException(nameof(id));
+        ArgumentNullException.ThrowIfNull(id);
         if (id.Length == 0) throw new ArgumentException(null, nameof(id));
 
         Guid errorGuid;
@@ -248,7 +253,6 @@ WHERE EXISTS (
 "
             };
         }
-
 
         public static SqlCommand LogError(
             Guid id,
