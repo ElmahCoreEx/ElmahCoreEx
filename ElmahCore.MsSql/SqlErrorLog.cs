@@ -98,7 +98,7 @@ public class SqlErrorLog : ErrorLog
 
     public override ErrorLogEntry GetError(string id)
     {
-        if (id == null) throw new ArgumentNullException(nameof(id));
+        ArgumentNullException.ThrowIfNull(id);
         if (id.Length == 0) throw new ArgumentException(null, nameof(id));
 
         Guid errorGuid;
@@ -253,7 +253,6 @@ WHERE EXISTS (
 "
             };
         }
-
 
         public static SqlCommand LogError(
             Guid id,

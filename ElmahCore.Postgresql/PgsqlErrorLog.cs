@@ -79,7 +79,7 @@ public class PgsqlErrorLog : ErrorLog
 
     public override ErrorLogEntry GetError(string id)
     {
-        if (id == null) throw new ArgumentNullException(nameof(id));
+        ArgumentNullException.ThrowIfNull(id);
         if (id.Length == 0) throw new ArgumentException(null, nameof(id));
 
         Guid errorGuid;
@@ -159,7 +159,6 @@ public class PgsqlErrorLog : ErrorLog
         cmdCreate.Connection = connection;
         cmdCreate.ExecuteNonQuery();
     }
-
 
     private static class Commands
     {
