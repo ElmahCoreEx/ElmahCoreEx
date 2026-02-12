@@ -19,46 +19,47 @@ public static class ElmahExtensions
             throw new MiddlewareNotInitializedException("Elmah Middleware not initialized");
     }
 
-    [Obsolete("Prefer RaiseError, will be removed in next major version")]
-    public static Task RiseError(this HttpContext ctx, Exception ex, Func<HttpContext, Error, Task> onError)
+    extension(HttpContext ctx)
     {
-        return RaiseError(ctx, ex, onError);
+        [Obsolete("Prefer RaiseError, will be removed in next major version")]
+        public Task RiseError(Exception ex, Func<HttpContext, Error, Task> onError)
+        {
+            return ctx.RaiseError(ex, onError);
+        }
+
+        public Task RaiseError(Exception ex, Func<HttpContext, Error, Task> onError)
+        {
+            GuardForNullMiddleware();
+            return LogMiddleware.LogException(ex, ctx, onError);
+        }
+
+        [Obsolete("Prefer RaiseError, will be removed in next major version")]
+        public Task RiseError(Exception ex)
+        {
+            return ctx.RaiseError(ex);
+        }
+
+        public Task RaiseError(Exception ex)
+        {
+            GuardForNullMiddleware();
+            return LogMiddleware.LogException(ex, ctx, (_, _) => Task.CompletedTask);
+        }
+
+        public Task RaiseError(Exception ex, int statusCode)
+        {
+            GuardForNullMiddleware();
+            return LogMiddleware.LogException(ex, ctx, (_, _) => Task.CompletedTask, statusCode: statusCode);
+        }
+
+        public Task RaiseError(Exception ex, int statusCode,
+            Func<HttpContext, Error, Task> onError)
+        {
+            GuardForNullMiddleware();
+            return LogMiddleware.LogException(ex, ctx, onError, statusCode: statusCode);
+        }
     }
 
     // ReSharper disable once MemberCanBePrivate.Global
-    public static Task RaiseError(this HttpContext ctx, Exception ex, Func<HttpContext, Error, Task> onError)
-    {
-        GuardForNullMiddleware();
-        return LogMiddleware.LogException(ex, ctx, onError);
-    }
-
-    [Obsolete("Prefer RaiseError, will be removed in next major version")]
-    public static Task RiseError(this HttpContext ctx, Exception ex)
-    {
-        return RaiseError(ctx, ex);
-    }
-
-    // ReSharper disable once MemberCanBePrivate.Global
-    public static Task RaiseError(this HttpContext ctx, Exception ex)
-    {
-        GuardForNullMiddleware();
-        return LogMiddleware.LogException(ex, ctx, (context, error) => Task.CompletedTask);
-    }
-
-    // ReSharper disable once MemberCanBePrivate.Global
-    public static Task RaiseError(this HttpContext ctx, Exception ex, int statusCode)
-    {
-        GuardForNullMiddleware();
-        return LogMiddleware.LogException(ex, ctx, (context, error) => Task.CompletedTask, statusCode: statusCode);
-    }
-
-    // ReSharper disable once MemberCanBePrivate.Global
-    public static Task RaiseError(this HttpContext ctx, Exception ex, int statusCode,
-        Func<HttpContext, Error, Task> onError)
-    {
-        GuardForNullMiddleware();
-        return LogMiddleware.LogException(ex, ctx, onError, statusCode: statusCode);
-    }
 
     [Obsolete("Prefer RaiseError")]
     public static void RiseError(Exception ex)
@@ -76,13 +77,13 @@ public static class ElmahExtensions
     // ReSharper disable once MemberCanBePrivate.Global
     public static void RaiseError(Exception ex)
     {
-        RaiseError(ex, (context, error) => Task.CompletedTask);
+        RaiseError(ex, (_, _) => Task.CompletedTask);
     }
 
     // ReSharper disable once MemberCanBePrivate.Global
     public static void RaiseError(Exception ex, int statusCode)
     {
-        RaiseError(ex, statusCode, (context, error) => Task.CompletedTask);
+        RaiseError(ex, statusCode, (_, _) => Task.CompletedTask);
     }
 
     // ReSharper disable once MemberCanBePrivate.Global
@@ -120,7 +121,7 @@ public static class ElmahExtensions
         }
         catch
         {
-            //ignored
+            // ignored
         }
     }
 }

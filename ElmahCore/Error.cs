@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -148,8 +149,9 @@ public sealed class Error : ICloneable
         {
             return JsonSerializer.Serialize(paramValue,  JsonSerializerHelper.DefaultJsonSerializerOptions);
         }
-        catch
+        catch (Exception ex)
         {
+            Debug.WriteLine($"ElmahCore: Failed to serialize parameter value: {ex.Message}");
             return paramValue.ToString();
         }
     }
@@ -338,8 +340,9 @@ public sealed class Error : ICloneable
             obj = getObject();
             if (obj == null) return;
         }
-        catch
+        catch (Exception ex)
         {
+            Debug.WriteLine($"ElmahCore: Failed to get object for server variables: {ex.Message}");
             return;
         }
 
@@ -351,9 +354,9 @@ public sealed class Error : ICloneable
             {
                 value = prop.GetValue(obj);
             }
-            catch
+            catch (Exception ex)
             {
-                // ignored
+                Debug.WriteLine($"ElmahCore: Failed to get property '{prop.Name}': {ex.Message}");
             }
 
             var isProcessed = false;
@@ -384,9 +387,9 @@ public sealed class Error : ICloneable
                             }
                         }
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // ignored
+                        Debug.WriteLine($"ElmahCore: Failed to process enumerable item: {ex.Message}");
                     }
             }
 
@@ -398,9 +401,9 @@ public sealed class Error : ICloneable
                     !value.GetType().IsSubclassOf(typeof(Stream)))
                     serverVariables.Add(prefix + prop.Name, value?.ToString());
             }
-            catch
+            catch (Exception ex)
             {
-                // ignored
+                Debug.WriteLine($"ElmahCore: Failed to add server variable '{prefix}{prop.Name}': {ex.Message}");
             }
         }
     }

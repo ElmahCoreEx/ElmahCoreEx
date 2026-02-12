@@ -17,7 +17,6 @@ namespace ElmahCore;
 /// </summary>
 public abstract class ErrorLog
 {
-    private string _appName;
     private bool _appNameInitialized;
 
     /// <summary>
@@ -32,14 +31,14 @@ public abstract class ErrorLog
 
     public string ApplicationName
     {
-        get => _appName ?? Assembly.GetEntryAssembly()?.GetName().Name;
+        get => field ?? Assembly.GetEntryAssembly()?.GetName().Name;
 
         set
         {
             if (_appNameInitialized)
                 throw new InvalidOperationException("The application name cannot be reset once initialized.");
 
-            _appName = value;
+            field = value;
             _appNameInitialized = (value ?? string.Empty).Length > 0;
         }
     }
@@ -77,6 +76,7 @@ public abstract class ErrorLog
     ///     When overridden in a subclass, begins an asynchronous version
     ///     of <see cref="Log(Error)" />.
     /// </summary>
+    [Obsolete("Use LogAsync instead. APM pattern will be removed in next major version.")]
     public virtual IAsyncResult BeginLog(Error error, AsyncCallback asyncCallback, object asyncState)
     {
         return LogAsync(error, CancellationToken.None).Apmize(asyncCallback, asyncState);
@@ -86,13 +86,14 @@ public abstract class ErrorLog
     ///     When overridden in a subclass, ends an asynchronous version
     ///     of <see cref="Log(Error)" />.
     /// </summary>
+    [Obsolete("Use LogAsync instead. APM pattern will be removed in next major version.")]
     public virtual string EndLog(IAsyncResult asyncResult)
     {
         return EndApmizedTask<string>(asyncResult);
     }
 
     /// <summary>
-    ///     Retrieves a single application error from log given its
+    ///     Retrieves a single application error from a log given its
     ///     identifier, or null if it does not exist.
     /// </summary>
     public abstract ErrorLogEntry GetError(string id);
@@ -124,6 +125,7 @@ public abstract class ErrorLog
     ///     When overridden in a subclass, begins an asynchronous version
     ///     of <see cref="GetError" />.
     /// </summary>
+    [Obsolete("Use GetErrorAsync instead. APM pattern will be removed in next major version.")]
     public virtual IAsyncResult BeginGetError(string id, AsyncCallback asyncCallback, object asyncState)
     {
         return GetErrorAsync(id, CancellationToken.None).Apmize(asyncCallback, asyncState);
@@ -133,6 +135,7 @@ public abstract class ErrorLog
     ///     When overridden in a subclass, ends an asynchronous version
     ///     of <see cref="GetError" />.
     /// </summary>
+    [Obsolete("Use GetErrorAsync instead. APM pattern will be removed in next major version.")]
     public virtual ErrorLogEntry EndGetError(IAsyncResult asyncResult)
     {
         return EndApmizedTask<ErrorLogEntry>(asyncResult);
@@ -169,6 +172,7 @@ public abstract class ErrorLog
     ///     When overridden in a subclass, begins an asynchronous version
     ///     of <see cref="GetErrors" />.
     /// </summary>
+    [Obsolete("Use GetErrorsAsync instead. APM pattern will be removed in next major version.")]
     public virtual IAsyncResult BeginGetErrors(int pageIndex, int pageSize,
         ICollection<ErrorLogEntry> errorEntryList, AsyncCallback asyncCallback, object asyncState)
     {
@@ -180,6 +184,7 @@ public abstract class ErrorLog
     ///     When overridden in a subclass, ends an asynchronous version
     ///     of <see cref="GetErrors" />.
     /// </summary>
+    [Obsolete("Use GetErrorsAsync instead. APM pattern will be removed in next major version.")]
     public virtual int EndGetErrors(IAsyncResult asyncResult)
     {
         return EndApmizedTask<int>(asyncResult);
@@ -189,7 +194,7 @@ public abstract class ErrorLog
     private static T EndApmizedTask<T>(IAsyncResult asyncResult)
     {
         if (asyncResult == null) throw new ArgumentNullException(nameof(asyncResult));
-        if (!(asyncResult is Task<T> task)) throw new ArgumentException(null, nameof(asyncResult));
+        if (asyncResult is not Task<T> task) throw new ArgumentException(null, nameof(asyncResult));
         try
         {
             return task.Result;

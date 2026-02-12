@@ -30,7 +30,7 @@ public class PgsqlErrorLog : ErrorLog
     ///     Initializes a new instance of the <see cref="PgsqlErrorLog" /> class
     ///     to use a specific connection string for connecting to the database.
     /// </summary>
-    public PgsqlErrorLog(string connectionString, bool createTablesIfNotExist, bool logAllXml = true)
+    public PgsqlErrorLog(string connectionString, bool createTablesIfNotExist = true, bool logAllXml = true)
     {
         if (string.IsNullOrEmpty(connectionString))
             throw new ArgumentNullException(nameof(connectionString));
