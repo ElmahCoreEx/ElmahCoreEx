@@ -44,6 +44,7 @@ internal sealed class ErrorLogMiddleware
     private readonly List<IErrorFilter> _filters = [];
     private readonly ILogger _logger;
     private readonly bool _logRequestBody = true;
+    private readonly int _maxRequestBodySize = 1024 * 1024; // 1MB default
     private readonly RequestDelegate _next;
     private readonly IEnumerable<IErrorNotifier> _notifiers;
     private readonly Func<HttpContext, Error, Task> _onError = (_, _) => Task.CompletedTask;
@@ -75,6 +76,7 @@ internal sealed class ErrorLogMiddleware
         foreach (var errorFilter in options.Filters) Filtering += errorFilter.OnErrorModuleFiltering;
 
         _logRequestBody = elmahOptions.Value.LogRequestBody;
+        _maxRequestBodySize = elmahOptions.Value.MaxRequestBodySize;
 
         if (!string.IsNullOrEmpty(options.FiltersConfig))
             try
@@ -169,7 +171,7 @@ internal sealed class ErrorLogMiddleware
             var tEnc = string.Join(",", context.Request.Headers["Transfer-Encoding"].ToArray());
             if (_logRequestBody && !string.IsNullOrEmpty(ct) && SupportedContentTypes.Any(i => ct.Contains(i))
                 && !tEnc.Contains("chunked"))
-                body = await GetBody(context.Request);
+                body = await GetBody(context.Request, _maxRequestBodySize);
 
             await _next(context);
 
@@ -195,8 +197,17 @@ internal sealed class ErrorLogMiddleware
         }
     }
 
-    private static async Task<string> GetBody(HttpRequest request)
+    private static async Task<string> GetBody(HttpRequest request, int maxBodySize)
     {
+        // Check if body size exceeds limit (0 means unlimited)
+        if (maxBodySize > 0)
+        {
+            if (!request.ContentLength.HasValue)
+                return "[Body not captured: unknown content length]";
+            if (request.ContentLength.Value > maxBodySize)
+                return $"[Body not captured: size {request.ContentLength.Value} exceeds limit of {maxBodySize} bytes]";
+        }
+
         request.EnableBuffering();
         var body = request.Body;
         var buffer = new byte[Convert.ToInt32(request.ContentLength)];

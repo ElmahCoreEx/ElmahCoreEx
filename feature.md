@@ -104,10 +104,11 @@
 
 ### Medium Priority - Performance & Architecture
 
-- [ ] **PERF-001: Add Request Body Size Limits**
+- [x] **PERF-001: Add Request Body Size Limits**
   - **File:** `ElmahCore.Mvc/ErrorLogMiddleware.cs:198-210`
   - **Issue:** No limit on body size, potential memory exhaustion
   - **Action:** Add configurable `MaxRequestBodySize` with default 1MB
+  - **Status:** ✓ Completed - Added MaxRequestBodySize option (default 1MB) to ElmahOptions and body size checking in GetBody
   - **Example Fix:**
     ```csharp
     private const int MaxBodySize = 1024 * 1024; // 1MB
@@ -131,10 +132,11 @@
     }
     ```
 
-- [ ] **PERF-002: Fix Thread Safety in Error Class**
+- [x] **PERF-002: Fix Thread Safety in Error Class**
   - **File:** `ElmahCore/Error.cs:462-465`
   - **Issue:** `FaultIn` method not thread-safe for lazy initialization
   - **Action:** Use `Interlocked.CompareExchange` or `Lazy<T>`
+  - **Status:** ✓ Completed - FaultIn now uses Interlocked.CompareExchange for thread-safe lazy initialization
   - **Example Fix:**
     ```csharp
     private static NameValueCollection GetOrCreate(ref NameValueCollection location)

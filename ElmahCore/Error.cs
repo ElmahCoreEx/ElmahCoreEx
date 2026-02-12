@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security;
 using System.Text.Json;
+using System.Threading;
 using System.Xml;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
@@ -461,6 +462,10 @@ public sealed class Error : ICloneable
 
     private static NameValueCollection FaultIn(ref NameValueCollection collection)
     {
-        return collection ??= new NameValueCollection();
+        if (collection != null)
+            return collection;
+
+        var newCollection = new NameValueCollection();
+        return Interlocked.CompareExchange(ref collection, newCollection, null) ?? newCollection;
     }
 }

@@ -90,6 +90,13 @@ public class ElmahOptions
     public bool LogRequestBody { get; set; } = true;
 
     /// <summary>
+    ///     Maximum request body size in bytes to capture for logging.
+    ///     Bodies larger than this will not be captured.
+    ///     Default is 1MB (1,048,576 bytes). Set to 0 for unlimited (not recommended).
+    /// </summary>
+    public int MaxRequestBodySize { get; set; } = 1024 * 1024;
+
+    /// <summary>
     /// Enable or disable the diagnostic observer
     /// Default is true
     /// </summary>
