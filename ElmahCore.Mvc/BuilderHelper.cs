@@ -70,7 +70,7 @@ public static class BuilderHelper
     {
         if (services == null) throw new ArgumentNullException(nameof(services));
 
-        if (setupAction == null) throw new ArgumentNullException(nameof(setupAction));
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         var builder = services.AddElmah<T>();
         builder.Configure(setupAction);

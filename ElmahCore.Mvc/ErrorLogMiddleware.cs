@@ -71,11 +71,11 @@ internal sealed class ErrorLogMiddleware
         _checkPermissionAction = options.PermissionCheck;
         _onError = options.Error;
 
-        //Notifiers
+        // Notifiers
         if (options.Notifiers != null)
             _notifiers = elmahOptions.Value.Notifiers.ToList();
 
-        //Filters
+        // Filters
         _filters = elmahOptions.Value.Filters.ToList();
         foreach (var errorFilter in options.Filters) Filtering += errorFilter.OnErrorModuleFiltering;
 
@@ -289,10 +289,8 @@ internal sealed class ErrorLogMiddleware
     {
         ArgumentNullException.ThrowIfNull(e);
 
-        //
         // Fire an event to check if listeners want to filter out
         // logging of the uncaught exception.
-        //
 
         ErrorLogEntry entry = null;
 

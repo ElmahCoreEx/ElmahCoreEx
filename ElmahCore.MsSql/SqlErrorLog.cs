@@ -1,16 +1,16 @@
 using System;
 using System.Data;
 using System.Data.Common;
+using System.Text;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 
 namespace ElmahCore.Sql;
 
 /// <summary>
-///     An <see cref="ErrorLog" /> implementation that uses MSSQL
-///     as its backing store.
+/// An <see cref="ErrorLog" /> implementation that uses MSSQL
+/// as its backing store.
 /// </summary>
-// ReSharper disable once UnusedType.Global
 public class SqlErrorLog : RelationalErrorLog
 {
     private const int MaxAppNameLength = 60;
@@ -20,8 +20,8 @@ public class SqlErrorLog : RelationalErrorLog
     private readonly string _tableName;
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="SqlErrorLog" /> class
-    ///     using a dictionary of configured settings.
+    /// Initializes a new instance of the <see cref="SqlErrorLog" /> class
+    /// using a dictionary of configured settings.
     /// </summary>
     public SqlErrorLog(IOptions<ElmahOptions> option)
         : this(option.Value.ConnectionString, option.Value.SqlServerDatabaseSchemaName,
@@ -31,8 +31,8 @@ public class SqlErrorLog : RelationalErrorLog
     }
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="SqlErrorLog" /> class
-    ///     to use a specific connection string for connecting to the database and a specific schema and table name.
+    /// Initializes a new instance of the <see cref="SqlErrorLog" /> class
+    /// to use a specific connection string for connecting to the database and a specific schema and table name.
     /// </summary>
     public SqlErrorLog(string connectionString, string schemaName = null, string tableName = null,
         bool createTablesIfNotExist = true, bool logAllXml = true)
@@ -63,12 +63,12 @@ public class SqlErrorLog : RelationalErrorLog
     protected override bool LogAllXml => _logAllXml;
 
     /// <summary>
-    ///     Gets the schema name to be used for the error table.
+    /// Gets the schema name to be used for the error table.
     /// </summary>
     protected virtual string DatabaseSchemaName => _schemaName;
 
     /// <summary>
-    ///     Gets the table name to be used for the error table.
+    /// Gets the table name to be used for the error table.
     /// </summary>
     protected virtual string DatabaseTableName => _tableName;
 
@@ -147,7 +147,8 @@ FETCH NEXT @limit ROWS ONLY;
     {
         var command = new SqlCommand
         {
-            CommandText = $"SELECT COUNT(*) FROM [{DatabaseSchemaName}].[{DatabaseTableName}] WHERE Application = @Application"
+            CommandText =
+                $"SELECT COUNT(*) FROM [{DatabaseSchemaName}].[{DatabaseTableName}] WHERE Application = @Application"
         };
         command.Parameters.Add("@Application", SqlDbType.NVarChar, MaxAppNameLength).Value = appName;
         return command;
@@ -217,20 +218,24 @@ ON [PRIMARY]";
 
     private static void ExecuteBatchNonQuery(string sql, SqlConnection conn)
     {
-        var sqlBatch = string.Empty;
+        var sqlBatch = new StringBuilder();
         using var cmd = new SqlCommand(string.Empty, conn);
-        sql += "\nGO"; // make sure the last batch is executed.
+        sql += "\nGO";
+
         foreach (var line in sql.Split(["\n", "\r"], StringSplitOptions.RemoveEmptyEntries))
         {
-            if (line.ToUpperInvariant().Trim() == "GO")
+            if (string.Equals(line.Trim(), "GO", StringComparison.OrdinalIgnoreCase))
             {
-                cmd.CommandText = sqlBatch;
-                cmd.ExecuteNonQuery();
-                sqlBatch = string.Empty;
+                if (sqlBatch.Length > 0)
+                {
+                    cmd.CommandText = sqlBatch.ToString();
+                    cmd.ExecuteNonQuery();
+                    sqlBatch.Clear();
+                }
             }
             else
             {
-                sqlBatch += line + "\n";
+                sqlBatch.AppendLine(line);
             }
         }
     }

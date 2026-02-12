@@ -4,13 +4,13 @@ using System.Threading.Tasks;
 namespace ElmahCore;
 
 /// <summary>
-///     Interface for logging errors to ELMAH.
-///     Use this interface for dependency injection instead of static methods.
+/// Interface for logging errors to ELMAH.
+/// Use this interface for dependency injection instead of static methods.
 /// </summary>
 public interface IErrorLogger
 {
     /// <summary>
-    ///     Logs an exception asynchronously.
+    /// Logs an exception asynchronously.
     /// </summary>
     /// <param name="exception">The exception to log.</param>
     /// <returns>The error ID, or null if the error was filtered.</returns>

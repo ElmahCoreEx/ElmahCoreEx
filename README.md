@@ -35,6 +35,41 @@ If you are in the same boat and just want small changes, feel free to submit a P
 
 The source code for the front end appears non-existent, in ElmahCore the front end Vue SPA files are all [minified](https://github.com/ElmahCore/ElmahCore/issues/77). Consider this a warning sign for the continuation of the front end without a rewrite WITH SOURCE. Source-maps may have enough content to obtain the code but this has not be investigated.
 
+
+## Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        ASP.NET Core Application                      │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                      ErrorLogMiddleware                              │
+│  - Intercepts exceptions and HTTP 4xx/5xx errors                     │
+│  - Captures request body, logs, SQL queries, parameters              │
+│  - Routes ~/elmah/* requests to handlers                             │
+└─────────────────────────────────────────────────────────────────────┘
+           │                    │                        │
+           ▼                    ▼                        ▼
+┌──────────────────┐  ┌──────────────────┐  ┌──────────────────────────┐
+│  IErrorFilter    │  │  IErrorNotifier  │  │      ErrorLog (Base)     │
+│  - Filter errors │  │  - Email/webhook │  │  - MemoryErrorLog        │
+│  - XML config    │  │  - Notifications │  │  - SqlErrorLog (MSSQL)   │
+└──────────────────┘  └──────────────────┘  │  - MySqlErrorLog         │
+                                            │  - PgsqlErrorLog         │
+                                            │  - XmlFileErrorLog       │
+                                            └──────────────────────────┘
+                                                        │
+                                                        ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                           Web UI (Vue.js SPA)                        │
+│  - ErrorApiHandler serves /api/errors, /api/error                    │
+│  - ErrorResourceHandler serves embedded static assets                │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+
 # Using ElmahCore
 
 ELMAH for Net Core 10 

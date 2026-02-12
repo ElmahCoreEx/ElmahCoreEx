@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -9,7 +9,6 @@ namespace ElmahCore.Mvc.Handlers;
 
 internal static class ErrorApiHandler
 {
-     
     public static async Task ProcessRequest(HttpContext context, ErrorLog errorLog, string path)
     {
         switch (path)
@@ -42,7 +41,6 @@ internal static class ErrorApiHandler
         await response.WriteAsync(json);
         await response.Body.FlushAsync();
     }
-
 
     private static async Task<ErrorLogEntryWrapper> GetErrorAsync(ErrorLog errorLog, string id)
     {

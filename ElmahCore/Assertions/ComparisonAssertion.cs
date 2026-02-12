@@ -7,9 +7,9 @@ using System.Globalization;
 namespace ElmahCore.Assertions;
 
 /// <summary>
-///     An assertion implementation whose test is based on whether
-///     the result of an input expression evaluated against a context
-///     matches a regular expression pattern or not.
+/// An assertion implementation whose test is based on whether
+/// the result of an input expression evaluated against a context
+/// matches a regular expression pattern or not.
 /// </summary>
 internal class ComparisonAssertion : DataBoundAssertion
 {
@@ -42,7 +42,7 @@ internal class ComparisonAssertion : DataBoundAssertion
 
     public override bool Test(object context)
     {
-        if (context == null) throw new ArgumentNullException(nameof(context));
+        ArgumentNullException.ThrowIfNull(context);
         return ExpectedValue != null && base.Test(context);
     }
 
@@ -62,7 +62,7 @@ internal class ComparisonAssertion : DataBoundAssertion
 
     protected bool TestComparison(IComparable left, IComparable right)
     {
-        if (left == null) throw new ArgumentNullException(nameof(left));
+        ArgumentNullException.ThrowIfNull(left);
         return _predicate(left.CompareTo(right));
     }
 }

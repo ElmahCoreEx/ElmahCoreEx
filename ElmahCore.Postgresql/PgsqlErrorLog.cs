@@ -8,8 +8,8 @@ using NpgsqlTypes;
 namespace ElmahCore.Postgresql;
 
 /// <summary>
-///     An <see cref="ErrorLog" /> implementation that uses PostgreSQL
-///     as its backing store.
+/// An <see cref="ErrorLog" /> implementation that uses PostgreSQL
+/// as its backing store.
 /// </summary>
 [UsedImplicitly]
 public class PgsqlErrorLog : RelationalErrorLog
@@ -19,8 +19,8 @@ public class PgsqlErrorLog : RelationalErrorLog
     private readonly string _connectionString;
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="PgsqlErrorLog" /> class
-    ///     using a dictionary of configured settings.
+    /// Initializes a new instance of the <see cref="PgsqlErrorLog" /> class
+    /// using a dictionary of configured settings.
     /// </summary>
     public PgsqlErrorLog(IOptions<ElmahOptions> option) : this(option.Value.ConnectionString,
         option.Value.CreateTablesIfNotExist, option.Value.LogAllXml)
@@ -28,8 +28,8 @@ public class PgsqlErrorLog : RelationalErrorLog
     }
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="PgsqlErrorLog" /> class
-    ///     to use a specific connection string for connecting to the database.
+    /// Initializes a new instance of the <see cref="PgsqlErrorLog" /> class
+    /// to use a specific connection string for connecting to the database.
     /// </summary>
     public PgsqlErrorLog(string connectionString, bool createTablesIfNotExist = true, bool logAllXml = true)
     {

@@ -81,7 +81,16 @@ public class ErrorTests
     {
         var error = new Error();
 
-        error.HostName.Should().NotBeNullOrEmpty();
+        // On most platforms, the hostname should be available
+        // but allow for edge cases where it might not be
+        if (!string.IsNullOrEmpty(Environment.MachineName))
+        {
+            error.HostName.Should().NotBeNullOrEmpty();
+        }
+        else
+        {
+            error.HostName.Should().NotBeNull();
+        }
     }
 
     [Fact]

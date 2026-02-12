@@ -8,8 +8,8 @@ using Microsoft.AspNetCore.Http;
 namespace ElmahCore.Mvc.Handlers;
 
 /// <summary>
-///     Renders a XML using the RSS 0.91 vocabulary that displays, at most,
-///     the 15 most recent errors recorded in the error log.
+/// Renders a XML using the RSS 0.91 vocabulary that displays, at most,
+/// the 15 most recent errors recorded in the error log.
 /// </summary>
 internal static class ErrorRssHandler
 {

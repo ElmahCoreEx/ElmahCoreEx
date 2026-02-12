@@ -5,8 +5,8 @@ using Microsoft.AspNetCore.Http;
 namespace ElmahCore.Mvc;
 
 /// <summary>
-///     Default implementation of <see cref="IErrorLogger"/> that provides
-///     dependency injection-based access to ELMAH error logging.
+/// Default implementation of <see cref="IErrorLogger"/> that provides
+/// dependency injection-based access to ELMAH error logging.
 /// </summary>
 internal sealed class ErrorLoggerService : IErrorLogger
 {
@@ -23,7 +23,7 @@ internal sealed class ErrorLoggerService : IErrorLogger
     }
 
     /// <summary>
-    ///     Called by the middleware to register itself for full logging support.
+    /// Called by the middleware to register itself for full logging support.
     /// </summary>
     internal static void SetMiddleware(ErrorLogMiddleware middleware)
     {

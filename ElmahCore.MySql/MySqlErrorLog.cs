@@ -7,18 +7,18 @@ using MySql.Data.MySqlClient;
 namespace ElmahCore.MySql;
 
 /// <summary>
-///     An <see cref="ErrorLog" /> implementation that uses MySQL
-///     as its backing store.
+/// An <see cref="ErrorLog" /> implementation that uses MySQL
+/// as its backing store.
 /// </summary>
 [UsedImplicitly]
 public class MySqlErrorLog : RelationalErrorLog
 {
-    private readonly bool _logAllXml;
     private readonly string _connectionString;
+    private readonly bool _logAllXml;
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="MySqlErrorLog" /> class
-    ///     using a dictionary of configured settings.
+    /// Initializes a new instance of the <see cref="MySqlErrorLog" /> class
+    /// using a dictionary of configured settings.
     /// </summary>
     public MySqlErrorLog(IOptions<ElmahOptions> option) : this(option.Value.ConnectionString,
         option.Value.CreateTablesIfNotExist, option.Value.LogAllXml)
@@ -26,8 +26,8 @@ public class MySqlErrorLog : RelationalErrorLog
     }
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="MySqlErrorLog" /> class
-    ///     to use a specific connection string for connecting to the database.
+    /// Initializes a new instance of the <see cref="MySqlErrorLog" /> class
+    /// to use a specific connection string for connecting to the database.
     /// </summary>
     public MySqlErrorLog(string connectionString, bool createTablesIfNotExist = true, bool logAllXml = true)
     {

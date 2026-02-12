@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -15,26 +15,26 @@ internal static class EnumerableHelper
     }
 
     /// <summary>
-    ///     Returns a sequence resulting from applying a function to each
-    ///     element in the source sequence and its
-    ///     predecessor, with the exception of the first element which is
-    ///     only returned as the predecessor of the second element.
+    /// Returns a sequence resulting from applying a function to each
+    /// element in the source sequence and its
+    /// predecessor, with the exception of the first element which is
+    /// only returned as the predecessor of the second element.
     /// </summary>
     /// <typeparam name="TSource">The type of the elements of <paramref name="source" />.</typeparam>
     /// <typeparam name="TResult">The type of the element of the returned sequence.</typeparam>
     /// <param name="source">The source sequence.</param>
     /// <param name="resultSelector">
-    ///     A transform function to apply to
-    ///     each pair of sequence.
+    /// A transform function to apply to
+    /// each pair of sequence.
     /// </param>
     /// <returns>
-    ///     Returns the resulting sequence.
+    /// Returns the resulting sequence.
     /// </returns>
     /// <remarks>
-    ///     This operator uses deferred execution and streams its results.
+    /// This operator uses deferred execution and streams its results.
     /// </remarks>
     /// <example>
-    ///     <code>
+    /// <code>
     /// int[] numbers = { 123, 456, 789 };
     /// IEnumerable&lt;int&gt; result = numbers.Pairwise(5, (a, b) => a + b);
     /// </code>
@@ -44,8 +44,8 @@ internal static class EnumerableHelper
     public static IEnumerable<TResult> Pairwise<TSource, TResult>(this IEnumerable<TSource> source,
         Func<TSource, TSource, TResult> resultSelector)
     {
-        if (source == null) throw new ArgumentNullException(nameof(source));
-        if (resultSelector == null) throw new ArgumentNullException(nameof(resultSelector));
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(resultSelector);
         return PairwiseImpl(source, resultSelector);
     }
 

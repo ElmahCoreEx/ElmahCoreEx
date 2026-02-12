@@ -7,28 +7,28 @@ using System.Threading.Tasks;
 namespace ElmahCore;
 
 /// <summary>
-///     Abstract base class for relational database error log implementations.
-///     Provides common logic for SQL Server, MySQL, and PostgreSQL backends.
+/// Abstract base class for relational database error log implementations.
+/// Provides common logic for SQL Server, MySQL, and PostgreSQL backends.
 /// </summary>
 public abstract class RelationalErrorLog : ErrorLog
 {
     /// <summary>
-    ///     Gets the connection string used by the log to connect to the database.
+    /// Gets the connection string used by the log to connect to the database.
     /// </summary>
     protected abstract string ConnectionString { get; }
 
     /// <summary>
-    ///     Gets whether to log the full XML representation of errors.
+    /// Gets whether to log the full XML representation of errors.
     /// </summary>
     protected abstract bool LogAllXml { get; }
 
     /// <summary>
-    ///     Creates a new database connection.
+    /// Creates a new database connection.
     /// </summary>
     protected abstract DbConnection CreateConnection();
 
     /// <summary>
-    ///     Creates a command to insert an error into the database.
+    /// Creates a command to insert an error into the database.
     /// </summary>
     protected abstract DbCommand CreateLogErrorCommand(
         Guid id,
@@ -43,22 +43,22 @@ public abstract class RelationalErrorLog : ErrorLog
         string xml);
 
     /// <summary>
-    ///     Creates a command to retrieve the XML for a single error.
+    /// Creates a command to retrieve the XML for a single error.
     /// </summary>
     protected abstract DbCommand CreateGetErrorXmlCommand(string appName, Guid errorId);
 
     /// <summary>
-    ///     Creates a command to retrieve a page of errors.
+    /// Creates a command to retrieve a page of errors.
     /// </summary>
     protected abstract DbCommand CreateGetErrorsXmlCommand(string appName, int errorIndex, int pageSize);
 
     /// <summary>
-    ///     Creates a command to get the total count of errors.
+    /// Creates a command to get the total count of errors.
     /// </summary>
     protected abstract DbCommand CreateGetErrorsCountCommand(string appName);
 
     /// <summary>
-    ///     Converts the scalar result from the count command to an integer.
+    /// Converts the scalar result from the count command to an integer.
     /// </summary>
     protected virtual int ConvertCountResult(object scalarResult)
     {
@@ -66,7 +66,7 @@ public abstract class RelationalErrorLog : ErrorLog
     }
 
     /// <summary>
-    ///     Called during construction to create the error table if it doesn't exist.
+    /// Called during construction to create the error table if it doesn't exist.
     /// </summary>
     protected abstract void CreateTableIfNotExists();
 

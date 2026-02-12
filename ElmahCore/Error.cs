@@ -19,8 +19,8 @@ using Microsoft.Extensions.Primitives;
 namespace ElmahCore;
 
 /// <summary>
-///     Represents a logical application error (as opposed to the actual
-///     exception it may be representing).
+/// Represents a logical application error (as opposed to the actual
+/// exception it may be representing).
 /// </summary>
 [Serializable]
 public sealed class Error : ICloneable
@@ -39,14 +39,14 @@ public sealed class Error : ICloneable
     private string _webHostHtmlMessage;
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="Error" /> class.
+    /// Initializes a new instance of the <see cref="Error" /> class.
     /// </summary>
     public Error()
     {
     }
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="Error" /> class
+    /// Initializes a new instance of the <see cref="Error" /> class
     ///     from a given <see cref="Exception" /> instance and
     ///     <see cref="HttpContext" /> instance representing the HTTP
     ///     context during the exception.
@@ -142,7 +142,6 @@ public sealed class Error : ICloneable
         (paramParams.Where(param => param != default)
             .Select(param => new KeyValuePair<string, string>(param.name, ToJsonString(param.value)))).ToArray();
 
-    
     private string ToJsonString(object paramValue)
     {
         if (paramValue == null) return "null";
@@ -437,7 +436,7 @@ public sealed class Error : ICloneable
             return null;
         // ReSharper disable once PossibleMultipleEnumeration
         var keyValuePairs = collection as KeyValuePair<string, StringValues>[] ?? collection.ToArray();
-        if (!keyValuePairs.Any())
+        if (keyValuePairs.Length == 0)
             return null;
         var col = new NameValueCollection();
         foreach (var pair in keyValuePairs) col.Add(pair.Key, pair.Value);

@@ -12,23 +12,21 @@ using System.Threading.Tasks;
 namespace ElmahCore;
 
 /// <summary>
-///     Represents an error log capable of storing and retrieving errors
-///     generated in an ASP.NET Web application.
+/// Represents an error log capable of storing and retrieving errors
+/// generated in an ASP.NET Web application.
 /// </summary>
 public abstract class ErrorLog
 {
     private bool _appNameInitialized;
 
     /// <summary>
-    ///     Get the name of this log.
+    /// Get the name of this log.
     /// </summary>
-
     public virtual string Name => GetType().Name;
 
     /// <summary>
     ///     Gets the name of the application to which the log is scoped.
     /// </summary>
-
     public string ApplicationName
     {
         get => field ?? Assembly.GetEntryAssembly()?.GetName().Name;
@@ -71,7 +69,6 @@ public abstract class ErrorLog
         return Task.FromResult(Log(error));
     }
 
-
     /// <summary>
     ///     When overridden in a subclass, begins an asynchronous version
     ///     of <see cref="Log(Error)" />.
@@ -98,7 +95,6 @@ public abstract class ErrorLog
     /// </summary>
     public abstract ErrorLogEntry GetError(string id);
 
-
     /// <summary>
     ///     When overridden in a subclass, starts a task that asynchronously
     ///     does the same as <see cref="GetError" />.
@@ -113,13 +109,11 @@ public abstract class ErrorLog
     ///     does the same as <see cref="GetError" />. An additional parameter
     ///     specifies a <see cref="CancellationToken" /> to use.
     /// </summary>
-
     // ReSharper disable once UnusedParameter.Global
     public virtual Task<ErrorLogEntry> GetErrorAsync(string id, CancellationToken cancellationToken)
     {
         return Task.FromResult(GetError(id));
     }
-
 
     /// <summary>
     ///     When overridden in a subclass, begins an asynchronous version
@@ -167,7 +161,6 @@ public abstract class ErrorLog
         return Task.FromResult(GetErrors(errorIndex, pageSize, errorEntryList));
     }
 
-
     /// <summary>
     ///     When overridden in a subclass, begins an asynchronous version
     ///     of <see cref="GetErrors" />.
@@ -190,10 +183,9 @@ public abstract class ErrorLog
         return EndApmizedTask<int>(asyncResult);
     }
 
-
     private static T EndApmizedTask<T>(IAsyncResult asyncResult)
     {
-        if (asyncResult == null) throw new ArgumentNullException(nameof(asyncResult));
+        ArgumentNullException.ThrowIfNull(asyncResult);
         if (asyncResult is not Task<T> task) throw new ArgumentException(null, nameof(asyncResult));
         try
         {

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 namespace ElmahCore.Mvc.Handlers;
 
 /// <summary>
-///     Renders an error as an XML document.
+/// Renders an error as an XML document.
 /// </summary>
 internal static class ErrorXmlHandler
 {

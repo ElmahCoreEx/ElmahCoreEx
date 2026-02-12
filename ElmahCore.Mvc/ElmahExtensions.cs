@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Http;
 namespace ElmahCore;
 
 /// <summary>
-///     Extension methods for logging errors to ELMAH.
+/// Extension methods for logging errors to ELMAH.
 /// </summary>
 /// <remarks>
 ///     For new code, prefer injecting <see cref="IErrorLogger"/> via dependency injection

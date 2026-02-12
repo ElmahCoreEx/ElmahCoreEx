@@ -8,12 +8,12 @@ using System.Threading;
 namespace ElmahCore;
 
 /// <summary>
-///     An <see cref="ErrorLog" /> implementation that uses memory as its
-///     backing store.
+/// An <see cref="ErrorLog" /> implementation that uses memory as its
+/// backing store.
 /// </summary>
 /// <remarks>
-///     All <see cref="MemoryErrorLog" /> instances will share the same memory
-///     store that is bound to the application (not an instance of this class).
+/// All <see cref="MemoryErrorLog" /> instances will share the same memory
+/// store that is bound to the application (not an instance of this class).
 /// </remarks>
 public sealed class MemoryErrorLog : ErrorLog
 {
@@ -26,8 +26,8 @@ public sealed class MemoryErrorLog : ErrorLog
     private static readonly ReaderWriterLockSlim Lock = new ReaderWriterLockSlim();
 
     /// <summary>
-    ///     The maximum number of errors that will ever be allowed to be stored
-    ///     in memory.
+    /// The maximum number of errors that will ever be allowed to be stored
+    /// in memory.
     /// </summary>
     private static readonly int MaximumSize = 500;
 
@@ -48,7 +48,6 @@ public sealed class MemoryErrorLog : ErrorLog
     ///     Initializes a new instance of the <see cref="MemoryErrorLog" /> class
     ///     with a default size for maximum recordable entries.
     /// </summary>
-
     // ReSharper disable once UnusedMember.Global
     public MemoryErrorLog() : this(DefaultSize)
     {
@@ -58,7 +57,6 @@ public sealed class MemoryErrorLog : ErrorLog
     ///     Initializes a new instance of the <see cref="MemoryErrorLog" /> class
     ///     with a specific size for maximum recordable entries.
     /// </summary>
-
     // ReSharper disable once MemberCanBePrivate.Global
     public MemoryErrorLog(int size)
     {
@@ -71,7 +69,6 @@ public sealed class MemoryErrorLog : ErrorLog
     /// <summary>
     ///     Gets the name of this error log implementation.
     /// </summary>
-
     public override string Name => "In-Memory Error Log";
 
     /// <summary>
@@ -91,8 +88,7 @@ public sealed class MemoryErrorLog : ErrorLog
 
     public override void Log(Guid id, Error error)
     {
-        if (error == null)
-            throw new ArgumentNullException(nameof(error));
+        ArgumentNullException.ThrowIfNull(error);
 
         //
         // Make a copy of the error to log since the source is mutable.
