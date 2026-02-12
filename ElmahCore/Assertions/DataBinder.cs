@@ -14,8 +14,8 @@ using System.Text.RegularExpressions;
 namespace ElmahCore.Assertions;
 
 /// <summary>
-///     Provides data expression evaluation facilities similar to
-///     <see cref="DataBinder" /> in ASP.NET.
+/// Provides data expression evaluation facilities similar to
+/// <see cref="DataBinder" /> in ASP.NET.
 /// </summary>
 internal static class DataBinder
 {
@@ -90,8 +90,8 @@ internal static class DataBinder
 
     private static object GetProperty(object obj, string name, Func<object, string, object> missingSelector)
     {
-        if (obj == null) throw new ArgumentNullException(nameof(obj));
-        if (name == null) throw new ArgumentNullException(nameof(name));
+        ArgumentNullException.ThrowIfNull(obj);
+        ArgumentNullException.ThrowIfNull(name);
 
         var property = TypeDescriptor.GetProperties(obj).Find(name, true);
         return property != null
@@ -101,8 +101,8 @@ internal static class DataBinder
 
     private static object GetIndex(object obj, object index, Func<object, object, object> missingSelector)
     {
-        if (obj == null) throw new ArgumentNullException(nameof(obj));
-        if (index == null) throw new ArgumentNullException(nameof(index));
+        ArgumentNullException.ThrowIfNull(obj);
+        ArgumentNullException.ThrowIfNull(index);
 
         var isIntegralIndex = index is int;
 
@@ -145,8 +145,8 @@ internal static class DataBinder
         Func<string, T> propertySelector,
         Func<object, T> indexSelector)
     {
-        if (propertySelector == null) throw new ArgumentNullException(nameof(propertySelector));
-        if (indexSelector == null) throw new ArgumentNullException(nameof(indexSelector));
+        ArgumentNullException.ThrowIfNull(propertySelector);
+        ArgumentNullException.ThrowIfNull(indexSelector);
 
         expression = (expression ?? string.Empty).Trim();
         if (expression.Length == 0)

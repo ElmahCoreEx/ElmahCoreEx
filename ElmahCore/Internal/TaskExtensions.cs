@@ -6,22 +6,22 @@ using System.Threading.Tasks;
 namespace ElmahCore;
 
 /// <summary>
-///     Extension methods for <see cref="TaskCompletionSource{TResult}" />.
+/// Extension methods for <see cref="TaskCompletionSource{TResult}" />.
 /// </summary>
 internal static class TaskCompletionSourceExtensions
 {
 	/// <summary>
-	///     Attempts to conclude <see cref="TaskCompletionSource{TResult}" />
-	///     as being canceled, faulted or having completed successfully
-	///     based on the corresponding status of the given
-	///     <see cref="Task{T}" />.
+	/// Attempts to conclude <see cref="TaskCompletionSource{TResult}" />
+	/// as being canceled, faulted or having completed successfully
+	/// based on the corresponding status of the given
+	/// <see cref="Task{T}" />.
 	/// </summary>
 	public static void TryConcludeFrom<T>(this TaskCompletionSource<T> source, Task<T> task)
 	{
-		if (source == null) throw new ArgumentNullException(nameof(source));
-		if (task == null) throw new ArgumentNullException(nameof(task));
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(task);
 
-		if (task.IsCanceled)
+        if (task.IsCanceled)
 		{
 			source.TrySetCanceled();
 		}
@@ -38,15 +38,14 @@ internal static class TaskCompletionSourceExtensions
 	}
 }
 
-
 /// <summary>
-///     Extension methods for <see cref="Task" />.
+/// Extension methods for <see cref="Task" />.
 /// </summary>
 internal static class TaskExtensions
 {
 	/// <summary>
-	///     Returns a <see cref="Task{T}" /> that can be used as the
-	///     <see cref="IAsyncResult" /> return value from the method
+	/// Returns a <see cref="Task{T}" /> that can be used as the
+	/// <see cref="IAsyncResult" /> return value from the method
 	///     that begin the operation of an API following the
 	///     <a href="http://msdn.microsoft.com/en-us/library/ms228963.aspx">Asynchronous Programming Model</a>.
 	///     If an <see cref="AsyncCallback" /> is supplied, it is invoked

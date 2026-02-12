@@ -26,17 +26,10 @@ public class ErrorLogMiddlewareTests
     }
 
     [Fact]
-    public void WhenInitMiddlewareSetsStaticExtension()
-    {
-        _ = new ErrorLogMiddleware(_requestDelegate, _errorLog, _loggerFactory, _options);
-        ElmahExtensions.LogMiddleware.Should().NotBeNull();
-    }
-
-    [Fact]
     public void RiseErrorOkWhenMiddlewareInitialized()
     {
         _ = new ErrorLogMiddleware(_requestDelegate, _errorLog, _loggerFactory, _options);
-        var act = async () => await ElmahExtensions.RaiseError(new DefaultHttpContext(), new Exception());
+        var act = async () => await new DefaultHttpContext().RaiseError(new Exception());
         act.Should().NotThrowAsync();
     }
 
@@ -51,7 +44,7 @@ public class ErrorLogMiddlewareTests
         var id = await middleware.LogException(
             new InvalidOperationException("Test"),
             context,
-            (ctx, error) => Task.CompletedTask,
+            (_, _) => Task.CompletedTask,
             statusCode: 404);
 
         id.Should().NotBeNullOrEmpty();
@@ -72,7 +65,7 @@ public class ErrorLogMiddlewareTests
         var id = await middleware.LogException(
             new InvalidOperationException("Test"),
             context,
-            (ctx, error) =>
+            (_, _) =>
             {
                 callbackInvoked = true;
                 return Task.CompletedTask;
@@ -97,7 +90,7 @@ public class ErrorLogMiddlewareTests
         var id = await middleware.LogException(
             new InvalidOperationException("Test"),
             context,
-            (ctx, error) => Task.CompletedTask);
+            (_, _) => Task.CompletedTask);
 
         id.Should().NotBeNullOrEmpty();
         var entry = errorLog.GetError(id);

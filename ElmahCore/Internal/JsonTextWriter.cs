@@ -7,13 +7,13 @@ using System.Xml;
 namespace ElmahCore;
 
 /// <summary>
-///     Represents a writer that provides a fast, non-cached, forward-only
-///     way of generating streams or files containing JSON Text according
-///     to the grammar rules laid out in
-///     <a href="http://www.ietf.org/rfc/rfc4627.txt">RFC 4627</a>.
+/// Represents a writer that provides a fast, non-cached, forward-only
+/// way of generating streams or files containing JSON Text according
+/// to the grammar rules laid out in
+/// <a href="http://www.ietf.org/rfc/rfc4627.txt">RFC 4627</a>.
 /// </summary>
 /// <remarks>
-///     This class supports ELMAH and is not intended to be used directly
+/// This class supports ELMAH and is not intended to be used directly
 ///     from your code. It may be modified or removed in the future without
 ///     notice. It has public accessibility for testing purposes. If you
 ///     need a general-purpose JSON Text encoder, consult
@@ -23,8 +23,7 @@ namespace ElmahCore;
 internal sealed class JsonTextWriter
 {
     private readonly int[] _counters;
-    private readonly char[] _terminators;
-    private readonly TextWriter _writer;
+    private readonly char[] _terminators; private readonly TextWriter _writer;
     private string _memberName;
 
     public JsonTextWriter(TextWriter writer)
@@ -112,7 +111,7 @@ internal sealed class JsonTextWriter
         else
             writer.Write(text);
 
-        ItemCount = ItemCount + 1;
+        ItemCount += 1;
 
         return this;
     }

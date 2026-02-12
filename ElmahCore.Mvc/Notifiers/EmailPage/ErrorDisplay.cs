@@ -29,7 +29,7 @@ using System.Globalization;
 namespace ElmahCore.Mvc.Notifiers;
 
 /// <summary>
-///     Provides miscellaneous formatting methods for
+/// Provides miscellaneous formatting methods for
 /// </summary>
 internal static class ErrorDisplay
 {

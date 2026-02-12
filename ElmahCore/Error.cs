@@ -2,11 +2,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security;
 using System.Text.Json;
+using System.Threading;
 using System.Xml;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
@@ -17,8 +19,8 @@ using Microsoft.Extensions.Primitives;
 namespace ElmahCore;
 
 /// <summary>
-///     Represents a logical application error (as opposed to the actual
-///     exception it may be representing).
+/// Represents a logical application error (as opposed to the actual
+/// exception it may be representing).
 /// </summary>
 [Serializable]
 public sealed class Error : ICloneable
@@ -37,14 +39,14 @@ public sealed class Error : ICloneable
     private string _webHostHtmlMessage;
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="Error" /> class.
+    /// Initializes a new instance of the <see cref="Error" /> class.
     /// </summary>
     public Error()
     {
     }
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="Error" /> class
+    /// Initializes a new instance of the <see cref="Error" /> class
     ///     from a given <see cref="Exception" /> instance and
     ///     <see cref="HttpContext" /> instance representing the HTTP
     ///     context during the exception.
@@ -140,7 +142,6 @@ public sealed class Error : ICloneable
         (paramParams.Where(param => param != default)
             .Select(param => new KeyValuePair<string, string>(param.name, ToJsonString(param.value)))).ToArray();
 
-    
     private string ToJsonString(object paramValue)
     {
         if (paramValue == null) return "null";
@@ -148,8 +149,9 @@ public sealed class Error : ICloneable
         {
             return JsonSerializer.Serialize(paramValue,  JsonSerializerHelper.DefaultJsonSerializerOptions);
         }
-        catch
+        catch (Exception ex)
         {
+            Debug.WriteLine($"ElmahCore: Failed to serialize parameter value: {ex.Message}");
             return paramValue.ToString();
         }
     }
@@ -338,8 +340,9 @@ public sealed class Error : ICloneable
             obj = getObject();
             if (obj == null) return;
         }
-        catch
+        catch (Exception ex)
         {
+            Debug.WriteLine($"ElmahCore: Failed to get object for server variables: {ex.Message}");
             return;
         }
 
@@ -351,9 +354,9 @@ public sealed class Error : ICloneable
             {
                 value = prop.GetValue(obj);
             }
-            catch
+            catch (Exception ex)
             {
-                // ignored
+                Debug.WriteLine($"ElmahCore: Failed to get property '{prop.Name}': {ex.Message}");
             }
 
             var isProcessed = false;
@@ -384,9 +387,9 @@ public sealed class Error : ICloneable
                             }
                         }
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // ignored
+                        Debug.WriteLine($"ElmahCore: Failed to process enumerable item: {ex.Message}");
                     }
             }
 
@@ -398,9 +401,9 @@ public sealed class Error : ICloneable
                     !value.GetType().IsSubclassOf(typeof(Stream)))
                     serverVariables.Add(prefix + prop.Name, value?.ToString());
             }
-            catch
+            catch (Exception ex)
             {
-                // ignored
+                Debug.WriteLine($"ElmahCore: Failed to add server variable '{prefix}{prop.Name}': {ex.Message}");
             }
         }
     }
@@ -433,7 +436,7 @@ public sealed class Error : ICloneable
             return null;
         // ReSharper disable once PossibleMultipleEnumeration
         var keyValuePairs = collection as KeyValuePair<string, StringValues>[] ?? collection.ToArray();
-        if (!keyValuePairs.Any())
+        if (keyValuePairs.Length == 0)
             return null;
         var col = new NameValueCollection();
         foreach (var pair in keyValuePairs) col.Add(pair.Key, pair.Value);
@@ -458,6 +461,10 @@ public sealed class Error : ICloneable
 
     private static NameValueCollection FaultIn(ref NameValueCollection collection)
     {
-        return collection ??= new NameValueCollection();
+        if (collection != null)
+            return collection;
+
+        var newCollection = new NameValueCollection();
+        return Interlocked.CompareExchange(ref collection, newCollection, null) ?? newCollection;
     }
 }

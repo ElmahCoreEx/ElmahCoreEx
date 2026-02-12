@@ -41,8 +41,8 @@ using MailAttachment = Attachment;
 #endregion
 
 /// <summary>
-///     HTTP module that sends an e-mail whenever an unhandled exception
-///     occurs in an ASP.NET web application.
+/// HTTP module that sends an e-mail whenever an unhandled exception
+/// occurs in an ASP.NET web application.
 /// </summary>
 [UsedImplicitly]
 public class ErrorMailNotifier : IErrorNotifier
@@ -50,7 +50,7 @@ public class ErrorMailNotifier : IErrorNotifier
     private readonly bool _reportAsynchronously;
 
     /// <summary>
-    ///     Initializes the module and prepares it to handle requests.
+    /// Initializes the module and prepares it to handle requests.
     /// </summary>
     public ErrorMailNotifier(string name, EmailOptions options)
     {
@@ -73,84 +73,83 @@ public class ErrorMailNotifier : IErrorNotifier
     }
 
     /// <summary>
-    ///     Gets the e-mail address of the sender.
+    /// Gets the e-mail address of the sender.
     /// </summary>
     protected virtual string MailSender { get; }
 
     /// <summary>
-    ///     Gets the e-mail address of the recipient, or a
-    ///     comma-/semicolon-delimited list of e-mail addresses in case of
-    ///     multiple recipients.
+    /// Gets the e-mail address of the recipient, or a
+    /// comma-/semicolon-delimited list of e-mail addresses in case of
+    /// multiple recipients.
     /// </summary>
     /// <remarks>
-    ///     When using System.Web.Mail components under .NET Framework 1.x,
-    ///     multiple recipients must be semicolon-delimited.
-    ///     When using System.Net.Mail components under .NET Framework 2.0
-    ///     or later, multiple recipients must be comma-delimited.
+    /// When using System.Web.Mail components under .NET Framework 1.x,
+    /// multiple recipients must be semicolon-delimited.
+    /// When using System.Net.Mail components under .NET Framework 2.0
+    /// or later, multiple recipients must be comma-delimited.
     /// </remarks>
     protected virtual string MailRecipient { get; }
 
     /// <summary>
-    ///     Gets the e-mail address of the recipient for mail carbon
-    ///     copy (CC), or a comma-/semicolon-delimited list of e-mail
-    ///     addresses in case of multiple recipients.
+    /// Gets the e-mail address of the recipient for mail carbon
+    /// copy (CC), or a comma-/semicolon-delimited list of e-mail
+    /// addresses in case of multiple recipients.
     /// </summary>
     /// <remarks>
-    ///     When using System.Web.Mail components under .NET Framework 1.x,
-    ///     multiple recipients must be semicolon-delimited.
-    ///     When using System.Net.Mail components under .NET Framework 2.0
-    ///     or later, multiple recipients must be comma-delimited.
+    /// When using System.Web.Mail components under .NET Framework 1.x,
+    /// multiple recipients must be semicolon-delimited.
+    /// When using System.Net.Mail components under .NET Framework 2.0
+    /// or later, multiple recipients must be comma-delimited.
     /// </remarks>
     protected virtual string MailCopyRecipient { get; }
 
     /// <summary>
-    ///     Gets the text used to format the e-mail subject.
+    /// Gets the text used to format the e-mail subject.
     /// </summary>
     /// <remarks>
-    ///     The subject text specification may include {0} where the
-    ///     error message (<see cref="Error.Message" />) should be inserted
-    ///     and {1} <see cref="Error.Type" /> where the error type should
-    ///     be insert.
+    /// The subject text specification may include {0} where the
+    /// error message (<see cref="Error.Message" />) should be inserted
+    /// and {1} <see cref="Error.Type" /> where the error type should
+    /// be insert.
     /// </remarks>
     protected virtual string MailSubjectFormat { get; }
 
     /// <summary>
-    ///     Gets the priority of the e-mail.
+    /// Gets the priority of the e-mail.
     /// </summary>
-
     protected virtual MailPriority MailPriority { get; }
 
     /// <summary>
-    ///     Gets the SMTP server host name used when sending the mail.
+    /// Gets the SMTP server host name used when sending the mail.
     /// </summary>
     protected string SmtpServer { get; }
 
     /// <summary>
-    ///     Gets the SMTP port used when sending the mail.
+    /// Gets the SMTP port used when sending the mail.
     /// </summary>
     protected int SmtpPort { get; }
 
     /// <summary>
-    ///     Gets the user name to use if the SMTP server requires authentication.
+    /// Gets the user name to use if the SMTP server requires authentication.
     /// </summary>
     protected string AuthUserName { get; }
 
     /// <summary>
-    ///     Gets the clear-text password to use if the SMTP server requires
-    ///     authentication.
+    /// Gets the clear-text password to use if the SMTP server requires
+    /// authentication.
     /// </summary>
     protected string AuthPassword { get; }
 
     /// <summary>
-    ///     Indicates whether <a href="http://en.wikipedia.org/wiki/Screens_of_death#ASP.NET">YSOD</a>
-    ///     is attached to the e-mail or not. If <c>true</c>, the YSOD is
-    ///     not attached.
+    /// Indicates whether <a href="http://en.wikipedia.org/wiki/Screens_of_death#ASP.NET">YSOD</a>
+    /// is attached to the e-mail or not. If <c>true</c>, the YSOD is
+    /// not attached.
     /// </summary>
     protected bool NoYsod { get; }
 
     /// <summary>
-    ///     Determines if SSL will be used to encrypt communication with the
-    ///     mail server.
+    /// Determines if SSL will be used to encrypt communication with the
+    /// mail server.
     /// </summary>
     protected bool UseSsl { get; }
 
@@ -165,11 +164,11 @@ public class ErrorMailNotifier : IErrorNotifier
     public string Name { get; }
 
     /// <summary>
-    ///     Schedules the error to be e-mailed asynchronously.
+    /// Schedules the error to be e-mailed asynchronously.
     /// </summary>
     /// <remarks>
-    ///     The default implementation uses the <see cref="ThreadPool" />
-    ///     to queue the reporting.
+    /// The default implementation uses the <see cref="ThreadPool" />
+    /// to queue the reporting.
     /// </remarks>
     protected virtual void ReportErrorAsync(Error error)
     {
@@ -210,7 +209,7 @@ public class ErrorMailNotifier : IErrorNotifier
     }
 
     /// <summary>
-    ///     Schedules the error to be e-mailed synchronously.
+    /// Schedules the error to be e-mailed synchronously.
     /// </summary>
     protected virtual void ReportError(Error error)
     {
@@ -300,8 +299,8 @@ public class ErrorMailNotifier : IErrorNotifier
     }
 
     /// <summary>
-    ///     Creates the <see cref="ErrorTextFormatter" /> implementation to
-    ///     be used to format the body of the e-mail.
+    /// Creates the <see cref="ErrorTextFormatter" /> implementation to
+    /// be used to format the body of the e-mail.
     /// </summary>
     internal virtual ErrorTextFormatter CreateErrorFormatter()
     {
@@ -309,12 +308,11 @@ public class ErrorMailNotifier : IErrorNotifier
     }
 
     /// <summary>
-    ///     Sends the e-mail using SmtpMail or SmtpClient.
+    /// Sends the e-mail using SmtpMail or SmtpClient.
     /// </summary>
     protected virtual void SendMail(MailMessage mail)
     {
-        if (mail == null)
-            throw new ArgumentNullException(nameof(mail));
+        ArgumentNullException.ThrowIfNull(mail);
 
         // Under .NET Framework 2.0, the authentication settings
         // go on the SmtpClient object rather than mail message

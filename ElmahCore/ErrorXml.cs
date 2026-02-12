@@ -10,14 +10,14 @@ using Microsoft.Extensions.Logging;
 namespace ElmahCore;
 
 /// <summary>
-///     Responsible for encoding and decoding the XML representation of
-///     an <see cref="Error" /> object.
+/// Responsible for encoding and decoding the XML representation of
+/// an <see cref="Error" /> object.
 /// </summary>
 public static class ErrorXml
 {
     /// <summary>
-    ///     Decodes an <see cref="Error" /> object from its default XML
-    ///     representation.
+    /// Decodes an <see cref="Error" /> object from its default XML
+    /// representation.
     /// </summary>
     public static Error DecodeString(string xml)
     {
@@ -32,11 +32,11 @@ public static class ErrorXml
     private static XmlReaderSettings XmlReaderSettings => new XmlReaderSettings { CheckCharacters = false };
 
     /// <summary>
-    ///     Decodes an <see cref="Error" /> object from its XML representation.
+    /// Decodes an <see cref="Error" /> object from its XML representation.
     /// </summary>
     public static Error Decode(XmlReader reader)
     {
-        if (reader == null) throw new ArgumentNullException(nameof(reader));
+        ArgumentNullException.ThrowIfNull(reader);
         if (!reader.IsStartElement())
             throw new ArgumentException("Reader is not positioned at the start of an element.", nameof(reader));
 
@@ -61,11 +61,11 @@ public static class ErrorXml
     }
 
     /// <summary>
-    ///     Reads the error data in XML attributes.
+    /// Reads the error data in XML attributes.
     /// </summary>
     private static void ReadXmlAttributes(XmlReader reader, Error error)
     {
-        if (reader == null) throw new ArgumentNullException(nameof(reader));
+        ArgumentNullException.ThrowIfNull(reader);
         if (!reader.IsStartElement())
             throw new ArgumentException("Reader is not positioned at the start of an element.", nameof(reader));
 
@@ -86,11 +86,11 @@ public static class ErrorXml
     }
 
     /// <summary>
-    ///     Reads the error data in child nodes.
+    /// Reads the error data in child nodes.
     /// </summary>
     private static void ReadInnerXml(XmlReader reader, Error error)
     {
-        if (reader == null) throw new ArgumentNullException(nameof(reader));
+        ArgumentNullException.ThrowIfNull(reader);
 
         // Loop through the elements, reading those that we
         // recognize. If an unknown element is found then
@@ -179,7 +179,7 @@ public static class ErrorXml
     /// </summary>
     public static void Encode(Error error, XmlWriter writer)
     {
-        if (writer == null) throw new ArgumentNullException(nameof(writer));
+        ArgumentNullException.ThrowIfNull(writer);
         if (writer.WriteState != WriteState.Element)
             throw new ArgumentException("Writer is not in the expected Element state.", nameof(writer));
 
@@ -195,7 +195,7 @@ public static class ErrorXml
     private static void WriteXmlAttributes(Error error, XmlWriter writer)
     {
         Debug.Assert(error != null);
-        if (writer == null) throw new ArgumentNullException(nameof(writer));
+        ArgumentNullException.ThrowIfNull(writer);
 
         WriteXmlAttribute(writer, "application", error.ApplicationName);
         WriteXmlAttribute(writer, "host", error.HostName);
@@ -218,7 +218,7 @@ public static class ErrorXml
     private static void WriteInnerXml(Error error, XmlWriter writer)
     {
         Debug.Assert(error != null);
-        if (writer == null) throw new ArgumentNullException(nameof(writer));
+        ArgumentNullException.ThrowIfNull(writer);
 
         WriteCollection(writer, "serverVariables", error.ServerVariables);
         WriteCollection(writer, "queryString", error.QueryString);
@@ -326,8 +326,8 @@ public static class ErrorXml
     /// </summary>
     private static void Encode(NameValueCollection collection, XmlWriter writer)
     {
-        if (collection == null) throw new ArgumentNullException(nameof(collection));
-        if (writer == null) throw new ArgumentNullException(nameof(writer));
+        ArgumentNullException.ThrowIfNull(collection);
+        ArgumentNullException.ThrowIfNull(writer);
 
         if (collection.Count == 0)
             return;
@@ -368,8 +368,8 @@ public static class ErrorXml
     /// </summary>
     private static void UpcodeTo(XmlReader reader, NameValueCollection collection)
     {
-        if (reader == null) throw new ArgumentNullException(nameof(reader));
-        if (collection == null) throw new ArgumentNullException(nameof(collection));
+        ArgumentNullException.ThrowIfNull(reader);
+        ArgumentNullException.ThrowIfNull(collection);
 
         Debug.Assert(!reader.IsEmptyElement);
         reader.Read();
@@ -433,8 +433,8 @@ public static class ErrorXml
 
     private static void UpcodeToLog(XmlReader reader, List<ElmahLogMessageEntry> log)
     {
-        if (reader == null) throw new ArgumentNullException(nameof(reader));
-        if (log == null) throw new ArgumentNullException(nameof(log));
+        ArgumentNullException.ThrowIfNull(reader);
+        ArgumentNullException.ThrowIfNull(log);
         reader.Read();
 
         while (reader.NodeType != XmlNodeType.EndElement)
@@ -465,8 +465,8 @@ public static class ErrorXml
 
     private static void UpcodeToParams(XmlReader reader, List<ElmahLogParamEntry> log)
     {
-        if (reader == null) throw new ArgumentNullException(nameof(reader));
-        if (log == null) throw new ArgumentNullException(nameof(log));
+        ArgumentNullException.ThrowIfNull(reader);
+        ArgumentNullException.ThrowIfNull(log);
 
         Debug.Assert(!reader.IsEmptyElement);
         reader.Read();
@@ -498,7 +498,7 @@ public static class ErrorXml
                     reader.Read(); // <item>
                 }
 
-                if (list.Any())
+                if (list.Count != 0)
                     log.Add(new ElmahLogParamEntry(
                         timeStamp,
                         list.ToArray(),
@@ -526,8 +526,8 @@ public static class ErrorXml
         
     private static void UpcodeToSqlLog(XmlReader reader, List<ElmahLogSqlEntry> log)
     {
-        if (reader == null) throw new ArgumentNullException(nameof(reader));
-        if (log == null) throw new ArgumentNullException(nameof(log));
+        ArgumentNullException.ThrowIfNull(reader);
+        ArgumentNullException.ThrowIfNull(log);
 
         Debug.Assert(!reader.IsEmptyElement);
         reader.Read();

@@ -38,27 +38,32 @@ internal sealed class ErrorLogMiddleware
         "text/markdown"
     };
 
-    private readonly Func<HttpContext, bool> _checkPermissionAction = context => true;
+    private readonly Func<HttpContext, bool> _checkPermissionAction = _ => true;
     private readonly string _elmahRoot = @"~/elmah";
     private readonly ErrorLog _errorLog;
-    private readonly List<IErrorFilter> _filters = new List<IErrorFilter>();
+    private readonly List<IErrorFilter> _filters = [];
     private readonly ILogger _logger;
     private readonly bool _logRequestBody = true;
+    private readonly int _maxRequestBodySize = 1024 * 1024; // 1MB default
     private readonly RequestDelegate _next;
     private readonly IEnumerable<IErrorNotifier> _notifiers;
-    private readonly Func<HttpContext, Error, Task> _onError = (context, error) => Task.CompletedTask;
+    private readonly Func<HttpContext, Error, Task> _onError = (_, _) => Task.CompletedTask;
 
     public ErrorLogMiddleware(RequestDelegate next, ErrorLog errorLog, ILoggerFactory loggerFactory,
         IOptions<ElmahOptions> elmahOptions)
     {
+        // Register with both static field (for backward compatibility) and service
+#pragma warning disable CS0618 // Intentional: maintaining backward compatibility
         ElmahExtensions.LogMiddleware = this;
+#pragma warning restore CS0618
+        ErrorLoggerService.SetMiddleware(this);
         _next = next;
         _errorLog = errorLog ?? throw new ArgumentNullException(nameof(errorLog));
         var lf = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
 
         _logger = lf.CreateLogger<ErrorLogMiddleware>();
 
-        //return here if the elmah options is not provided
+        // return here if the elmah options are not provided
         if (elmahOptions?.Value == null)
             return;
         var options = elmahOptions.Value;
@@ -66,24 +71,25 @@ internal sealed class ErrorLogMiddleware
         _checkPermissionAction = options.PermissionCheck;
         _onError = options.Error;
 
-        //Notifiers
+        // Notifiers
         if (options.Notifiers != null)
             _notifiers = elmahOptions.Value.Notifiers.ToList();
 
-        //Filters
+        // Filters
         _filters = elmahOptions.Value.Filters.ToList();
         foreach (var errorFilter in options.Filters) Filtering += errorFilter.OnErrorModuleFiltering;
 
         _logRequestBody = elmahOptions.Value.LogRequestBody;
+        _maxRequestBodySize = elmahOptions.Value.MaxRequestBodySize;
 
         if (!string.IsNullOrEmpty(options.FiltersConfig))
             try
             {
                 ConfigureFilters(options.FiltersConfig);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                _logger.LogError("Error in filters XML file");
+                _logger.LogError(ex, "Error in filters XML file");
             }
 
         if (elmahOptions.Value != null)
@@ -91,8 +97,8 @@ internal sealed class ErrorLogMiddleware
             if (!string.IsNullOrEmpty(options.Path))
             {
                 _elmahRoot = elmahOptions.Value.Path.ToLower();
-                if (!_elmahRoot.StartsWith("/") && !_elmahRoot.StartsWith("~/")) _elmahRoot = "/" + _elmahRoot;
-                if (_elmahRoot.EndsWith("/")) _elmahRoot = _elmahRoot[..^1];
+                if (!_elmahRoot.StartsWith('/') && !_elmahRoot.StartsWith("~/")) _elmahRoot = "/" + _elmahRoot;
+                if (_elmahRoot.EndsWith('/')) _elmahRoot = _elmahRoot[..^1];
             }
 
             if (!string.IsNullOrWhiteSpace(options.ApplicationName))
@@ -159,7 +165,7 @@ internal sealed class ErrorLogMiddleware
                 }
 
                 var path = sourcePath.Substring(elmahRoot.Length, sourcePath.Length - elmahRoot.Length);
-                if (path.StartsWith("/")) path = path[1..];
+                if (path.StartsWith('/')) path = path[1..];
                 if (path.Contains('?')) path = path[..path.IndexOf('?')];
                 await ProcessElmahRequest(context, path);
                 return;
@@ -167,9 +173,9 @@ internal sealed class ErrorLogMiddleware
 
             var ct = context.Request.ContentType?.ToLower();
             var tEnc = string.Join(",", context.Request.Headers["Transfer-Encoding"].ToArray());
-            if (_logRequestBody && !string.IsNullOrEmpty(ct) && SupportedContentTypes.Any(i => ct.Contains(ct))
+            if (_logRequestBody && !string.IsNullOrEmpty(ct) && SupportedContentTypes.Any(i => ct.Contains(i))
                 && !tEnc.Contains("chunked"))
-                body = await GetBody(context.Request);
+                body = await GetBody(context.Request, _maxRequestBodySize);
 
             await _next(context);
 
@@ -188,15 +194,24 @@ internal sealed class ErrorLogMiddleware
 
             context.Features.Set<IElmahFeature>(new ElmahFeature(id, location));
 
-            //To next middleware
+            // To next middleware
             if (!ShowDebugPage) throw;
             //Show Debug page
             context.Response.Redirect(location);
         }
     }
 
-    private static async Task<string> GetBody(HttpRequest request)
+    private static async Task<string> GetBody(HttpRequest request, int maxBodySize)
     {
+        // Check if body size exceeds limit (0 means unlimited)
+        if (maxBodySize > 0)
+        {
+            if (!request.ContentLength.HasValue)
+                return "[Body not captured: unknown content length]";
+            if (request.ContentLength.Value > maxBodySize)
+                return $"[Body not captured: size {request.ContentLength.Value} exceeds limit of {maxBodySize} bytes]";
+        }
+
         request.EnableBuffering();
         var body = request.Body;
         var buffer = new byte[Convert.ToInt32(request.ContentLength)];
@@ -274,10 +289,8 @@ internal sealed class ErrorLogMiddleware
     {
         ArgumentNullException.ThrowIfNull(e);
 
-        //
         // Fire an event to check if listeners want to filter out
         // logging of the uncaught exception.
-        //
 
         ErrorLogEntry entry = null;
 
@@ -292,9 +305,7 @@ internal sealed class ErrorLogMiddleware
                     return null;
             }
 
-            //
             // AddMessage away...
-            //
             var error = new Error(e, context, body);
 
             // Override status code if provided
@@ -307,7 +318,7 @@ internal sealed class ErrorLogMiddleware
             entry = new ErrorLogEntry(_errorLog, id, error);
 
             //Send notification
-            foreach (var notifier in _notifiers)
+            foreach (var notifier in _notifiers ?? Enumerable.Empty<IErrorNotifier>())
                 if (!args.DismissedNotifiers.Any(i =>
                         i.Equals(notifier.Name, StringComparison.InvariantCultureIgnoreCase)))
                 {
@@ -319,15 +330,12 @@ internal sealed class ErrorLogMiddleware
         }
         catch (Exception ex)
         {
-            //
             // IMPORTANT! We swallow any exception raised during the 
-            // logging and send them out to the trace . The idea 
+            // logging and send them out to the trace. The idea 
             // here is that logging of exceptions by itself should not 
-            // be  critical to the overall operation of the application.
+            // be critical to the overall operation of the application.
             // The bad thing is that we catch ANY kind of exception, 
             // even system ones and potentially let them slip by.
-            //
-
             _logger.LogError(ex, "Elmah local exception");
         }
 
@@ -338,7 +346,7 @@ internal sealed class ErrorLogMiddleware
     }
 
     /// <summary>
-    ///     Raises the <see cref="Logged" /> event.
+    /// Raises the <see cref="Logged" /> event.
     /// </summary>
     private void OnLogged(ErrorLoggedEventArgs args)
     {
@@ -346,7 +354,7 @@ internal sealed class ErrorLogMiddleware
     }
 
     /// <summary>
-    ///     Raises the <see cref="Filtering" /> event.
+    /// Raises the <see cref="Filtering" /> event.
     /// </summary>
     private void OnFiltering(ExceptionFilterEventArgs args)
     {

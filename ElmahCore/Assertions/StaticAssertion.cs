@@ -1,8 +1,8 @@
 namespace ElmahCore.Assertions;
 
 /// <summary>
-///     An static assertion implementation that always evaluates to
-///     a preset value.
+/// An static assertion implementation that always evaluates to
+/// a preset value.
 /// </summary>
 internal sealed class StaticAssertion : IAssertion
 {

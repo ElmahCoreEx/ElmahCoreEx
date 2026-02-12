@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
+using System.Data.Common;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 using MySql.Data.MySqlClient;
@@ -7,17 +7,18 @@ using MySql.Data.MySqlClient;
 namespace ElmahCore.MySql;
 
 /// <summary>
-///     An <see cref="ErrorLog" /> implementation that uses MySQL
-///     as its backing store.
+/// An <see cref="ErrorLog" /> implementation that uses MySQL
+/// as its backing store.
 /// </summary>
 [UsedImplicitly]
-public class MySqlErrorLog : ErrorLog
+public class MySqlErrorLog : RelationalErrorLog
 {
+    private readonly string _connectionString;
     private readonly bool _logAllXml;
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="MySqlErrorLog" /> class
-    ///     using a dictionary of configured settings.
+    /// Initializes a new instance of the <see cref="MySqlErrorLog" /> class
+    /// using a dictionary of configured settings.
     /// </summary>
     public MySqlErrorLog(IOptions<ElmahOptions> option) : this(option.Value.ConnectionString,
         option.Value.CreateTablesIfNotExist, option.Value.LogAllXml)
@@ -25,141 +26,168 @@ public class MySqlErrorLog : ErrorLog
     }
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="MySqlErrorLog" /> class
-    ///     to use a specific connection string for connecting to the database.
+    /// Initializes a new instance of the <see cref="MySqlErrorLog" /> class
+    /// to use a specific connection string for connecting to the database.
     /// </summary>
     public MySqlErrorLog(string connectionString, bool createTablesIfNotExist = true, bool logAllXml = true)
     {
         if (string.IsNullOrEmpty(connectionString))
             throw new ArgumentNullException(nameof(connectionString));
 
-        ConnectionString = connectionString;
+        _connectionString = connectionString;
         _logAllXml = logAllXml;
 
         if (createTablesIfNotExist)
-            CreateTableIfNotExist();
+            CreateTableIfNotExists();
     }
 
-    /// <summary>
-    ///     Gets the name of this error log implementation.
-    /// </summary>
+    /// <inheritdoc />
     public override string Name => "MySQL Error Log";
 
-    /// <summary>
-    ///     Gets the connection string used by the log to connect to the database.
-    /// </summary>
-    protected virtual string ConnectionString { get; }
+    /// <inheritdoc />
+    protected override string ConnectionString => _connectionString;
 
-    public override string Log(Error error)
+    /// <inheritdoc />
+    protected override bool LogAllXml => _logAllXml;
+
+    /// <inheritdoc />
+    protected override DbConnection CreateConnection() => new MySqlConnection(ConnectionString);
+
+    /// <inheritdoc />
+    protected override DbCommand CreateLogErrorCommand(Guid id, string appName, string hostName, string typeName,
+        string source, string message, string user, int statusCode, DateTime time, string xml)
     {
-        var id = Guid.NewGuid();
+        var command = new MySqlCommand
+        {
+            CommandText = @"
+/* elmah */
+INSERT INTO ELMAH_Error (ErrorId, Application, Host, Type, Source, Message, User, StatusCode, TimeUtc, AllXml)
+VALUES (@ErrorId, @Application, @Host, @Type, @Source, @Message, @User, @StatusCode, @TimeUtc, @AllXml)
+"
+        };
 
-        Log(id, error);
+        command.Parameters.Add(new MySqlParameter("ErrorId", id));
+        command.Parameters.Add(new MySqlParameter("Application", appName));
+        command.Parameters.Add(new MySqlParameter("Host", hostName));
+        command.Parameters.Add(new MySqlParameter("Type", typeName));
+        command.Parameters.Add(new MySqlParameter("Source", source));
+        command.Parameters.Add(new MySqlParameter("Message", message));
+        command.Parameters.Add(new MySqlParameter("User", user));
+        command.Parameters.Add(new MySqlParameter("StatusCode", statusCode));
+        command.Parameters.Add(new MySqlParameter("TimeUtc", time.ToUniversalTime()));
+        command.Parameters.Add(new MySqlParameter("AllXml", xml));
 
-        return id.ToString();
+        return command;
     }
 
-    public override void Log(Guid id, Error error)
+    /// <inheritdoc />
+    protected override DbCommand CreateGetErrorXmlCommand(string appName, Guid errorId)
     {
-        ArgumentNullException.ThrowIfNull(error);
+        var command = new MySqlCommand
+        {
+            CommandText = @"
+SELECT AllXml FROM ELMAH_Error
+WHERE
+    Application = @Application
+    AND ErrorId = @ErrorId
+"
+        };
 
-        var errorXml = _logAllXml
-            ? ErrorXml.EncodeString(error)
-            : "<error message=\"AllXml logging disabled\" />";
+        command.Parameters.Add(new MySqlParameter("Application", appName));
+        command.Parameters.Add(new MySqlParameter("ErrorId", errorId));
 
-        using var connection = new MySqlConnection(ConnectionString);
-        using var command = CommandExtension.LogError(id, ApplicationName, error.HostName, error.Type,
-            error.Source, error.Message, error.User, error.StatusCode, error.Time, errorXml);
-        connection.Open();
-        command.Connection = connection;
-        command.ExecuteNonQuery();
+        return command;
     }
 
-    public override ErrorLogEntry GetError(string id)
+    /// <inheritdoc />
+    protected override DbCommand CreateGetErrorsXmlCommand(string appName, int errorIndex, int pageSize)
     {
-        ArgumentNullException.ThrowIfNull(id);
-        if (id.Length == 0) throw new ArgumentException(null, nameof(id));
-
-        Guid errorGuid;
-
-        try
+        var command = new MySqlCommand
         {
-            errorGuid = new Guid(id);
-        }
-        catch (FormatException e)
-        {
-            throw new ArgumentException(e.Message, nameof(id), e);
-        }
+            CommandText = @"
+SELECT ErrorId, AllXml FROM ELMAH_Error
+WHERE
+    Application = @Application
+ORDER BY Sequence DESC
+    LIMIT @limit
+    OFFSET @offset
+"
+        };
 
-        string errorXml;
+        command.Parameters.Add("@Application", MySqlDbType.String).Value = appName;
+        command.Parameters.Add("@offset", MySqlDbType.Int32).Value = errorIndex;
+        command.Parameters.Add("@limit", MySqlDbType.Int32).Value = pageSize;
 
-        using (var connection = new MySqlConnection(ConnectionString))
-        using (var command = CommandExtension.GetErrorXml(ApplicationName, errorGuid))
-        {
-            command.Connection = connection;
-            connection.Open();
-            errorXml = (string)command.ExecuteScalar();
-        }
-
-        if (errorXml == null)
-            return null;
-
-        var error = ErrorXml.DecodeString(errorXml);
-        return new ErrorLogEntry(this, id, error);
+        return command;
     }
 
-    public override int GetErrors(int errorIndex, int pageSize, ICollection<ErrorLogEntry> errorEntryList)
+    /// <inheritdoc />
+    protected override DbCommand CreateGetErrorsCountCommand(string appName)
     {
-        if (errorIndex < 0) throw new ArgumentOutOfRangeException(nameof(errorIndex), errorIndex, null);
-        if (pageSize < 0) throw new ArgumentOutOfRangeException(nameof(pageSize), pageSize, null);
-
-        using var connection = new MySqlConnection(ConnectionString);
-        connection.Open();
-
-        using (var command = CommandExtension.GetErrorsXml(ApplicationName, errorIndex, pageSize))
+        var command = new MySqlCommand
         {
-            command.Connection = connection;
-
-            using (var reader = command.ExecuteReader())
-            {
-                while (reader.Read())
-                {
-                    var id = reader.GetGuid(0);
-                    var xml = reader.GetString(1);
-                    var error = ErrorXml.DecodeString(xml);
-                    errorEntryList.Add(new ErrorLogEntry(this, id.ToString(), error));
-                }
-            }
-        }
-
-        return GetTotalErrorsXml(connection);
+            CommandText = "SELECT COUNT(*) FROM ELMAH_Error WHERE Application = @Application"
+        };
+        command.Parameters.Add(new MySqlParameter("@Application", appName));
+        return command;
     }
 
-    /// <summary>
-    ///     Creates the necessary tables used by this implementation
-    /// </summary>
-    private void CreateTableIfNotExist()
+    /// <inheritdoc />
+    protected override void CreateTableIfNotExists()
     {
         using var connection = new MySqlConnection(ConnectionString);
         connection.Open();
         var databaseName = connection.Database;
 
-        using var commandCheck = CommandExtension.CheckTable(databaseName);
-        commandCheck.Connection = connection;
+        using var commandCheck = new MySqlCommand
+        {
+            Connection = connection,
+            CommandText = @"
+SELECT EXISTS (
+   SELECT 1
+   FROM   information_schema.tables
+   WHERE  table_schema = @DatabaseName
+   AND    table_name = 'ELMAH_Error'
+   );
+"
+        };
+        commandCheck.Parameters.Add(new MySqlParameter("@DatabaseName", databaseName));
+
         var exists = Convert.ToBoolean(commandCheck.ExecuteScalar());
 
         if (!exists)
         {
-            using var commandCreate = CommandExtension.CreateTable();
-            commandCreate.Connection = connection;
+            using var commandCreate = new MySqlCommand
+            {
+                Connection = connection,
+                CommandText = @"
+CREATE TABLE ELMAH_Error
+(
+    ErrorId		VARCHAR(64) NOT NULL,
+    Application	VARCHAR(60) NOT NULL,
+    Host 		VARCHAR(50) NOT NULL,
+    Type		VARCHAR(100) NOT NULL,
+    Source		VARCHAR(60)  NOT NULL,
+    Message		TEXT NOT NULL,
+    User		VARCHAR(50)  NOT NULL,
+    StatusCode	INT NOT NULL,
+    TimeUtc		TIMESTAMP NOT NULL,
+    Sequence	INT NOT NULL AUTO_INCREMENT,
+    AllXml		MEDIUMTEXT NOT NULL,
+    KEY(Sequence)
+);
+
+ALTER TABLE ELMAH_Error ADD CONSTRAINT PK_ELMAH_Error PRIMARY KEY (ErrorId);
+
+CREATE INDEX IX_ELMAH_Error_App_Time_Seq ON ELMAH_Error
+(
+    Application   ASC,
+    TimeUtc       DESC,
+    Sequence      DESC
+) USING BTREE;
+"
+            };
             commandCreate.ExecuteNonQuery();
         }
-    }
-
-    private int GetTotalErrorsXml(MySqlConnection connection)
-    {
-        using var command = CommandExtension.GetTotalErrorsXml(ApplicationName);
-        command.Connection = connection;
-        return Convert.ToInt32(command.ExecuteScalar());
     }
 }

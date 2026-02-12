@@ -12,34 +12,31 @@ using System.Threading.Tasks;
 namespace ElmahCore;
 
 /// <summary>
-///     Represents an error log capable of storing and retrieving errors
-///     generated in an ASP.NET Web application.
+/// Represents an error log capable of storing and retrieving errors
+/// generated in an ASP.NET Web application.
 /// </summary>
 public abstract class ErrorLog
 {
-    private string _appName;
     private bool _appNameInitialized;
 
     /// <summary>
-    ///     Get the name of this log.
+    /// Get the name of this log.
     /// </summary>
-
     public virtual string Name => GetType().Name;
 
     /// <summary>
     ///     Gets the name of the application to which the log is scoped.
     /// </summary>
-
     public string ApplicationName
     {
-        get => _appName ?? Assembly.GetEntryAssembly()?.GetName().Name;
+        get => field ?? Assembly.GetEntryAssembly()?.GetName().Name;
 
         set
         {
             if (_appNameInitialized)
                 throw new InvalidOperationException("The application name cannot be reset once initialized.");
 
-            _appName = value;
+            field = value;
             _appNameInitialized = (value ?? string.Empty).Length > 0;
         }
     }
@@ -72,11 +69,11 @@ public abstract class ErrorLog
         return Task.FromResult(Log(error));
     }
 
-
     /// <summary>
     ///     When overridden in a subclass, begins an asynchronous version
     ///     of <see cref="Log(Error)" />.
     /// </summary>
+    [Obsolete("Use LogAsync instead. APM pattern will be removed in next major version.")]
     public virtual IAsyncResult BeginLog(Error error, AsyncCallback asyncCallback, object asyncState)
     {
         return LogAsync(error, CancellationToken.None).Apmize(asyncCallback, asyncState);
@@ -86,17 +83,17 @@ public abstract class ErrorLog
     ///     When overridden in a subclass, ends an asynchronous version
     ///     of <see cref="Log(Error)" />.
     /// </summary>
+    [Obsolete("Use LogAsync instead. APM pattern will be removed in next major version.")]
     public virtual string EndLog(IAsyncResult asyncResult)
     {
         return EndApmizedTask<string>(asyncResult);
     }
 
     /// <summary>
-    ///     Retrieves a single application error from log given its
+    ///     Retrieves a single application error from a log given its
     ///     identifier, or null if it does not exist.
     /// </summary>
     public abstract ErrorLogEntry GetError(string id);
-
 
     /// <summary>
     ///     When overridden in a subclass, starts a task that asynchronously
@@ -112,18 +109,17 @@ public abstract class ErrorLog
     ///     does the same as <see cref="GetError" />. An additional parameter
     ///     specifies a <see cref="CancellationToken" /> to use.
     /// </summary>
-
     // ReSharper disable once UnusedParameter.Global
     public virtual Task<ErrorLogEntry> GetErrorAsync(string id, CancellationToken cancellationToken)
     {
         return Task.FromResult(GetError(id));
     }
 
-
     /// <summary>
     ///     When overridden in a subclass, begins an asynchronous version
     ///     of <see cref="GetError" />.
     /// </summary>
+    [Obsolete("Use GetErrorAsync instead. APM pattern will be removed in next major version.")]
     public virtual IAsyncResult BeginGetError(string id, AsyncCallback asyncCallback, object asyncState)
     {
         return GetErrorAsync(id, CancellationToken.None).Apmize(asyncCallback, asyncState);
@@ -133,6 +129,7 @@ public abstract class ErrorLog
     ///     When overridden in a subclass, ends an asynchronous version
     ///     of <see cref="GetError" />.
     /// </summary>
+    [Obsolete("Use GetErrorAsync instead. APM pattern will be removed in next major version.")]
     public virtual ErrorLogEntry EndGetError(IAsyncResult asyncResult)
     {
         return EndApmizedTask<ErrorLogEntry>(asyncResult);
@@ -164,11 +161,11 @@ public abstract class ErrorLog
         return Task.FromResult(GetErrors(errorIndex, pageSize, errorEntryList));
     }
 
-
     /// <summary>
     ///     When overridden in a subclass, begins an asynchronous version
     ///     of <see cref="GetErrors" />.
     /// </summary>
+    [Obsolete("Use GetErrorsAsync instead. APM pattern will be removed in next major version.")]
     public virtual IAsyncResult BeginGetErrors(int pageIndex, int pageSize,
         ICollection<ErrorLogEntry> errorEntryList, AsyncCallback asyncCallback, object asyncState)
     {
@@ -180,16 +177,16 @@ public abstract class ErrorLog
     ///     When overridden in a subclass, ends an asynchronous version
     ///     of <see cref="GetErrors" />.
     /// </summary>
+    [Obsolete("Use GetErrorsAsync instead. APM pattern will be removed in next major version.")]
     public virtual int EndGetErrors(IAsyncResult asyncResult)
     {
         return EndApmizedTask<int>(asyncResult);
     }
 
-
     private static T EndApmizedTask<T>(IAsyncResult asyncResult)
     {
-        if (asyncResult == null) throw new ArgumentNullException(nameof(asyncResult));
-        if (!(asyncResult is Task<T> task)) throw new ArgumentException(null, nameof(asyncResult));
+        ArgumentNullException.ThrowIfNull(asyncResult);
+        if (asyncResult is not Task<T> task) throw new ArgumentException(null, nameof(asyncResult));
         try
         {
             return task.Result;

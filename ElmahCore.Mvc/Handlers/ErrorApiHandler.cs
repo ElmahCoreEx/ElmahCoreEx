@@ -1,16 +1,14 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using ElmahCore.Mvc.Notifiers;
 using Microsoft.AspNetCore.Http;
-using NetJSON;
 
 namespace ElmahCore.Mvc.Handlers;
 
 internal static class ErrorApiHandler
 {
-     
     public static async Task ProcessRequest(HttpContext context, ErrorLog errorLog, string path)
     {
         switch (path)
@@ -32,8 +30,7 @@ internal static class ErrorApiHandler
             case "api/new-errors":
                 var id = context.Request.Query["id"].ToString();
                 var newEntities = await GetNewErrorsAsync(errorLog, id);
-                //await context.Response.WriteJsonAsync(JsonSerializer.Serialize(newEntities, JsonSerializerHelper.DefaultJsonSerializerOptions));
-                await context.Response.WriteJsonAsync(NetJSON.NetJSON.Serialize(newEntities, new NetJSONSettings(){CamelCase = true}));
+                await context.Response.WriteJsonAsync(JsonSerializer.Serialize(newEntities, JsonSerializerHelper.DefaultJsonSerializerOptions));
                 break;
         }
     }
@@ -44,7 +41,6 @@ internal static class ErrorApiHandler
         await response.WriteAsync(json);
         await response.Body.FlushAsync();
     }
-
 
     private static async Task<ErrorLogEntryWrapper> GetErrorAsync(ErrorLog errorLog, string id)
     {
