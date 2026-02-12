@@ -4,7 +4,6 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using ElmahCore.Mvc.Notifiers;
 using Microsoft.AspNetCore.Http;
-using NetJSON;
 
 namespace ElmahCore.Mvc.Handlers;
 
@@ -32,8 +31,7 @@ internal static class ErrorApiHandler
             case "api/new-errors":
                 var id = context.Request.Query["id"].ToString();
                 var newEntities = await GetNewErrorsAsync(errorLog, id);
-                //await context.Response.WriteJsonAsync(JsonSerializer.Serialize(newEntities, JsonSerializerHelper.DefaultJsonSerializerOptions));
-                await context.Response.WriteJsonAsync(NetJSON.NetJSON.Serialize(newEntities, new NetJSONSettings(){CamelCase = true}));
+                await context.Response.WriteJsonAsync(JsonSerializer.Serialize(newEntities, JsonSerializerHelper.DefaultJsonSerializerOptions));
                 break;
         }
     }
