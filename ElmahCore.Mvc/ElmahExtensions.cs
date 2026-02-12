@@ -45,6 +45,21 @@ public static class ElmahExtensions
         return LogMiddleware.LogException(ex, ctx, (context, error) => Task.CompletedTask);
     }
 
+    // ReSharper disable once MemberCanBePrivate.Global
+    public static Task RaiseError(this HttpContext ctx, Exception ex, int statusCode)
+    {
+        GuardForNullMiddleware();
+        return LogMiddleware.LogException(ex, ctx, (context, error) => Task.CompletedTask, statusCode: statusCode);
+    }
+
+    // ReSharper disable once MemberCanBePrivate.Global
+    public static Task RaiseError(this HttpContext ctx, Exception ex, int statusCode,
+        Func<HttpContext, Error, Task> onError)
+    {
+        GuardForNullMiddleware();
+        return LogMiddleware.LogException(ex, ctx, onError, statusCode: statusCode);
+    }
+
     [Obsolete("Prefer RaiseError")]
     public static void RiseError(Exception ex)
     {
@@ -62,6 +77,19 @@ public static class ElmahExtensions
     public static void RaiseError(Exception ex)
     {
         RaiseError(ex, (context, error) => Task.CompletedTask);
+    }
+
+    // ReSharper disable once MemberCanBePrivate.Global
+    public static void RaiseError(Exception ex, int statusCode)
+    {
+        RaiseError(ex, statusCode, (context, error) => Task.CompletedTask);
+    }
+
+    // ReSharper disable once MemberCanBePrivate.Global
+    public static void RaiseError(Exception ex, int statusCode, Func<HttpContext, Error, Task> onError)
+    {
+        LogMiddleware?.LogException(ex, InternalHttpContext.Current ?? new DefaultHttpContext(),
+            onError, statusCode: statusCode);
     }
 
     [UsedImplicitly]

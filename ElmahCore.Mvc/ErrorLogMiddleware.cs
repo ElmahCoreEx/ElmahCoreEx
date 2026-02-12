@@ -270,7 +270,7 @@ internal sealed class ErrorLogMiddleware
     }
 
     internal async Task<string> LogException(Exception e, HttpContext context,
-        Func<HttpContext, Error, Task> onError, string body = null)
+        Func<HttpContext, Error, Task> onError, string body = null, int? statusCode = null)
     {
         if (e == null)
             throw new ArgumentNullException(nameof(e));
@@ -297,6 +297,10 @@ internal sealed class ErrorLogMiddleware
             // AddMessage away...
             //
             var error = new Error(e, context, body);
+
+            // Override status code if provided
+            if (statusCode.HasValue)
+                error.StatusCode = statusCode.Value;
 
             await onError(context, error);
             error.ApplicationName = _errorLog.ApplicationName;
