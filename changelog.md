@@ -10,6 +10,8 @@ Migrate all projects to .NET 10, update dependencies and adjust solution structu
 
 - Migrate to net10
 - Update dependencies
+- Add `LogAllXml` option to disable full XML logging in database error logs
+- Add optional `statusCode` parameter to `RaiseError()` methods for custom HTTP status codes
 
 ## 2.1.4-beta 1
 

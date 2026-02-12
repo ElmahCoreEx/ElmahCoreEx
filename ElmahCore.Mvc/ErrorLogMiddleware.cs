@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -270,10 +270,9 @@ internal sealed class ErrorLogMiddleware
     }
 
     internal async Task<string> LogException(Exception e, HttpContext context,
-        Func<HttpContext, Error, Task> onError, string body = null)
+        Func<HttpContext, Error, Task> onError, string body = null, int? statusCode = null)
     {
-        if (e == null)
-            throw new ArgumentNullException(nameof(e));
+        ArgumentNullException.ThrowIfNull(e);
 
         //
         // Fire an event to check if listeners want to filter out
@@ -285,7 +284,7 @@ internal sealed class ErrorLogMiddleware
         try
         {
             var args = new ExceptionFilterEventArgs(e, context);
-            if (_filters.Any())
+            if (_filters.Count != 0)
             {
                 OnFiltering(args);
 
@@ -297,6 +296,10 @@ internal sealed class ErrorLogMiddleware
             // AddMessage away...
             //
             var error = new Error(e, context, body);
+
+            // Override status code if provided
+            if (statusCode.HasValue)
+                error.StatusCode = statusCode.Value;
 
             await onError(context, error);
             error.ApplicationName = _errorLog.ApplicationName;
