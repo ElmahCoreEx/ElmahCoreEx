@@ -20,7 +20,7 @@ The interfaces and namespaces have been kept the same.
 
 # License
 
-This project is licensed under the terms of the Apache license 2.0.
+This project is licensed under the terms of the Apache License 2.0.
 
 # Warnings & Dragons
 
@@ -28,7 +28,7 @@ The source code for the front end appears non-existent, in ElmahCore the front e
 
 # Using ElmahCore
 
-ELMAH for Net.Standard 2.0 and .Net 6
+ELMAH for Net Core 10 
 
 Add NuGet package [ElmahCoreEx](https://www.nuget.org/packages?q=elmahcoreex)
 
@@ -66,11 +66,11 @@ app.UseAuthorization();
 //...
 app.UseElmah(); // needs to be positioned after `UseAuthentication` and `UseAuthorization`
 ```
-or the user will be redirected to the sign in screen even if they are authenticated.
+or the user will be redirected to the sign-in screen even if they are authenticated.
 
 ## Change Error Log type
 
-You can implement a custom error log adapter, to write logs to alternate locations.
+You can implement a custom error log adapter to write logs to alternate locations.
 
 ```csharp
 public class MyErrorLog: ErrorLog {
@@ -200,7 +200,7 @@ services.AddElmah<XmlFileErrorLog>(options =>
     options.Notifiers.Add(new ErrorMailNotifier("Email",emailOptions));
 });
 ```
-Each notifier must have unique name.
+Each notifier must have a unique name.
 
 ## Using Filters
 
@@ -237,5 +237,5 @@ see more [here](https://elmah.github.io/a/error-filtering/examples/)
 
 JavaScript filters have not been implemented
 
-Add notifiers to errorFilter node if you do not want to send notifications
-Filtered errors will be logged, but will not be sent.
+Attach notifiers to the errorFilter node if you wish to avoid sending notifications.
+Errors that are filtered will be recorded but not dispatched.
