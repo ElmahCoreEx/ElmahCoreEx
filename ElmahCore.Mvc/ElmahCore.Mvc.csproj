@@ -1,76 +1,74 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <Version>2.1.2</Version>
-    <PackageProjectUrl>https://github.com/ElmahCoreEx/ElmahCoreEx</PackageProjectUrl>
-    <AssemblyVersion>2.1.2.0</AssemblyVersion>
-    <FileVersion>2.1.2.0</FileVersion>
-    <AssemblyName>ElmahCore.Mvc</AssemblyName>
-    <PackageId>ElmahCoreEx</PackageId>
-    <Authors>ElmahCoreEx</Authors>
-    <Company>ElmahCoreEx</Company>
-    <Product>ElmahCoreEx</Product>
-    <NeutralLanguage>en-001</NeutralLanguage>
-    <RepositoryUrl>https://www.nuget.org/packages/ElmahCoreEx</RepositoryUrl>
-    <PackageTags>net-core elmah mvc-core asp-net-core asp-net-core-mvc elmah-core netcore netcore2 netcore20 mvc mvc6 aspnetcore aspnetcoremvc</PackageTags>
-    <Description>ELMAH for ASP.NET Core MVC</Description>
-    <Copyright>ElmahCoreEx</Copyright>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <LangVersion>default</LangVersion>
-    <TargetFramework>net8.0</TargetFramework>
-  </PropertyGroup>
+    <PropertyGroup>
+        <Version>2.1.5</Version>
+        <PackageProjectUrl>https://github.com/ElmahCoreEx/ElmahCoreEx</PackageProjectUrl>
+        <AssemblyVersion>2.1.5.0</AssemblyVersion>
+        <FileVersion>2.1.5.0</FileVersion>
+        <AssemblyName>ElmahCore.Mvc</AssemblyName>
+        <PackageId>ElmahCoreEx</PackageId>
+        <Authors>ElmahCoreEx</Authors>
+        <Company>ElmahCoreEx</Company>
+        <Product>ElmahCoreEx</Product>
+        <NeutralLanguage>en-001</NeutralLanguage>
+        <RepositoryUrl>https://www.nuget.org/packages/ElmahCoreEx</RepositoryUrl>
+        <PackageTags>net-core elmah mvc-core asp-net-core asp-net-core-mvc elmah-core netcore netcore2 netcore20 mvc mvc6 aspnetcore aspnetcoremvc</PackageTags>
+        <Description>ELMAH for ASP.NET Core MVC</Description>
+        <Copyright>ElmahCoreEx</Copyright>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <LangVersion>default</LangVersion>
+        <TargetFramework>net10.0</TargetFramework>
+    </PropertyGroup>
 
-<PropertyGroup>
-  <MinVerDefaultPreReleaseIdentifiers>alpha.0</MinVerDefaultPreReleaseIdentifiers>
-</PropertyGroup>
+    <PropertyGroup>
+        <MinVerDefaultPreReleaseIdentifiers>alpha.0</MinVerDefaultPreReleaseIdentifiers>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="wwwroot\index.html" />
-    <None Remove="wwwroot\js\*.js" />
-    <None Remove="wwwroot\img\*.svg" />
-    <None Remove="wwwroot\css\*.css" />
-    <None Remove="wwwroot\fonts\*.*" />
-  </ItemGroup>
+    <ItemGroup>
+        <None Remove="wwwroot\index.html"/>
+        <None Remove="wwwroot\js\*.js"/>
+        <None Remove="wwwroot\img\*.svg"/>
+        <None Remove="wwwroot\css\*.css"/>
+        <None Remove="wwwroot\fonts\*.*"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="wwwroot\index.html" />
-    <EmbeddedResource Include="wwwroot\js\*.js" />
-    <EmbeddedResource Include="wwwroot\img\*.svg" />
-    <EmbeddedResource Include="wwwroot\css\*.css" />
-    <EmbeddedResource Include="wwwroot\fonts\*.*" />
-  </ItemGroup>
+    <ItemGroup>
+        <EmbeddedResource Include="wwwroot\index.html"/>
+        <EmbeddedResource Include="wwwroot\js\*.js"/>
+        <EmbeddedResource Include="wwwroot\img\*.svg"/>
+        <EmbeddedResource Include="wwwroot\css\*.css"/>
+        <EmbeddedResource Include="wwwroot\fonts\*.*"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="HtmlAgilityPack" Version="1.11.72" />
-    <PackageReference Include="JetBrains.Annotations" Version="2024.3.0" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Abstractions" Version="2.3.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
-    <PackageReference Include="MinVer" Version="4.3.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="NetJSON" Version="1.4.4" />
-    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="8.0.1" />
-    <PackageReference Include="System.Text.Json" Version="8.0.5" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
+        <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
+        <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.4" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.3" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.Abstractions" Version="2.3.9" />
+        <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.9" />
+        <PackageReference Include="MinVer" Version="7.0.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="NetJSON" Version="1.4.5" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\ElmahCore\ElmahCore.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\ElmahCore\ElmahCore.csproj"/>
+    </ItemGroup>
 
-<PropertyGroup>
-    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-</PropertyGroup>
+    <PropertyGroup>
+        <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
 
-<ItemGroup>
-    <None Include="..\LICENSE.txt" Pack="true" PackagePath="" />
-    <None Include="..\README.md" Pack="true" PackagePath="" />
-</ItemGroup>
+    <ItemGroup>
+        <None Include="..\LICENSE.txt" Pack="true" PackagePath=""/>
+        <None Include="..\README.md" Pack="true" PackagePath=""/>
+    </ItemGroup>
 
 </Project>

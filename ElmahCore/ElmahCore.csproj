@@ -1,57 +1,56 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <LangVersion>default</LangVersion>
-	  <Version>2.1.2</Version>
-    <PackageProjectUrl>https://github.com/ElmahCoreEx/ElmahCoreEx</PackageProjectUrl>
-	  <AssemblyVersion>2.1.2.0</AssemblyVersion>
-	  <FileVersion>2.1.2.0</FileVersion>
-	  <AssemblyName>ElmahCoreEx</AssemblyName>
-	  <PackageId>ElmahCoreEx.Common</PackageId>
-	  <Authors>ElmahCoreEx</Authors>
-	  <Company>ElmahCoreEx</Company>
-	  <Product>ElmahCoreEx</Product>
-	  <NeutralLanguage>en-001</NeutralLanguage>
-	  <RepositoryUrl>https://www.nuget.org/packages/ElmahCoreEx</RepositoryUrl>
-	  <PackageTags>net-core elmah mvc-core asp-net-core asp-net-core-mvc elmah-core netcore aspnetcore</PackageTags>
-	  <Description>ELMAH for ASP.NET Core</Description>
-	  <Copyright>ElmahCoreEx</Copyright>
-	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <TargetFramework>net8.0</TargetFramework>
-  </PropertyGroup>
+    <PropertyGroup>
+        <LangVersion>default</LangVersion>
+        <Version>2.1.5</Version>
+        <PackageProjectUrl>https://github.com/ElmahCoreEx/ElmahCoreEx</PackageProjectUrl>
+        <AssemblyVersion>2.1.5.0</AssemblyVersion>
+        <FileVersion>2.1.5.0</FileVersion>
+        <AssemblyName>ElmahCoreEx</AssemblyName>
+        <PackageId>ElmahCoreEx.Common</PackageId>
+        <Authors>ElmahCoreEx</Authors>
+        <Company>ElmahCoreEx</Company>
+        <Product>ElmahCoreEx</Product>
+        <NeutralLanguage>en-001</NeutralLanguage>
+        <RepositoryUrl>https://www.nuget.org/packages/ElmahCoreEx</RepositoryUrl>
+        <PackageTags>net-core elmah mvc-core asp-net-core asp-net-core-mvc elmah-core netcore aspnetcore</PackageTags>
+        <Description>ELMAH for ASP.NET Core</Description>
+        <Copyright>ElmahCoreEx</Copyright>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <TargetFramework>net10.0</TargetFramework>
+    </PropertyGroup>
 
-<PropertyGroup>
-  <MinVerDefaultPreReleaseIdentifiers>alpha.0</MinVerDefaultPreReleaseIdentifiers>
-</PropertyGroup>
+    <PropertyGroup>
+        <MinVerDefaultPreReleaseIdentifiers>alpha.0</MinVerDefaultPreReleaseIdentifiers>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.103" PrivateAssets="All" />
+    </ItemGroup>
 
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.3.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
-    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.12" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
-    <PackageReference Include="MinVer" Version="4.3.0">
-	    <PrivateAssets>all</PrivateAssets>
-	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="System.Text.Json" Version="8.0.5" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.3.9" />
+        <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.9" />
+        <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="10.0.3" />
+        <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.3" />
+        <PackageReference Include="MinVer" Version="7.0.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
 
-  <PropertyGroup>
-    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-</PropertyGroup>
+    <PropertyGroup>
+        <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
 
-<ItemGroup>
-    <None Include="..\LICENSE.txt" Pack="true" PackagePath="" />
-    <None Include="..\README.md" Pack="true" PackagePath="" />
-</ItemGroup>
+    <ItemGroup>
+        <None Include="..\LICENSE.txt" Pack="true" PackagePath=""/>
+        <None Include="..\README.md" Pack="true" PackagePath=""/>
+    </ItemGroup>
 
 </Project>

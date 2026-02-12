@@ -1,54 +1,53 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-	  <Version>2.1.2</Version>
-	  <PackageProjectUrl>https://github.com/ElmahCoreEx/ElmahCoreEx</PackageProjectUrl>
-	  <AssemblyVersion>2.1.2.0</AssemblyVersion>
-	  <FileVersion>2.1.2.0</FileVersion>
-	  <AssemblyName>ElmahCore.Sql</AssemblyName>
-	  <PackageId>ElmahCoreEx.Sql</PackageId>
-	  <Authors>ElmahCoreEx</Authors>
-	  <Company>ElmahCoreEx</Company>
-	  <Product>ElmahCore.Sql</Product>
-	  <NeutralLanguage>en-001</NeutralLanguage>
-	  <RepositoryUrl>https://www.nuget.org/packages/ElmahCoreEx</RepositoryUrl>
-	  <PackageTags>net-core elmah mvc-core asp-net-core asp-net-core-mvc elmah-core netcore aspnetcore aspnetcoremvc</PackageTags>
-	  <Description>ELMAH for ASP.NET Core Microsoft SQL Adapter</Description>
-	  <Copyright>ElmahCoreEx</Copyright>
-	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-	  
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <LangVersion>default</LangVersion>
-    <TargetFramework>net8.0</TargetFramework>
-  </PropertyGroup>
+    <PropertyGroup>
+        <Version>2.1.5</Version>
+        <PackageProjectUrl>https://github.com/ElmahCoreEx/ElmahCoreEx</PackageProjectUrl>
+        <AssemblyVersion>2.1.5.0</AssemblyVersion>
+        <FileVersion>2.1.5.0</FileVersion>
+        <AssemblyName>ElmahCore.Sql</AssemblyName>
+        <PackageId>ElmahCoreEx.Sql</PackageId>
+        <Authors>ElmahCoreEx</Authors>
+        <Company>ElmahCoreEx</Company>
+        <Product>ElmahCore.Sql</Product>
+        <NeutralLanguage>en-001</NeutralLanguage>
+        <RepositoryUrl>https://www.nuget.org/packages/ElmahCoreEx</RepositoryUrl>
+        <PackageTags>net-core elmah mvc-core asp-net-core asp-net-core-mvc elmah-core netcore aspnetcore aspnetcoremvc</PackageTags>
+        <Description>ELMAH for ASP.NET Core Microsoft SQL Adapter</Description>
+        <Copyright>ElmahCoreEx</Copyright>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
-<PropertyGroup>
-  <MinVerDefaultPreReleaseIdentifiers>alpha.0</MinVerDefaultPreReleaseIdentifiers>
-</PropertyGroup>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <LangVersion>default</LangVersion>
+        <TargetFramework>net10.0</TargetFramework>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.1" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
-    <PackageReference Include="MinVer" Version="4.3.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="8.0.1" />
-  </ItemGroup>
+    <PropertyGroup>
+        <MinVerDefaultPreReleaseIdentifiers>alpha.0</MinVerDefaultPreReleaseIdentifiers>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\ElmahCore\ElmahCore.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.4" />
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.103" PrivateAssets="All" />
+        <PackageReference Include="MinVer" Version="7.0.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
 
-<PropertyGroup>
-    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-</PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\ElmahCore\ElmahCore.csproj"/>
+    </ItemGroup>
 
-<ItemGroup>
-    <None Include="..\LICENSE.txt" Pack="true" PackagePath="" />
-    <None Include="..\README.md" Pack="true" PackagePath="" />
-</ItemGroup>
+    <PropertyGroup>
+        <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\LICENSE.txt" Pack="true" PackagePath=""/>
+        <None Include="..\README.md" Pack="true" PackagePath=""/>
+    </ItemGroup>
 </Project>

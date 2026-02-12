@@ -1,5 +1,15 @@
 # Release Notes
 
+## 2.1.5
+
+### Summary
+
+Migrate all projects to .NET 10, update dependencies and adjust solution structure
+
+### Changes
+
+- Migrate to net10
+- Update dependencies
 
 ## 2.1.4-beta 1
 
