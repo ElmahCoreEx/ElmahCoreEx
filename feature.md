@@ -45,10 +45,11 @@
 
 ### High Priority - Security & Reliability
 
-- [ ] **SEC-001: Fix SQL Injection in Table/Schema Names**
+- [x] **SEC-001: Fix SQL Injection in Table/Schema Names**
   - **Files:** `ElmahCore.MsSql/SqlErrorLog.cs:241-254`
   - **Issue:** Schema and table names interpolated directly into SQL
   - **Action:** Add identifier validation regex or use parameterized approach
+  - **Status:** ✓ Completed - Added SqlIdentifierValidator class with regex validation. SqlErrorLog validates schema/table names in constructor.
   - **Example Fix:**
     ```csharp
     private static readonly Regex SafeIdentifier = new(@"^[a-zA-Z_][a-zA-Z0-9_]{0,127}$");

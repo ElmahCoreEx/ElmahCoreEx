@@ -45,6 +45,10 @@ public class SqlErrorLog : RelationalErrorLog
         _tableName = !string.IsNullOrWhiteSpace(tableName) ? tableName : "ELMAH_Error";
         _logAllXml = logAllXml;
 
+        // Validate identifiers to prevent SQL injection
+        SqlIdentifierValidator.ValidateSchemaName(_schemaName);
+        SqlIdentifierValidator.ValidateTableName(_tableName);
+
         if (createTablesIfNotExist)
             CreateTableIfNotExists();
     }
