@@ -95,6 +95,13 @@ public class ElmahOptions
     /// </summary>
     public bool EnableDiagnosticObserver { get; set; } = true;
 
+    /// <summary>
+    ///     Enable/Disable storing the full XML representation of errors in the database.
+    ///     When disabled, a minimal placeholder is stored instead.
+    ///     Default is true for backward compatibility.
+    /// </summary>
+    public bool LogAllXml { get; set; } = true;
+
     public virtual bool PermissionCheck(HttpContext context)
     {
         return OnPermissionCheck(context);
