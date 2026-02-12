@@ -52,7 +52,11 @@ internal sealed class ErrorLogMiddleware
     public ErrorLogMiddleware(RequestDelegate next, ErrorLog errorLog, ILoggerFactory loggerFactory,
         IOptions<ElmahOptions> elmahOptions)
     {
+        // Register with both static field (for backward compatibility) and service
+#pragma warning disable CS0618 // Intentional: maintaining backward compatibility
         ElmahExtensions.LogMiddleware = this;
+#pragma warning restore CS0618
+        ErrorLoggerService.SetMiddleware(this);
         _next = next;
         _errorLog = errorLog ?? throw new ArgumentNullException(nameof(errorLog));
         var lf = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));

@@ -117,12 +117,13 @@
         return "[Body too large or unknown size]";
     ```
 
-- [ ] **ARCH-001: Replace Static Service Locator Pattern**
+- [x] **ARCH-001: Replace Static Service Locator Pattern**
   - **Files:**
     - `ElmahCore.Mvc/ElmahExtensions.cs:14`
     - `ElmahCore.Mvc/ErrorLogMiddleware.cs:54`
   - **Issue:** Static `LogMiddleware` field breaks DI, testing, and multi-tenancy
   - **Action:** Create `IErrorLogger` interface for DI-based access
+  - **Status:** ✓ Completed - Added IErrorLogger interface and ErrorLoggerService. Static methods deprecated but maintained for backward compatibility.
   - **Example Fix:**
     ```csharp
     public interface IErrorLogger

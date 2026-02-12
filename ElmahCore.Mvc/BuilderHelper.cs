@@ -46,7 +46,10 @@ public static class BuilderHelper
         services.AddSingleton<ILoggerProvider>(provider =>
             new ElmahLoggerProvider(provider.GetService<IHttpContextAccessor>()));
 
-        return services.AddSingleton<ErrorLog, T>();
+        services.AddSingleton<ErrorLog, T>();
+        services.AddSingleton<IErrorLogger, ErrorLoggerService>();
+
+        return services;
     }
 
     public static IServiceCollection SetElmahLogLevel(this IServiceCollection services, LogLevel level)
