@@ -162,13 +162,14 @@
 
 ### Low Priority - Code Quality & Maintainability
 
-- [ ] **MAINT-002: Extract Common Database Logic**
+- [x] **MAINT-002: Extract Common Database Logic**
   - **Files:**
     - `ElmahCore.MsSql/SqlErrorLog.cs`
     - `ElmahCore.MySql/MySqlErrorLog.cs`
     - `ElmahCore.Postgresql/PgsqlErrorLog.cs`
   - **Issue:** ~80% code duplication across implementations
   - **Action:** Create `RelationalErrorLog` base class
+  - **Status:** ✓ Completed - Created RelationalErrorLog base class with common Log, GetError, GetErrors, and async implementations. Database-specific classes now only implement connection creation and command factories.
   - **Example Fix:**
     ```csharp
     public abstract class RelationalErrorLog : ErrorLog
