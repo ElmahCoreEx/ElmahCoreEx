@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
@@ -105,5 +108,49 @@ public class ErrorLogMiddlewareTests
         // With DefaultHttpContext (no connection), Error defaults to 0
         // With a real HTTP context, it would default to 500
         entry.Error.StatusCode.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task InvokeAsyncDoesNotThrowWhenBodyIsShorterThanDeclaredContentLength()
+    {
+        var errorLog = new MemoryErrorLog();
+        var options = Options.Create(new ElmahOptions { LogRequestBody = true });
+        var middleware = new ErrorLogMiddleware(_requestDelegate, errorLog, _loggerFactory, options);
+
+        var context = new DefaultHttpContext();
+        var actualBody = Encoding.UTF8.GetBytes("field=short");
+        context.Request.ContentType = "application/x-www-form-urlencoded";
+        // Simulates a truncated/malformed request (e.g. a bot that disconnects mid-body):
+        // the client declares more bytes than it actually sends.
+        context.Request.ContentLength = actualBody.Length + 100;
+        context.Request.Body = new MemoryStream(actualBody);
+
+        var act = async () => await middleware.InvokeAsync(context);
+
+        await act.Should().NotThrowAsync();
+    }
+
+    [Fact]
+    public async Task InvokeAsyncCapturesTruncatedBodyInErrorInsteadOfThrowingEndOfStreamException()
+    {
+        var errorLog = new MemoryErrorLog();
+        var options = Options.Create(new ElmahOptions { LogRequestBody = true });
+        var actualBody = Encoding.UTF8.GetBytes("field=short");
+        RequestDelegate throwingDelegate = _ => throw new InvalidOperationException("boom");
+        var middleware = new ErrorLogMiddleware(throwingDelegate, errorLog, _loggerFactory, options);
+
+        var context = new DefaultHttpContext();
+        context.Request.ContentType = "application/x-www-form-urlencoded";
+        context.Request.ContentLength = actualBody.Length + 100;
+        context.Request.Body = new MemoryStream(actualBody);
+
+        var act = async () => await middleware.InvokeAsync(context);
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+
+        var entries = new List<ErrorLogEntry>();
+        errorLog.GetErrors(0, 10, entries);
+        entries.Should().ContainSingle();
+        entries[0].Error.Body.Should().Be(Encoding.UTF8.GetString(actualBody));
     }
 }
