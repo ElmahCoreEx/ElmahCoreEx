@@ -1,13 +1,16 @@
 name: Publish Release
 
-# One-click stable release of all packages:
+# One-click stable release of all packages. Run it from develop (the normal
+# path) or from main (for a hotfix):
 #
 #   1. resolves the version from the release draft (or the version input)
 #   2. makes sure changelog.md has a section for it, rolling "## Unreleased"
 #      into a version heading if the notes were collected there
-#   3. commits any changelog change to main and tags it
+#   3. commits any changelog change to the branch it runs on and tags it
 #   4. calls release.yml, which builds, tests, packs, and publishes to NuGet
 #   5. publishes the release draft with contributor attribution
+#   6. when run from develop, merges the released commit into main once the
+#      packages are published
 #
 # All packages (ElmahCoreEx, ElmahCoreEx.Common, ElmahCoreEx.Sql, ElmahCoreEx.MySql,
 # ElmahCoreEx.Postgresql) take their version from the tag through MinVer, so this
@@ -48,10 +51,13 @@ jobs:
     steps:
       - name: Check branch
         run: |
-          if [ "$GITHUB_REF_NAME" != "main" ]; then
-            echo "::error::Releases must be published from main (got $GITHUB_REF_NAME)"
-            exit 1
-          fi
+          case "$GITHUB_REF_NAME" in
+            develop|main) ;;
+            *)
+              echo "::error::Releases must be published from develop or main (got $GITHUB_REF_NAME)"
+              exit 1
+              ;;
+          esac
 
       - uses: actions/checkout@v7
         with:
@@ -138,8 +144,10 @@ jobs:
           if ! git diff --quiet -- changelog.md; then
             git add changelog.md
             git commit -m "chore: roll changelog for $TAG"
-            git push origin HEAD:main
-            echo "Committed the changelog roll to main — merge main back into develop." >> "$GITHUB_STEP_SUMMARY"
+            git push origin "HEAD:$GITHUB_REF_NAME"
+            if [ "$GITHUB_REF_NAME" = "main" ]; then
+              echo "Committed the changelog roll to main — merge main back into develop." >> "$GITHUB_STEP_SUMMARY"
+            fi
           fi
 
           git tag -a "$TAG" -m "Release $TAG"
@@ -221,3 +229,41 @@ jobs:
           gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --notes-file notes.md
           echo "Appended:"
           cat new-contributors.md
+
+  merge-to-main:
+    name: Merge release into main
+    needs: [prepare, release]
+    # Only after the packages are on NuGet, so main never points at a release
+    # that failed to publish. A release run from main is already there.
+    if: ${{ !inputs.dry-run && github.ref_name == 'develop' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    env:
+      TAG: ${{ needs.prepare.outputs.tag }}
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+          fetch-tags: true
+
+      # Merges the tag, not the tip of develop, so commits that landed on develop
+      # while the release was running stay out of main. Fast-forwards when main
+      # has nothing develop lacks; otherwise makes a merge commit. A conflict
+      # fails the job and main is left as it was — merge by hand.
+      - name: Merge tag into main
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+          if ! git merge --no-edit -m "Merge release $TAG into main" "$TAG"; then
+            git merge --abort || true
+            echo "::error::Could not merge $TAG into main cleanly. Merge develop into main by hand."
+            exit 1
+          fi
+
+          git push origin HEAD:main
+          echo "Merged $TAG into main." >> "$GITHUB_STEP_SUMMARY"
