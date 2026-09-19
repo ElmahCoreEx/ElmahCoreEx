@@ -3,7 +3,9 @@ name: Release Drafter
 on:
   pull_request_target:
     types: [closed]
-    branches: [main]
+    # PRs merge into develop, and Publish Release runs from develop, so the draft
+    # tracks develop. main is only updated by Publish Release.
+    branches: [develop]
 
 permissions:
   contents: write
