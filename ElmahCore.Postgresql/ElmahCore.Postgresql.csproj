@@ -30,7 +30,7 @@
     <ItemGroup>
         <PackageReference Include="JetBrains.Annotations" Version="2026.2.0" />
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.401" PrivateAssets="All" />
-        <PackageReference Include="MinVer" Version="7.0.0">
+        <PackageReference Include="MinVer" Version="8.0.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -38,7 +38,7 @@
 
 
     <ItemGroup>
-        <PackageReference Include="Npgsql" Version="10.0.1" />
+        <PackageReference Include="Npgsql" Version="10.0.3" />
     </ItemGroup>
 
     <ItemGroup>
