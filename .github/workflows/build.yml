@@ -34,5 +34,24 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
-      - name: Test
-        run: dotnet test --no-restore --verbosity normal
+      - name: Unit tests (ElmahCore.Tests)
+        run: dotnet test Tests/ElmahCore.Tests --no-restore --verbosity normal
+
+      - name: Unit tests (ElmahCore.Mvc.Tests)
+        run: dotnet test Tests/ElmahCore.Mvc.Tests --no-restore --verbosity normal
+
+  integration:
+    # Starts SQL Server in Docker via Testcontainers.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Integration tests
+        run: dotnet test Tests/ElmahCore.IntegrationTests --verbosity normal

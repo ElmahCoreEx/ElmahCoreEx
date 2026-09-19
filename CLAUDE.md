@@ -6,7 +6,7 @@ Error Logging Modules and Handlers for ASP.NET Core. A .NET Core port of ELMAH p
 
 ```bash
 dotnet build              # Build all projects
-dotnet test               # Run all tests
+dotnet test               # Run all tests (integration tests need Docker)
 dotnet run --project ElmahCore.Demo  # Run demo app (UI at /elmah)
 ```
 
@@ -46,6 +46,11 @@ Tests use xUnit, AwesomeAssertions, and NSubstitute:
 ```bash
 dotnet test Tests/ElmahCore.Tests
 dotnet test Tests/ElmahCore.Mvc.Tests
+dotnet test Tests/ElmahCore.IntegrationTests   # needs Docker
 ```
 
 Pattern: `[ClassName]_[Scenario]_[ExpectedResult]`
+
+`Tests/ElmahCore.IntegrationTests` runs the database error logs against real servers with Testcontainers
+(SQL Server 2022, one container per test run). Shared behavior is in `ErrorLogContractTests`; to cover another
+database, subclass it with that database's log. Tests isolate their rows with a unique `ApplicationName`.
