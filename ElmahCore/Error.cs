@@ -187,8 +187,7 @@ public sealed class Error : ICloneable
     /// </summary>
     public string HostName
     {
-        get => _hostName ?? Environment.GetEnvironmentVariable("COMPUTERNAME") ??
-            Environment.GetEnvironmentVariable("HOSTNAME");
+        get => _hostName ?? Environment.MachineName;
         set => _hostName = value;
     }
 
