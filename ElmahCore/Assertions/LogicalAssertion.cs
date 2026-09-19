@@ -1,72 +1,71 @@
 using System;
 using System.Collections.Generic;
 
-namespace ElmahCore.Assertions
+namespace ElmahCore.Assertions;
+
+internal sealed class LogicalAssertion : CompositeAssertion
 {
-    internal sealed class LogicalAssertion : CompositeAssertion
+    private readonly bool _all;
+    private readonly bool _not;
+
+    private LogicalAssertion(IEnumerable<IAssertion> assertions, bool not, bool all) :
+        base(assertions)
     {
-        private readonly bool _all;
-        private readonly bool _not;
+        _not = not;
+        _all = all;
+    }
 
-        private LogicalAssertion(IEnumerable<IAssertion> assertions, bool not, bool all) :
-            base(assertions)
+    public static LogicalAssertion LogicalAnd(IAssertion[] operands)
+    {
+        return new LogicalAssertion(operands, false, true);
+    }
+
+    public static LogicalAssertion LogicalOr(IAssertion[] operands)
+    {
+        return new LogicalAssertion(operands, false, false);
+    }
+
+    public static LogicalAssertion LogicalNot(IAssertion[] operands)
+    {
+        return new LogicalAssertion(operands, true, true);
+    }
+
+    public override bool Test(object context)
+    {
+        if (context == null)
+            throw new ArgumentNullException(nameof(context));
+
+        if (Count == 0)
+            return false;
+
+        //
+        // Walk through all child assertions and determine the
+        // outcome, OR-ing or AND-ing each as needed.
+        //
+
+        var result = false;
+
+        foreach (var assertion in this)
         {
-            _not = not;
-            _all = all;
-        }
+            if (assertion == null)
+                continue;
 
-        public static LogicalAssertion LogicalAnd(IAssertion[] operands)
-        {
-            return new LogicalAssertion(operands, false, true);
-        }
+            var testResult = assertion.Test(context);
 
-        public static LogicalAssertion LogicalOr(IAssertion[] operands)
-        {
-            return new LogicalAssertion(operands, false, false);
-        }
+            if (_not)
+                testResult = !testResult;
 
-        public static LogicalAssertion LogicalNot(IAssertion[] operands)
-        {
-            return new LogicalAssertion(operands, true, true);
-        }
-
-        public override bool Test(object context)
-        {
-            if (context == null)
-                throw new ArgumentNullException(nameof(context));
-
-            if (Count == 0)
-                return false;
-
-            //
-            // Walk through all child assertions and determine the
-            // outcome, OR-ing or AND-ing each as needed.
-            //
-
-            var result = false;
-
-            foreach (var assertion in this)
+            if (testResult)
             {
-                if (assertion == null)
-                    continue;
-
-                var testResult = assertion.Test(context);
-
-                if (_not)
-                    testResult = !testResult;
-
-                if (testResult)
-                {
-                    if (!_all) return true;
-                    result = true;
-                }
-                else
-                {
-                    if (_all) return false;
-                }
+                if (!_all) return true;
+                result = true;
             }
-
-            return result;
+            else
+            {
+                if (_all) return false;
+            }
         }
+
+        return result;
     }
 }

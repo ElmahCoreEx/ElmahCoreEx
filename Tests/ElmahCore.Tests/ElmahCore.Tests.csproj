@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <IsPackable>false</IsPackable>
+        <LangVersion>default</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AwesomeAssertions" Version="9.6.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
+        <PackageReference Include="NSubstitute" Version="6.2.0" />
+        <PackageReference Include="xunit" Version="2.9.3"/>
+        <PackageReference Include="xunit.runner.visualstudio" Version="4.0.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="coverlet.collector" Version="10.0.1">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\ElmahCore\ElmahCore.csproj"/>
+        <ProjectReference Include="..\..\ElmahCore.MsSql\ElmahCore.Sql.csproj"/>
+        <ProjectReference Include="..\..\ElmahCore.MySql\ElmahCore.MySql.csproj"/>
+        <ProjectReference Include="..\..\ElmahCore.Postgresql\ElmahCore.Postgresql.csproj"/>
+    </ItemGroup>
+
+</Project>

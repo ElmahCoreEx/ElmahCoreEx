@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -15,340 +15,366 @@ using Microsoft.Extensions.Options;
 
 [assembly: InternalsVisibleTo("ElmahCore.Mvc.Tests")]
 
-namespace ElmahCore.Mvc
+namespace ElmahCore.Mvc;
+
+internal sealed class ErrorLogMiddleware
 {
-    internal sealed class ErrorLogMiddleware
+    public delegate void ErrorLoggedEventHandler(object sender, ErrorLoggedEventArgs args);
+
+    internal static bool ShowDebugPage = false;
+
+    private static readonly string[] SupportedContentTypes =
     {
-        public delegate void ErrorLoggedEventHandler(object sender, ErrorLoggedEventArgs args);
+        "application/json",
+        "application/x-www-form-urlencoded",
+        "application/javascript",
+        "application/soap+xml",
+        "application/xhtml+xml",
+        "application/xml",
+        "text/html",
+        "text/javascript",
+        "text/plain",
+        "text/xml",
+        "text/markdown"
+    };
 
-        internal static bool ShowDebugPage = false;
+    private readonly Func<HttpContext, bool> _checkPermissionAction = _ => true;
+    private readonly string _elmahRoot = @"~/elmah";
+    private readonly ErrorLog _errorLog;
+    private readonly List<IErrorFilter> _filters = [];
+    private readonly ILogger _logger;
+    private readonly bool _logRequestBody = true;
+    private readonly int _maxRequestBodySize = 1024 * 1024; // 1MB default
+    private readonly RequestDelegate _next;
+    private readonly IEnumerable<IErrorNotifier> _notifiers;
+    private readonly Func<HttpContext, Error, Task> _onError = (_, _) => Task.CompletedTask;
 
-        private static readonly string[] SupportedContentTypes =
+    public ErrorLogMiddleware(RequestDelegate next, ErrorLog errorLog, ILoggerFactory loggerFactory,
+        IOptions<ElmahOptions> elmahOptions)
+    {
+        // Register with both static field (for backward compatibility) and service
+#pragma warning disable CS0618 // Intentional: maintaining backward compatibility
+        ElmahExtensions.LogMiddleware = this;
+#pragma warning restore CS0618
+        ErrorLoggerService.SetMiddleware(this);
+        _next = next;
+        _errorLog = errorLog ?? throw new ArgumentNullException(nameof(errorLog));
+        var lf = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
+
+        _logger = lf.CreateLogger<ErrorLogMiddleware>();
+
+        // return here if the elmah options are not provided
+        if (elmahOptions?.Value == null)
+            return;
+        var options = elmahOptions.Value;
+
+        _checkPermissionAction = options.PermissionCheck;
+        _onError = options.Error;
+
+        // Notifiers
+        if (options.Notifiers != null)
+            _notifiers = elmahOptions.Value.Notifiers.ToList();
+
+        // Filters
+        _filters = elmahOptions.Value.Filters.ToList();
+        foreach (var errorFilter in options.Filters) Filtering += errorFilter.OnErrorModuleFiltering;
+
+        _logRequestBody = elmahOptions.Value.LogRequestBody;
+        _maxRequestBodySize = elmahOptions.Value.MaxRequestBodySize;
+
+        if (!string.IsNullOrEmpty(options.FiltersConfig))
+            try
+            {
+                ConfigureFilters(options.FiltersConfig);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in filters XML file");
+            }
+
+        if (elmahOptions.Value != null)
         {
-            "application/json",
-            "application/x-www-form-urlencoded",
-            "application/javascript",
-            "application/soap+xml",
-            "application/xhtml+xml",
-            "application/xml",
-            "text/html",
-            "text/javascript",
-            "text/plain",
-            "text/xml",
-            "text/markdown"
-        };
+            if (!string.IsNullOrEmpty(options.Path))
+            {
+                _elmahRoot = elmahOptions.Value.Path.ToLower();
+                if (!_elmahRoot.StartsWith('/') && !_elmahRoot.StartsWith("~/")) _elmahRoot = "/" + _elmahRoot;
+                if (_elmahRoot.EndsWith('/')) _elmahRoot = _elmahRoot[..^1];
+            }
 
-        private readonly Func<HttpContext, bool> _checkPermissionAction = context => true;
-        private readonly string _elmahRoot = @"~/elmah";
-        private readonly ErrorLog _errorLog;
-        private readonly List<IErrorFilter> _filters = new List<IErrorFilter>();
-        private readonly ILogger _logger;
-        private readonly bool _logRequestBody = true;
-        private readonly RequestDelegate _next;
-        private readonly IEnumerable<IErrorNotifier> _notifiers;
-        private readonly Func<HttpContext, Error, Task> _onError = (context, error) => Task.CompletedTask;
+            if (!string.IsNullOrWhiteSpace(options.ApplicationName))
+                _errorLog.ApplicationName = elmahOptions.Value.ApplicationName;
+            if (options.SourcePaths != null && options.SourcePaths.Length != 0)
+                _errorLog.SourcePaths = elmahOptions.Value.SourcePaths;
+        }
+    }
 
-        public ErrorLogMiddleware(RequestDelegate next, ErrorLog errorLog, ILoggerFactory loggerFactory,
-            IOptions<ElmahOptions> elmahOptions)
+    public event ExceptionFilterEventHandler Filtering;
+
+    // ReSharper disable once EventNeverSubscribedTo.Global
+    public event ErrorLoggedEventHandler Logged;
+
+    private void ConfigureFilters(string config)
+    {
+        var doc = new XmlDocument();
+        doc.Load(config);
+        var filterNodes = doc.SelectNodes("//errorFilter");
+        if (filterNodes != null)
+            foreach (XmlNode filterNode in filterNodes)
+            {
+                var notList = new List<string>();
+                var notifiers = filterNode.SelectNodes("//notifier");
+                {
+                    if (notifiers != null)
+                        foreach (XmlElement notifier in notifiers)
+                        {
+                            var name = notifier.Attributes["name"]?.Value;
+                            if (name != null) notList.Add(name);
+                        }
+                }
+                var assertionNode = (XmlElement)filterNode.SelectSingleNode("test/*");
+
+                if (assertionNode != null)
+                {
+                    var a = AssertionFactory.Create(assertionNode);
+                    var filter = new ErrorFilter(a, notList);
+                    Filtering += filter.OnErrorModuleFiltering;
+                    _filters.Add(filter);
+                }
+            }
+    }
+
+    public async Task InvokeAsync(HttpContext context)
+    {
+        string body = null;
+        var elmahRoot = _elmahRoot;
+        try
         {
-            ElmahExtensions.LogMiddleware = this;
-            _next = next;
-            _errorLog = errorLog ?? throw new ArgumentNullException(nameof(errorLog));
-            var lf = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
+            if (elmahRoot.StartsWith("~/"))
+                elmahRoot = context.Request.PathBase + elmahRoot.Substring(1);
 
-            _logger = lf.CreateLogger<ErrorLogMiddleware>();
+            context.Features.Set(new ElmahLogFeature());
 
-            //return here if the elmah options is not provided
-            if (elmahOptions?.Value == null)
+            var sourcePath = context.Request.PathBase + context.Request.Path.Value;
+            if (sourcePath.Equals(elmahRoot, StringComparison.InvariantCultureIgnoreCase)
+                || sourcePath.StartsWith(elmahRoot + "/", StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (!_checkPermissionAction(context))
+                {
+                    await context.ChallengeAsync();
+                    return;
+                }
+
+                var path = sourcePath.Substring(elmahRoot.Length, sourcePath.Length - elmahRoot.Length);
+                if (path.StartsWith('/')) path = path[1..];
+                if (path.Contains('?')) path = path[..path.IndexOf('?')];
+                await ProcessElmahRequest(context, path);
                 return;
-            var options = elmahOptions.Value;
-
-            _checkPermissionAction = options.PermissionCheck;
-            _onError = options.Error;
-
-            //Notifiers
-            if (options.Notifiers != null)
-                _notifiers = elmahOptions.Value.Notifiers.ToList();
-
-            //Filters
-            _filters = elmahOptions.Value?.Filters.ToList();
-            foreach (var errorFilter in options.Filters) Filtering += errorFilter.OnErrorModuleFiltering;
-
-            _logRequestBody = elmahOptions.Value?.LogRequestBody == true;
-
-            if (!string.IsNullOrEmpty(options.FiltersConfig))
-                try
-                {
-                    ConfigureFilters(options.FiltersConfig);
-                }
-                catch (Exception)
-                {
-                    _logger.LogError("Error in filters XML file");
-                }
-
-            if (elmahOptions.Value != null)
-            {
-                if (!string.IsNullOrEmpty(options.Path))
-                {
-                    _elmahRoot = elmahOptions.Value.Path.ToLower();
-                    if (!_elmahRoot.StartsWith("/") && !_elmahRoot.StartsWith("~/")) _elmahRoot = "/" + _elmahRoot;
-                    if (_elmahRoot.EndsWith("/")) _elmahRoot = _elmahRoot.Substring(0, _elmahRoot.Length - 1);
-                }
-
-                if (!string.IsNullOrWhiteSpace(options.ApplicationName))
-                    _errorLog.ApplicationName = elmahOptions.Value.ApplicationName;
-                if (options.SourcePaths != null && options.SourcePaths.Any())
-                    _errorLog.SourcePaths = elmahOptions.Value.SourcePaths;
             }
+
+            var ct = context.Request.ContentType?.ToLower();
+            var tEnc = string.Join(",", context.Request.Headers["Transfer-Encoding"].ToArray());
+            if (_logRequestBody && !string.IsNullOrEmpty(ct) && SupportedContentTypes.Any(i => ct.Contains(i))
+                && !tEnc.Contains("chunked"))
+                body = await GetBody(context.Request, _maxRequestBodySize);
+
+            await _next(context);
+
+            if (context.Response.HasStarted
+                || context.Response.StatusCode < 400
+                || context.Response.StatusCode >= 600
+                || context.Response.ContentLength.HasValue
+                || !string.IsNullOrEmpty(context.Response.ContentType))
+                return;
+            await LogException(new HttpException(context.Response.StatusCode), context, _onError, body);
+        }
+        catch (Exception exception)
+        {
+            var id = await LogException(exception, context, _onError, body);
+            var location = $"{elmahRoot}/detail/{id}";
+
+            context.Features.Set<IElmahFeature>(new ElmahFeature(id, location));
+
+            // To next middleware
+            if (!ShowDebugPage) throw;
+            //Show Debug page
+            context.Response.Redirect(location);
+        }
+    }
+
+    private static async Task<string> GetBody(HttpRequest request, int maxBodySize)
+    {
+        // Check if body size exceeds limit (0 means unlimited)
+        if (maxBodySize > 0)
+        {
+            if (!request.ContentLength.HasValue)
+                return "[Body not captured: unknown content length]";
+            if (request.ContentLength.Value > maxBodySize)
+                return $"[Body not captured: size {request.ContentLength.Value} exceeds limit of {maxBodySize} bytes]";
         }
 
-        public event ExceptionFilterEventHandler Filtering;
-
-        // ReSharper disable once EventNeverSubscribedTo.Global
-        public event ErrorLoggedEventHandler Logged;
-
-        private void ConfigureFilters(string config)
+        request.EnableBuffering();
+        var body = request.Body;
+        var buffer = new byte[Convert.ToInt32(request.ContentLength)];
+        // Content-Length is not authoritative: a truncated or malformed request (e.g. a
+        // client that disconnects mid-body) can deliver fewer bytes than it declared.
+        // ReadAtLeastAsync with throwOnEndOfStream:false reads whatever is actually
+        // available instead of throwing EndOfStreamException and taking down the request.
+        string bodyAsText;
+        try
         {
-            var doc = new XmlDocument();
-            doc.Load(config);
-            var filterNodes = doc.SelectNodes("//errorFilter");
-            if (filterNodes != null)
-                foreach (XmlNode filterNode in filterNodes)
-                {
-                    var notList = new List<string>();
-                    var notifiers = filterNode.SelectNodes("//notifier");
-                    {
-                        if (notifiers != null)
-                            foreach (XmlElement notifier in notifiers)
-                            {
-                                var name = notifier.Attributes["name"]?.Value;
-                                if (name != null) notList.Add(name);
-                            }
-                    }
-                    var assertionNode = (XmlElement)filterNode.SelectSingleNode("test/*");
-
-                    if (assertionNode != null)
-                    {
-                        var a = AssertionFactory.Create(assertionNode);
-                        var filter = new ErrorFilter(a, notList);
-                        Filtering += filter.OnErrorModuleFiltering;
-                        _filters.Add(filter);
-                    }
-                }
+            var bytesRead = await request.Body.ReadAtLeastAsync(buffer, buffer.Length, throwOnEndOfStream: false,
+                cancellationToken: request.HttpContext.RequestAborted);
+            bodyAsText = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+        }
+        catch (Exception ex) when (ex is IOException or OperationCanceledException)
+        {
+            // On a real server a client that disconnects mid-body surfaces as an IOException
+            // (Kestrel's BadHttpRequestException and ConnectionResetException both derive from it)
+            // or as cancellation of RequestAborted. Failing to capture the body is not an
+            // application error, so don't let it reach InvokeAsync's catch and get logged.
+            return null;
         }
 
-        public async Task InvokeAsync(HttpContext context)
+        body.Seek(0, SeekOrigin.Begin);
+        request.Body = body;
+
+        return bodyAsText;
+    }
+
+    private async Task ProcessElmahRequest(HttpContext context, string resource)
+    {
+        try
         {
-            string body = null;
-            var elmahRoot = _elmahRoot;
-            try
+            var elmahRoot = _elmahRoot.StartsWith("~/")
+                ? context.Request.PathBase + _elmahRoot[1..]
+                : _elmahRoot;
+
+            if (resource.StartsWith("api/"))
             {
-                if (elmahRoot.StartsWith("~/"))
-                    elmahRoot = context.Request.PathBase + elmahRoot.Substring(1);
+                await ErrorApiHandler.ProcessRequest(context, _errorLog, resource);
+                return;
+            }
 
-                context.Features.Set(new ElmahLogFeature());
+            if (resource.StartsWith("exception/"))
+            {
+                await MsdnHandler.ProcessRequestException(context, resource["exception/".Length..]);
+                return;
+            }
 
-                var sourcePath = context.Request.PathBase + context.Request.Path.Value;
-                if (sourcePath.Equals(elmahRoot, StringComparison.InvariantCultureIgnoreCase)
-                    || sourcePath.StartsWith(elmahRoot + "/", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    if (!_checkPermissionAction(context))
-                    {
-                        await context.ChallengeAsync();
-                        return;
-                    }
+            if (resource.StartsWith("status/"))
+            {
+                await MsdnHandler.ProcessRequestStatus(context, resource["status/".Length..]);
+                return;
+            }
 
-                    var path = sourcePath.Substring(elmahRoot.Length, sourcePath.Length - elmahRoot.Length);
-                    if (path.StartsWith("/")) path = path.Substring(1);
-                    if (path.Contains('?')) path = path.Substring(0, path.IndexOf('?'));
-                    await ProcessElmahRequest(context, path);
+            switch (resource)
+            {
+                case "xml":
+                    await ErrorXmlHandler.ProcessRequest(context, _errorLog);
+                    break;
+                case "json":
+                    await ErrorJsonHandler.ProcessRequest(context, _errorLog);
+                    break;
+                case "rss":
+                    await ErrorRssHandler.ProcessRequest(context, _errorLog, elmahRoot);
+                    break;
+                case "digestrss":
+                    await ErrorDigestRssHandler.ProcessRequest(context, _errorLog, elmahRoot);
                     return;
-                }
-
-                var ct = context.Request.ContentType?.ToLower();
-                var tEnc = string.Join(",", context.Request.Headers["Transfer-Encoding"].ToArray());
-                if (_logRequestBody && !string.IsNullOrEmpty(ct) && SupportedContentTypes.Any(i => ct.Contains(ct))
-                    && !tEnc.Contains("chunked"))
-                    body = await GetBody(context.Request);
-
-                await _next(context);
-
-                if (context.Response.HasStarted
-                    || context.Response.StatusCode < 400
-                    || context.Response.StatusCode >= 600
-                    || context.Response.ContentLength.HasValue
-                    || !string.IsNullOrEmpty(context.Response.ContentType))
+                case "download":
+                    await ErrorLogDownloadHandler.ProcessRequestAsync(_errorLog, context);
                     return;
-                await LogException(new HttpException(context.Response.StatusCode), context, _onError, body);
-            }
-            catch (Exception exception)
-            {
-                var id = await LogException(exception, context, _onError, body);
-                var location = $"{elmahRoot}/detail/{id}";
-
-                context.Features.Set<IElmahFeature>(new ElmahFeature(id, location));
-
-                //To next middleware
-                if (!ShowDebugPage) throw;
-                //Show Debug page
-                context.Response.Redirect(location);
+                case "test":
+                    throw new TestException();
+                default:
+                    await ErrorResourceHandler.ProcessRequest(context, resource, elmahRoot);
+                    break;
             }
         }
-
-        private static async Task<string> GetBody(HttpRequest request)
+        catch (TestException)
         {
-            request.EnableBuffering();
-            var body = request.Body;
-            var buffer = new byte[Convert.ToInt32(request.ContentLength)];
-            // ReSharper disable once MustUseReturnValue
-            await request.Body.ReadAsync(buffer, 0, buffer.Length);
-            var bodyAsText = Encoding.UTF8.GetString(buffer);
-            body.Seek(0, SeekOrigin.Begin);
-            request.Body = body;
-
-            return bodyAsText;
+            throw;
         }
-
-        private async Task ProcessElmahRequest(HttpContext context, string resource)
+        catch (Exception ex)
         {
-            try
-            {
-                var elmahRoot = _elmahRoot.StartsWith("~/")
-                    ? context.Request.PathBase + _elmahRoot.Substring(1)
-                    : _elmahRoot;
-
-                if (resource.StartsWith("api/"))
-                {
-                    await ErrorApiHandler.ProcessRequest(context, _errorLog, resource);
-                    return;
-                }
-
-                if (resource.StartsWith("exception/"))
-                {
-                    await MsdnHandler.ProcessRequestException(context, resource.Substring("exception/".Length));
-                    return;
-                }
-
-                if (resource.StartsWith("status/"))
-                {
-                    await MsdnHandler.ProcessRequestStatus(context, resource.Substring("status/".Length));
-                    return;
-                }
-
-                switch (resource)
-                {
-                    case "xml":
-                        await ErrorXmlHandler.ProcessRequest(context, _errorLog);
-                        break;
-                    case "json":
-                        await ErrorJsonHandler.ProcessRequest(context, _errorLog);
-                        break;
-                    case "rss":
-                        await ErrorRssHandler.ProcessRequest(context, _errorLog, elmahRoot);
-                        break;
-                    case "digestrss":
-                        await ErrorDigestRssHandler.ProcessRequest(context, _errorLog, elmahRoot);
-                        return;
-                    case "download":
-                        await ErrorLogDownloadHandler.ProcessRequestAsync(_errorLog, context);
-                        return;
-                    case "test":
-                        throw new TestException();
-                    default:
-                        await ErrorResourceHandler.ProcessRequest(context, resource, elmahRoot);
-                        break;
-                }
-            }
-            catch (TestException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Elmah request processing error");
-            }
+            _logger.LogError(ex, "Elmah request processing error");
         }
+    }
 
-        internal async Task<string> LogException(Exception e, HttpContext context,
-            Func<HttpContext, Error, Task> onError, string body = null)
+    internal async Task<string> LogException(Exception e, HttpContext context,
+        Func<HttpContext, Error, Task> onError, string body = null, int? statusCode = null)
+    {
+        ArgumentNullException.ThrowIfNull(e);
+
+        // Fire an event to check if listeners want to filter out
+        // logging of the uncaught exception.
+
+        ErrorLogEntry entry = null;
+
+        try
         {
-            if (e == null)
-                throw new ArgumentNullException(nameof(e));
-
-            //
-            // Fire an event to check if listeners want to filter out
-            // logging of the uncaught exception.
-            //
-
-            ErrorLogEntry entry = null;
-
-            try
+            var args = new ExceptionFilterEventArgs(e, context);
+            if (_filters.Count != 0)
             {
-                var args = new ExceptionFilterEventArgs(e, context);
-                if (_filters.Any())
+                OnFiltering(args);
+
+                if (args.Dismissed && !args.DismissedNotifiers.Any())
+                    return null;
+            }
+
+            // AddMessage away...
+            var error = new Error(e, context, body);
+
+            // Override status code if provided
+            if (statusCode.HasValue)
+                error.StatusCode = statusCode.Value;
+
+            await onError(context, error);
+            error.ApplicationName = _errorLog.ApplicationName;
+            var id = await _errorLog.LogAsync(error);
+            entry = new ErrorLogEntry(_errorLog, id, error);
+
+            //Send notification
+            foreach (var notifier in _notifiers ?? Enumerable.Empty<IErrorNotifier>())
+                if (!args.DismissedNotifiers.Any(i =>
+                        i.Equals(notifier.Name, StringComparison.InvariantCultureIgnoreCase)))
                 {
-                    OnFiltering(args);
-
-                    if (args.Dismissed && !args.DismissedNotifiers.Any())
-                        return null;
+                    if (notifier is IErrorNotifierWithId notifierWithId)
+                        notifierWithId.Notify(id, error);
+                    else
+                        notifier.Notify(error);
                 }
-
-                //
-                // AddMessage away...
-                //
-                var error = new Error(e, context, body);
-
-                await onError(context, error);
-                var log = _errorLog;
-                error.ApplicationName = log.ApplicationName;
-                var id = await log.LogAsync(error);
-                entry = new ErrorLogEntry(log, id, error);
-
-                //Send notification
-                foreach (var notifier in _notifiers)
-                    if (!args.DismissedNotifiers.Any(i =>
-                            i.Equals(notifier.Name, StringComparison.InvariantCultureIgnoreCase)))
-                    {
-                        if (notifier is IErrorNotifierWithId notifierWithId)
-                            notifierWithId.Notify(id, error);
-                        else
-                            notifier.Notify(error);
-                    }
-            }
-            catch (Exception ex)
-            {
-                //
-                // IMPORTANT! We swallow any exception raised during the 
-                // logging and send them out to the trace . The idea 
-                // here is that logging of exceptions by itself should not 
-                // be  critical to the overall operation of the application.
-                // The bad thing is that we catch ANY kind of exception, 
-                // even system ones and potentially let them slip by.
-                //
-
-                _logger.LogError(ex, "Elmah local exception");
-            }
-
-            if (entry != null)
-                OnLogged(new ErrorLoggedEventArgs(entry));
-
-            return entry?.Id;
         }
-
-        /// <summary>
-        ///     Raises the <see cref="Logged" /> event.
-        /// </summary>
-        private void OnLogged(ErrorLoggedEventArgs args)
+        catch (Exception ex)
         {
-            Logged?.Invoke(this, args);
+            // IMPORTANT! We swallow any exception raised during the 
+            // logging and send them out to the trace. The idea 
+            // here is that logging of exceptions by itself should not 
+            // be critical to the overall operation of the application.
+            // The bad thing is that we catch ANY kind of exception, 
+            // even system ones and potentially let them slip by.
+            _logger.LogError(ex, "Elmah local exception");
         }
 
-        /// <summary>
-        ///     Raises the <see cref="Filtering" /> event.
-        /// </summary>
-        private void OnFiltering(ExceptionFilterEventArgs args)
-        {
-            Filtering?.Invoke(this, args);
-        }
+        if (entry != null)
+            OnLogged(new ErrorLoggedEventArgs(entry));
+
+        return entry?.Id;
+    }
+
+    /// <summary>
+    /// Raises the <see cref="Logged" /> event.
+    /// </summary>
+    private void OnLogged(ErrorLoggedEventArgs args)
+    {
+        Logged?.Invoke(this, args);
+    }
+
+    /// <summary>
+    /// Raises the <see cref="Filtering" /> event.
+    /// </summary>
+    private void OnFiltering(ExceptionFilterEventArgs args)
+    {
+        Filtering?.Invoke(this, args);
     }
 }

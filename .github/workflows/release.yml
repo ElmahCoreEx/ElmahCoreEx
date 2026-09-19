@@ -4,74 +4,104 @@ env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: true
   NUGET_PUSH_SOURCE: https://api.nuget.org/v3/index.json
-  NUGET_DIR: ${{ github.workspace}}/nuget
+  NUGET_DIR: ${{ github.workspace }}/nuget
 
 defaults:
   run:
     shell: pwsh
-    working-directory: ./
 
 on:
   push:
-    # matched against refs/heads
-    # branches-ignore:
-    # - develop
-    # matched against ref/tags
     tags:
-      - 1.*
-      - 2.*
-  workflow_dispatch: # Allow running the workflow manually from the GitHub UI
+      - '[0-9]+.*'
+  workflow_dispatch:
   release:
-    types:
-      - published # Run the workflow when a new GitHub release is published
+    types: [published]
+  # Called by release-publish.yml, which creates the tag and then invokes this
+  # workflow directly. A tag pushed with GITHUB_TOKEN does not trigger the
+  # `push: tags` trigger above, so the call has to be explicit.
+  workflow_call:
+    inputs:
+      tag:
+        description: 'Tag to release'
+        required: true
+        type: string
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        dotnet-version: ["6.0.x"]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7
         with:
-          fetch-depth: 0 # get all history to allow MinVer to work.
-      - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: ${{ matrix.dotnet-version }}
-      - name: Install dependencies
+          ref: ${{ inputs.tag || github.ref }}
+          fetch-depth: 0
 
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
         run: dotnet restore
+
       - name: Build
-        # Create the NuGet package in the folder from the environment variable NuGetDirectory
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test --configuration Release --no-build --verbosity normal
+
+      - name: Pack
+        run: dotnet pack --configuration Release --no-build --output ${{ env.NUGET_DIR }}
+
+      # Every package must carry the tag's version. A mismatch means MinVer did
+      # not see the tag, which would publish a pre-release-versioned package.
+      - name: Verify package versions match the tag
+        if: ${{ inputs.tag || github.ref_type == 'tag' }}
+        shell: bash
+        env:
+          TAG: ${{ inputs.tag || github.ref_name }}
         run: |
-          dotnet build ElmahCore.MsSql\ElmahCore.Sql.csproj --configuration Release --output ${{ env.NUGET_DIR }}
-          dotnet build ElmahCore.Postgresql\ElmahCore.Postgresql.csproj --configuration Release --output ${{ env.NUGET_DIR }}
-          dotnet build ElmahCore.MySql\ElmahCore.MySql.csproj --configuration Release --output ${{ env.NUGET_DIR }}
-          dotnet build ElmahCore.Mvc\ElmahCore.Mvc.csproj --configuration Release --output ${{ env.NUGET_DIR }}
-          dotnet build ElmahCore\ElmahCore.csproj --configuration Release --output ${{ env.NUGET_DIR }}
-      - uses: actions/upload-artifact@v3
+          status=0
+          for package in "$NUGET_DIR"/*.nupkg; do
+            name=$(basename "$package" .nupkg)
+            if [ "${name%.$TAG}" = "$name" ]; then
+              echo "::error::$name is not version $TAG"
+              status=1
+            fi
+          done
+          if [ "$status" -ne 0 ]; then
+            echo "::error::Package versions do not match tag $TAG - refusing to publish"
+            exit 1
+          fi
+          echo "All packages are version $TAG"
+
+      - uses: actions/upload-artifact@v7
         with:
           name: nuget
           if-no-files-found: error
           retention-days: 7
           path: ${{ env.NUGET_DIR }}/*.*nupkg
+
   deploy:
     runs-on: ubuntu-latest
     needs: [build]
+    environment: nuget
     steps:
-      # Download the NuGet package created in the previous job
-      - uses: actions/download-artifact@v3
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - uses: actions/download-artifact@v8
         with:
           name: nuget
           path: ${{ env.NUGET_DIR }}
-      # Install the .NET SDK indicated in the global.json file
-      # - name: Setup .NET Core
-      #   uses: actions/setup-dotnet@v3
-      - name: Publish
-        env:
-          API_KEY: ${{ secrets.NUGET_APIKEY }}
-        # run: nuget push **/*.nupkg -Source ${{ env.NUGET_PUSH_SOURCE }} -ApiKey ${{ env.API_KEY }} -SkipDuplicate
+
+      - name: Publish to NuGet
         run: |
           foreach($file in (Get-ChildItem "${{ env.NUGET_DIR }}" -Recurse -Include *.nupkg)) {
             dotnet nuget push $file --api-key "${{ secrets.NUGET_APIKEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate

@@ -1,0 +1,39 @@
+# Used by release-drafter.yml (drafts the release) and pr-autolabel.yml (labels PRs).
+# Labels come from the Conventional Commits PR title and drive both the release-note
+# category and the version bump.
+
+# Tags have no "v" prefix; release.yml publishes on tags matching [0-9]+.*
+name-template: '$RESOLVED_VERSION'
+tag-template: '$RESOLVED_VERSION'
+
+autolabeler:
+  - label: feature
+    title: ['/^feat(\(.+\))?!?:/i']
+  - label: fix
+    title: ['/^fix(\(.+\))?!?:/i']
+  - label: breaking
+    title: ['/^\w+(\(.+\))?!:/']
+  - label: chore
+    title: ['/^(chore|ci|build|refactor|test|perf|docs|style)(\(.+\))?:/i']
+
+categories:
+  - title: Breaking changes
+    labels: [breaking]
+  - title: Features
+    labels: [feature]
+  - title: Fixes
+    labels: [fix]
+  - title: Maintenance
+    labels: [chore]
+
+change-template: '- $TITLE (#$NUMBER) @$AUTHOR'
+
+version-resolver:
+  major:
+    labels: [breaking]
+  minor:
+    labels: [feature]
+  default: patch
+
+template: |
+  $CHANGES

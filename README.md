@@ -20,16 +20,59 @@ The interfaces and namespaces have been kept the same.
 
 # License
 
-This project is licensed under the terms of the Apache license 2.0.
+This project is licensed under the terms of the Apache License 2.0.
+
+# Why does this exist?
+
+We use the ElmahCore in some projects, migrated from Elmah (pre dotnet).
+This is a fork and just some tidy and maintenance work.
+
+For new projects you would be better off with something like the Microsoft.Extensions.Logging plus AppInsights or Serilog.
+
+If you are in the same boat and just want small changes, feel free to submit a PR.
 
 # Warnings & Dragons
 
 The source code for the front end appears non-existent, in ElmahCore the front end Vue SPA files are all [minified](https://github.com/ElmahCore/ElmahCore/issues/77). Consider this a warning sign for the continuation of the front end without a rewrite WITH SOURCE. Source-maps may have enough content to obtain the code but this has not be investigated.
 
 
+## Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        ASP.NET Core Application                      │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                      ErrorLogMiddleware                              │
+│  - Intercepts exceptions and HTTP 4xx/5xx errors                     │
+│  - Captures request body, logs, SQL queries, parameters              │
+│  - Routes ~/elmah/* requests to handlers                             │
+└─────────────────────────────────────────────────────────────────────┘
+           │                    │                        │
+           ▼                    ▼                        ▼
+┌──────────────────┐  ┌──────────────────┐  ┌──────────────────────────┐
+│  IErrorFilter    │  │  IErrorNotifier  │  │      ErrorLog (Base)     │
+│  - Filter errors │  │  - Email/webhook │  │  - MemoryErrorLog        │
+│  - XML config    │  │  - Notifications │  │  - SqlErrorLog (MSSQL)   │
+└──────────────────┘  └──────────────────┘  │  - MySqlErrorLog         │
+                                            │  - PgsqlErrorLog         │
+                                            │  - XmlFileErrorLog       │
+                                            └──────────────────────────┘
+                                                        │
+                                                        ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                           Web UI (Vue.js SPA)                        │
+│  - ErrorApiHandler serves /api/errors, /api/error                    │
+│  - ErrorResourceHandler serves embedded static assets                │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+
 # Using ElmahCore
 
-ELMAH for Net.Standard 2.0 and .Net 6
+ELMAH for Net Core 10 
 
 Add NuGet package [ElmahCoreEx](https://www.nuget.org/packages?q=elmahcoreex)
 
@@ -39,9 +82,8 @@ Add NuGet package [ElmahCoreEx](https://www.nuget.org/packages?q=elmahcoreex)
 // Startup.cs
 services.AddElmah() //in ConfigureServices
 // ...
-app.UseElmah(); //in Configure, must be set after initializing other exception handlers
-    //such as UseExceptionHandler and UseDeveloperExceptionPage
-
+app.UseElmah(); // in Configure, must be positioned after initializing other exception handlers
+                // such as UseExceptionHandler and UseDeveloperExceptionPage
 ```
 
 Default ELMAH endpoint path `~/elmah`.
@@ -62,16 +104,17 @@ services.AddElmah(options =>
 ```
 
 ```csharp
+// startup.cs
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseElmah(); //needs to be placed after `UseAuthentication` and `UseAuthorization`
+//...
+app.UseElmah(); // needs to be positioned after `UseAuthentication` and `UseAuthorization`
 ```
-
-or the user will be redirected to the sign in screen even if they are authenticated.
+or the user will be redirected to the sign-in screen even if they are authenticated.
 
 ## Change Error Log type
 
-You can create your own error log, which will store errors anywhere.
+You can implement a custom error log adapter to write logs to alternate locations.
 
 ```csharp
 public class MyErrorLog: ErrorLog {
@@ -79,48 +122,67 @@ public class MyErrorLog: ErrorLog {
 }    
 ```
 
-The ErrorLog adapters:
+The ErrorLog adapters are available:
 
 - **MemoryErrorLog** – store errors in memory (by default)
-- **XmlFileErrorLog** – store errors in XML files
+- **XmlFileErrorLog** – store errors in XML files.
 - **SqlErrorLog** - store errors in MS SQL (add reference to [ElmahCoreEx.Sql](https://www.nuget.org/packages/ElmahCoreEx.Sql))
 - **MysqlErrorLog** - store errors in MySQL (add reference to [ElmahCoreEx.MySql](https://www.nuget.org/packages/ElmahCoreEx.MySql))
 - **PgsqlErrorLog** - store errors in PostgreSQL (add reference to [ElmahCoreEx.Postgresql](https://www.nuget.org/packages/ElmahCoreEx.Postgresql))
 
+Example to configure for XML:
+
 ```csharp
 services.AddElmah<XmlFileErrorLog>(options =>
 {
-    options.LogPath = "~/log"; // OR options.LogPath = "с:\errors";
+  options.LogPath = "~/log"; // OR options.LogPath = "с:\errors";
 });
 ```
+
+Example to configure For MSSQL
 
 ```csharp
 services.AddElmah<SqlErrorLog>(options =>
 {
-    options.ConnectionString = "connection_string";
-    options.SqlServerDatabaseSchemaName = "Errors"; //Defaults to dbo if not set
-    options.SqlServerDatabaseTableName = "ElmahError"; //Defaults to ELMAH_Error if not set
+  options.ConnectionString = "connection_string";
+  options.SqlServerDatabaseSchemaName = "Errors"; // Defaults to dbo if not set
+  options.SqlServerDatabaseTableName = "ElmahError"; // Defaults to ELMAH_Error if not set
 });
 ```
 
-## Raise exception
+## Disable Full XML Logging
+
+For high-volume applications, you can disable storing the full XML representation of errors in the database to reduce storage requirements. When disabled, a minimal placeholder XML is stored instead. The basic error fields (type, message, source, user, time, statusCode) are still stored in dedicated database columns.
 
 ```csharp
-public IActionResult Test()
+services.AddElmah<SqlErrorLog>(options =>
+{
+  options.ConnectionString = "connection_string";
+  options.LogAllXml = false; // Disable full XML storage
+});
+```
+
+This option works with `SqlErrorLog`, `MySqlErrorLog`, and `PgsqlErrorLog`. Default is `true` for backward compatibility.
+
+## Raise exception
+
+To raise a custom exception to log:
+
+```csharp
+public IActionResult RaiseCustomExceptionExample()
 {
     HttpContext.RaiseError(new InvalidOperationException("Test"));
-    ...
 }
 ```
 
 ## Microsoft.Extensions.Logging support
 
-Since version 2.0 ElmahCore support Microsoft.Extensions.Logging
+ElmahCoreEx support `Microsoft.Extensions.Logging`
 
 ## Source Preview
 
-Since version 2.0.1 ElmahCore support source preview.
-Just add paths to source files.
+ElmahCoreEx support source preview.
+Add paths to source files example:
 
 ```csharp
 services.AddElmah(options =>
@@ -134,17 +196,17 @@ services.AddElmah(options =>
 });
 ```
 
-## Log the request body
+## Logging request body
 
-Since version 2.0.5 ElmahCore can log the request body.
+V2.0.5+ ElmahCoreEx can log the request body.
 
 ## Logging SQL request body
 
-Since version 2.0.6 ElmahCore can log the SQL request body.
+v2.0.6+ ElmahCoreEx can log the SQL request body.
 
 ## Logging method parameters
 
-Since version 2.0.6 ElmahCore can log method parameters.
+V2.0.6+ ElmahCoreEx can log method parameters.
 
 ```csharp
 using ElmahCore;
@@ -156,12 +218,11 @@ public void TestMethod(string p1, int p2)
     this.LogParams((nameof(p1), p1), (nameof(p2), p2));
     ...
 }
-
 ```
 
 ## Using UseElmahExceptionPage
 
-You can replace UseDeveloperExceptionPage to UseElmahExceptionPage
+You can replace `UseDeveloperExceptionPage` to `UseElmahExceptionPage`
 
 ```csharp
 if (env.IsDevelopment())
@@ -173,7 +234,7 @@ if (env.IsDevelopment())
 
 ## Using Notifiers
 
-You can create your own notifiers by implement IErrorNotifier or IErrorNotifierWithId interface and add notifier to Elmah options:
+You can create custom notifiers by implementing `IErrorNotifier` or `IErrorNotifierWithId` interface and add notifier to Elmah options:
 
 ```csharp
 services.AddElmah<XmlFileErrorLog>(options =>
@@ -183,12 +244,11 @@ services.AddElmah<XmlFileErrorLog>(options =>
     options.Notifiers.Add(new ErrorMailNotifier("Email",emailOptions));
 });
 ```
-
-Each notifier must have unique name.
+Each notifier must have a unique name.
 
 ## Using Filters
 
-You can use Elmah XML filter configuration in separate file, create and add custom filters:
+You can use Elmah XML filter configuration in a separate file, create and add custom filters:
 
 ```csharp
 services.AddElmah<XmlFileErrorLog>(options =>
@@ -197,9 +257,8 @@ services.AddElmah<XmlFileErrorLog>(options =>
     options.Filters.Add(new MyFilter());
 })
 ```
-
-Custom filter must implement IErrorFilter.
-XML filter config example:
+Custom filter must implement `IErrorFilter`.
+An XML filter config example:
 
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
@@ -220,7 +279,7 @@ XML filter config example:
 
 see more [here](https://elmah.github.io/a/error-filtering/examples/)
 
-JavaScript filters not yet implemented
+JavaScript filters have not been implemented
 
-Add notifiers to errorFilter node if you do not want to send notifications
-Filtered errors will be logged, but will not be sent.
+Attach notifiers to the errorFilter node if you wish to avoid sending notifications.
+Errors that are filtered will be recorded but not dispatched.
