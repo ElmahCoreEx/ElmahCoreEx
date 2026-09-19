@@ -215,9 +215,13 @@ internal sealed class ErrorLogMiddleware
         request.EnableBuffering();
         var body = request.Body;
         var buffer = new byte[Convert.ToInt32(request.ContentLength)];
-        // ReSharper disable once MustUseReturnValue
-        await request.Body.ReadExactlyAsync(buffer, 0, buffer.Length);
-        var bodyAsText = Encoding.UTF8.GetString(buffer);
+        // Content-Length is not authoritative: a truncated or malformed request (e.g. a
+        // client that disconnects mid-body) can deliver fewer bytes than it declared.
+        // ReadAtLeastAsync with throwOnEndOfStream:false reads whatever is actually
+        // available instead of throwing EndOfStreamException and taking down the request.
+        var bytesRead = await request.Body.ReadAtLeastAsync(buffer, buffer.Length, throwOnEndOfStream: false,
+            cancellationToken: request.HttpContext.RequestAborted);
+        var bodyAsText = Encoding.UTF8.GetString(buffer, 0, bytesRead);
         body.Seek(0, SeekOrigin.Begin);
         request.Body = body;
 
