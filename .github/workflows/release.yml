@@ -17,6 +17,15 @@ on:
   workflow_dispatch:
   release:
     types: [published]
+  # Called by release-publish.yml, which creates the tag and then invokes this
+  # workflow directly. A tag pushed with GITHUB_TOKEN does not trigger the
+  # `push: tags` trigger above, so the call has to be explicit.
+  workflow_call:
+    inputs:
+      tag:
+        description: 'Tag to release'
+        required: true
+        type: string
 
 concurrency:
   group: release-${{ github.ref }}
@@ -28,6 +37,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
+          ref: ${{ inputs.tag || github.ref }}
           fetch-depth: 0
 
       - name: Setup .NET 10
@@ -46,6 +56,28 @@ jobs:
 
       - name: Pack
         run: dotnet pack --configuration Release --no-build --output ${{ env.NUGET_DIR }}
+
+      # Every package must carry the tag's version. A mismatch means MinVer did
+      # not see the tag, which would publish a pre-release-versioned package.
+      - name: Verify package versions match the tag
+        if: ${{ inputs.tag || github.ref_type == 'tag' }}
+        shell: bash
+        env:
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          status=0
+          for package in "$NUGET_DIR"/*.nupkg; do
+            name=$(basename "$package" .nupkg)
+            if [ "${name%.$TAG}" = "$name" ]; then
+              echo "::error::$name is not version $TAG"
+              status=1
+            fi
+          done
+          if [ "$status" -ne 0 ]; then
+            echo "::error::Package versions do not match tag $TAG - refusing to publish"
+            exit 1
+          fi
+          echo "All packages are version $TAG"
 
       - uses: actions/upload-artifact@v7
         with:
