@@ -7,13 +7,13 @@ using System.Linq;
 namespace ElmahCore;
 
 /// <summary>
-///     Responsible for primarily encoding the JSON representation of
-///     <see cref="Error" /> objects.
+/// Responsible for primarily encoding the JSON representation of
+/// <see cref="Error" /> objects.
 /// </summary>
 internal static class ErrorJson
 {
     /// <summary>
-    ///     Encodes the default JSON representation of an <see cref="Error" />
+    /// Encodes the default JSON representation of an <see cref="Error" />
     ///     object to a <see cref="TextWriter" />.
     /// </summary>
     /// <remarks>
@@ -22,8 +22,8 @@ internal static class ErrorJson
     /// </remarks>
     public static void Encode(Error error, TextWriter writer)
     {
-        if (error == null) throw new ArgumentNullException(nameof(error));
-        if (writer == null) throw new ArgumentNullException(nameof(writer));
+        ArgumentNullException.ThrowIfNull(error);
+        ArgumentNullException.ThrowIfNull(writer);
 
         EncodeEnclosed(error, new JsonTextWriter(writer));
     }

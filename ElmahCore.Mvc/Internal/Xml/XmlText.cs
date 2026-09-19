@@ -3,17 +3,17 @@ using System.Text.RegularExpressions;
 namespace ElmahCore.Mvc.Xml;
 
 /// <summary>
-///     XML 1.0 services.
+/// XML 1.0 services.
 /// </summary>
 internal static class XmlText
 {
     /// <summary>
-    ///     Replaces illegal XML characters with a replacement string,
-    ///     with the default being a question mark (?) if the replacement
-    ///     is null reference.
+    /// Replaces illegal XML characters with a replacement string,
+    /// with the default being a question mark (?) if the replacement
+    /// is null reference.
     /// </summary>
     /// <remarks>
-    ///     Only strips illegal characters as per XML 1.0, not 1.1.
+    /// Only strips illegal characters as per XML 1.0, not 1.1.
     ///     See section <a href="http://www.w3.org/TR/2006/REC-xml-20060816/#charsets">2.2 Characters</a>
     ///     of <a href="http://www.w3.org/TR/2006/REC-xml-20060816">Extensible Markup Language (XML) 1.0 (Fourth Edition)</a>.
     /// </remarks>

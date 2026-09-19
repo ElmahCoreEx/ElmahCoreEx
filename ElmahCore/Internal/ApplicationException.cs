@@ -3,7 +3,7 @@ using System;
 namespace ElmahCore;
 
 /// <summary>
-///     The exception that is thrown when a non-fatal error occurs.
+/// The exception that is thrown when a non-fatal error occurs.
 ///     This exception also serves as the base for all exceptions thrown by
 ///     this library.
 /// </summary>

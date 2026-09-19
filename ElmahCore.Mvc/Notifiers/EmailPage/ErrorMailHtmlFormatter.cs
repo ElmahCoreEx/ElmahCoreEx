@@ -30,7 +30,7 @@ using ElmahCore.Mvc.Notifiers.ErrorMailHtml;
 namespace ElmahCore.Mvc.Notifiers;
 
 /// <summary>
-///     Formats the HTML to display the details of a given error that is
+/// Formats the HTML to display the details of a given error that is
 ///     suitable for sending as the body of an e-mail message.
 /// </summary>
 internal class ErrorMailHtmlFormatter : ErrorTextFormatter
@@ -39,7 +39,6 @@ internal class ErrorMailHtmlFormatter : ErrorTextFormatter
     ///     Returns the text/html MIME type that is the format provided
     ///     by this <see cref="ErrorTextFormatter" /> implementation.
     /// </summary>
-
     public override string MimeType => "text/html";
 
     /// <summary>
@@ -48,7 +47,7 @@ internal class ErrorMailHtmlFormatter : ErrorTextFormatter
     /// </summary>
     public override void Format(TextWriter writer, Error error)
     {
-        if (writer == null) throw new ArgumentNullException(nameof(writer));
+        ArgumentNullException.ThrowIfNull(writer);
         if (error == null) throw new ArgumentNullException(nameof(error));
 
         var page = new ErrorMailHtmlPage(error);

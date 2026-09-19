@@ -11,7 +11,7 @@ using System.Xml;
 namespace ElmahCore.Assertions;
 
 /// <summary>
-///     Represents the method that will be responsible for creating an
+/// Represents the method that will be responsible for creating an
 ///     assertion object and initializing it from an XML configuration
 ///     element.
 /// </summary>
@@ -118,8 +118,7 @@ internal static class AssertionFactory
 
     public static IAssertion Create(XmlElement config)
     {
-        if (config == null)
-            throw new ArgumentNullException(nameof(config));
+        ArgumentNullException.ThrowIfNull(config);
 
         try
         {
@@ -133,8 +132,7 @@ internal static class AssertionFactory
 
     public static IAssertion[] Create(XmlNodeList nodes)
     {
-        if (nodes == null)
-            throw new ArgumentNullException(nameof(nodes));
+        ArgumentNullException.ThrowIfNull(nodes);
 
         //
         // First count the number of elements, which will be used to
@@ -291,7 +289,7 @@ internal static class AssertionFactory
 
         if (OrdinalStringStartsWith(xmlns, assemblyNs))
         {
-            assemblyName = Uri.UnescapeDataString(xmlns.Substring(assemblyNs.Length));
+            assemblyName = Uri.UnescapeDataString(xmlns.AsSpan(assemblyNs.Length));
             return assemblyName.Length > 0;
         }
 
@@ -305,7 +303,7 @@ internal static class AssertionFactory
         {
             var index = xmlns.IndexOf("/", fullNs.Length, StringComparison.InvariantCultureIgnoreCase);
             typeNamespace = xmlns.Substring(fullNs.Length, index - fullNs.Length);
-            assemblyName = Uri.UnescapeDataString(xmlns.Substring(index + 1));
+            assemblyName = Uri.UnescapeDataString(xmlns.AsSpan(index + 1));
             return assemblyName.Length > 0 && typeNamespace.Length > 0;
         }
 

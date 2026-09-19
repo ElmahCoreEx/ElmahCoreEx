@@ -29,8 +29,8 @@ using System;
 namespace ElmahCore.Mvc.Notifiers.ErrorMailHtml;
 
 /// <summary>
-///     Renders an HTML page displaying details about an error from the
-///     error log ready for emailing.
+/// Renders an HTML page displaying details about an error from the
+/// error log ready for emailing.
 /// </summary>
 internal partial class ErrorMailHtmlPage
 {

@@ -22,9 +22,53 @@ The interfaces and namespaces have been kept the same.
 
 This project is licensed under the terms of the Apache License 2.0.
 
+# Why does this exist?
+
+We use the ElmahCore in some projects, migrated from Elmah (pre dotnet).
+This is a fork and just some tidy and maintenance work.
+
+For new projects you would be better off with something like the Microsoft.Extensions.Logging plus AppInsights or Serilog.
+
+If you are in the same boat and just want small changes, feel free to submit a PR.
+
 # Warnings & Dragons
 
 The source code for the front end appears non-existent, in ElmahCore the front end Vue SPA files are all [minified](https://github.com/ElmahCore/ElmahCore/issues/77). Consider this a warning sign for the continuation of the front end without a rewrite WITH SOURCE. Source-maps may have enough content to obtain the code but this has not be investigated.
+
+
+## Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        ASP.NET Core Application                      │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                      ErrorLogMiddleware                              │
+│  - Intercepts exceptions and HTTP 4xx/5xx errors                     │
+│  - Captures request body, logs, SQL queries, parameters              │
+│  - Routes ~/elmah/* requests to handlers                             │
+└─────────────────────────────────────────────────────────────────────┘
+           │                    │                        │
+           ▼                    ▼                        ▼
+┌──────────────────┐  ┌──────────────────┐  ┌──────────────────────────┐
+│  IErrorFilter    │  │  IErrorNotifier  │  │      ErrorLog (Base)     │
+│  - Filter errors │  │  - Email/webhook │  │  - MemoryErrorLog        │
+│  - XML config    │  │  - Notifications │  │  - SqlErrorLog (MSSQL)   │
+└──────────────────┘  └──────────────────┘  │  - MySqlErrorLog         │
+                                            │  - PgsqlErrorLog         │
+                                            │  - XmlFileErrorLog       │
+                                            └──────────────────────────┘
+                                                        │
+                                                        ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                           Web UI (Vue.js SPA)                        │
+│  - ErrorApiHandler serves /api/errors, /api/error                    │
+│  - ErrorResourceHandler serves embedded static assets                │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
 
 # Using ElmahCore
 
@@ -78,7 +122,7 @@ public class MyErrorLog: ErrorLog {
 }    
 ```
 
-The ErrorLog adapters available:
+The ErrorLog adapters are available:
 
 - **MemoryErrorLog** – store errors in memory (by default)
 - **XmlFileErrorLog** – store errors in XML files.

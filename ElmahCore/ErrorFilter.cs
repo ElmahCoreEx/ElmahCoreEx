@@ -7,8 +7,8 @@ using ElmahCore.Assertions;
 namespace ElmahCore;
 
 /// <summary>
-///     HTTP module implementation that logs unhanded exceptions in an
-///     ASP.NET Web application to an error log.
+/// HTTP module implementation that logs unhanded exceptions in an
+/// ASP.NET Web application to an error log.
 /// </summary>
 
 // ReSharper disable once UnusedMember.Global

@@ -9,8 +9,8 @@ namespace ElmahCore;
 internal class ElmahLogFeature
 {
     private readonly ConcurrentDictionary<Guid, ElmahLogSqlEntry> _map = new();
-    public readonly List<ElmahLogMessageEntry> Log = new();
-    public readonly List<ElmahLogParameters> Params = new();
+    public readonly List<ElmahLogMessageEntry> Log = [];
+    public readonly List<ElmahLogParameters> Params = [];
 
     public List<ElmahLogSqlEntry> LogSql => _map.Values.OrderBy(i => i.TimeStamp).ToList();
 

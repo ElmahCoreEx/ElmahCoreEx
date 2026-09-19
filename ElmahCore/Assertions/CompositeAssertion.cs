@@ -6,7 +6,7 @@ using System.Linq;
 namespace ElmahCore.Assertions;
 
 /// <summary>
-///     Read-only collection of <see cref="Assertions.IAssertion" /> instances.
+/// Read-only collection of <see cref="Assertions.IAssertion" /> instances.
 /// </summary>
 [Serializable]
 internal abstract class CompositeAssertion : ReadOnlyCollection<IAssertion>, IAssertion
@@ -25,7 +25,7 @@ internal abstract class CompositeAssertion : ReadOnlyCollection<IAssertion>, IAs
 
     private static IEnumerable<IAssertion> Validate(IEnumerable<IAssertion> assertions)
     {
-        if (assertions == null) throw new ArgumentNullException(nameof(assertions));
+        ArgumentNullException.ThrowIfNull(assertions);
         return ValidateImpl(assertions);
     }
 

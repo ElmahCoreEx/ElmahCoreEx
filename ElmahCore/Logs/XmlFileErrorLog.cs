@@ -11,18 +11,17 @@ using Microsoft.Extensions.Options;
 namespace ElmahCore;
 
 /// <summary>
-///     An <see cref="ErrorLog" /> implementation that uses XML files stored on
-///     disk as its backing store.
+/// An <see cref="ErrorLog" /> implementation that uses XML files stored on
+/// disk as its backing store.
 /// </summary>
-
 // ReSharper disable once UnusedType.Global
 public class XmlFileErrorLog : ErrorLog
 {
     private readonly string _logPath;
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="XmlFileErrorLog" /> class
-    ///     using a dictionary of configured settings.
+    /// Initializes a new instance of the <see cref="XmlFileErrorLog" /> class
+    /// using a dictionary of configured settings.
     /// </summary>
     public XmlFileErrorLog(IOptions<ElmahOptions> options, IHostingEnvironment hostingEnvironment)
     {
@@ -32,26 +31,23 @@ public class XmlFileErrorLog : ErrorLog
                 _logPath.Substring(2));
     }
 
-
     /// <summary>
-    ///     Gets the path to where the log is stored.
+    /// Gets the path to where the log is stored.
     /// </summary>
-
     protected virtual string LogPath => _logPath;
 
     /// <summary>
-    ///     Gets the name of this error log implementation.
+    /// Gets the name of this error log implementation.
     /// </summary>
-
     public override string Name => "XML File-Based Error Log";
 
     /// <summary>
-    ///     Logs an error to the database.
+    /// Logs an error to the database.
     /// </summary>
     /// <remarks>
-    ///     Logs an error as a single XML file stored in a folder. XML files are named with a
-    ///     sortable date and a unique identifier. Currently the XML files are stored indefinitely.
-    ///     As they are stored as files, they may be managed using standard scheduled jobs.
+    /// Logs an error as a single XML file stored in a folder. XML files are named with a
+    /// sortable date and a unique identifier. Currently the XML files are stored indefinitely.
+    /// As they are stored as files, they may be managed using standard scheduled jobs.
     /// </remarks>
     public override string Log(Error error)
     {
@@ -99,8 +95,8 @@ public class XmlFileErrorLog : ErrorLog
     }
 
     /// <summary>
-    ///     Returns a page of errors from the folder in descending order
-    ///     of logged time as defined by the sortable file names.
+    /// Returns a page of errors from the folder in descending order
+    /// of logged time as defined by the sortable file names.
     /// </summary>
     public override int GetErrors(int errorIndex, int pageSize, ICollection<ErrorLogEntry> errorEntryList)
     {
@@ -111,7 +107,7 @@ public class XmlFileErrorLog : ErrorLog
             return 0;
         var dir = new DirectoryInfo(LogPath);
         var infos = dir.GetFiles("error-*.xml");
-        if (!infos.Any())
+        if (infos.Length == 0)
             return 0;
 
         var files = infos.Where(info => IsUserFile(info.Attributes))
@@ -151,7 +147,7 @@ public class XmlFileErrorLog : ErrorLog
     }
 
     /// <summary>
-    ///     Returns the specified error from the filesystem, or throws an exception if it does not exist.
+    /// Returns the specified error from the filesystem, or throws an exception if it does not exist.
     /// </summary>
     public override ErrorLogEntry GetError(string id)
     {

@@ -14,21 +14,21 @@ internal class ErrorLogEntryWrapper
     }
 
     /// <summary>
-    ///     Gets the <see cref="ErrorLog" /> instance where this entry
-    ///     originated from.
+    /// Gets the <see cref="ErrorLog" /> instance where this entry
+    /// originated from.
     /// </summary>
 
     public ErrorLog Log { get; }
 
     /// <summary>
-    ///     Gets the unique identifier that identifies the error entry
-    ///     in the log.
+    /// Gets the unique identifier that identifies the error entry
+    /// in the log.
     /// </summary>
 
     public string Id { get; }
 
     /// <summary>
-    ///     Gets the <see cref="Error" /> object held in the entry.
+    /// Gets the <see cref="Error" /> object held in the entry.
     /// </summary>
 
     public ErrorWrapper Error { get; }

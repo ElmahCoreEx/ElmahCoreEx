@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 namespace ElmahCore.Mvc.Handlers;
 
 /// <summary>
-///     Renders an error as JSON Text (RFC 4627).
+/// Renders an error as JSON Text (RFC 4627).
 /// </summary>
 internal static class ErrorJsonHandler
 {

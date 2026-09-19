@@ -3,9 +3,9 @@ using System;
 namespace ElmahCore.Mvc;
 
 /// <summary>
-///     The exception that is thrown when to test the error logging
-///     subsystem. This exception is used for testing purposes only and
-///     should not be used for any other purpose.
+/// The exception that is thrown when to test the error logging
+/// subsystem. This exception is used for testing purposes only and
+/// should not be used for any other purpose.
 /// </summary>
 [Serializable]
 internal sealed class TestException : System.ApplicationException

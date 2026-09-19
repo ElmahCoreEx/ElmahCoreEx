@@ -14,9 +14,9 @@ using Microsoft.AspNetCore.Http;
 namespace ElmahCore.Mvc.Handlers;
 
 /// <summary>
-///     Renders an RSS feed that is a daily digest of the most recently
-///     recorded errors in the error log. The feed spans at most 15
-///     days on which errors occurred.
+/// Renders an RSS feed that is a daily digest of the most recently
+/// recorded errors in the error log. The feed spans at most 15
+/// days on which errors occurred.
 /// </summary>
 internal static class ErrorDigestRssHandler
 {

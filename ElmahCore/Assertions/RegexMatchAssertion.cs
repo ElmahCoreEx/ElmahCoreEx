@@ -5,9 +5,9 @@ using System.Text.RegularExpressions;
 namespace ElmahCore.Assertions;
 
 /// <summary>
-///     An assertion implementation whose test is based on whether
-///     the result of an input expression evaluated against a context
-///     matches a regular expression pattern or not.
+/// An assertion implementation whose test is based on whether
+/// the result of an input expression evaluated against a context
+/// matches a regular expression pattern or not.
 /// </summary>
 internal sealed class RegexMatchAssertion : DataBoundAssertion
 {
