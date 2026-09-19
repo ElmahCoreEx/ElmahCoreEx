@@ -18,7 +18,7 @@ dotnet run --project ElmahCore.Demo  # Run demo app (UI at /elmah)
 - `ElmahCore.MySql/` - MySQL error log implementation
 - `ElmahCore.Postgresql/` - PostgreSQL error log implementation
 - `ElmahCore.Demo/` - Reference application with usage examples
-- `Tests/` - xUnit tests with FluentAssertions and NSubstitute
+- `Tests/` - xUnit tests with AwesomeAssertions and NSubstitute
 
 ## Key Files
 
@@ -41,7 +41,7 @@ dotnet run --project ElmahCore.Demo  # Run demo app (UI at /elmah)
 
 ## Testing
 
-Tests use xUnit, FluentAssertions, and NSubstitute:
+Tests use xUnit, AwesomeAssertions, and NSubstitute:
 
 ```bash
 dotnet test Tests/ElmahCore.Tests

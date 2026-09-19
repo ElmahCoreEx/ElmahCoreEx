@@ -1,6 +1,6 @@
 ﻿using System;
 using ElmahCore.Mvc.Exceptions;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
 using Xunit;
 
