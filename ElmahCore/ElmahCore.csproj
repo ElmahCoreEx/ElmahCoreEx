@@ -33,11 +33,11 @@
 
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.3.9" />
-        <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.9" />
-        <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="10.0.3" />
-        <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.3" />
-        <PackageReference Include="MinVer" Version="7.0.0">
+        <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.3.13" />
+        <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.13" />
+        <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="10.0.12" />
+        <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.12" />
+        <PackageReference Include="MinVer" Version="8.0.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

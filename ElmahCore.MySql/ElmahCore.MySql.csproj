@@ -25,11 +25,11 @@
 
     <ItemGroup>
         <PackageReference Include="JetBrains.Annotations" Version="2026.2.0" />
-        <PackageReference Include="MinVer" Version="7.0.0">
+        <PackageReference Include="MinVer" Version="8.0.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="MySql.Data" Version="9.6.0" />
+        <PackageReference Include="MySql.Data" Version="26.7.0" />
     </ItemGroup>
 
     <ItemGroup>

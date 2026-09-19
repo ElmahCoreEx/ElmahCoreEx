@@ -44,13 +44,13 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
+        <PackageReference Include="HtmlAgilityPack" Version="1.13.0" />
         <PackageReference Include="JetBrains.Annotations" Version="2026.2.0" />
-        <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.4" />
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.3" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.Abstractions" Version="2.3.9" />
-        <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.9" />
-        <PackageReference Include="MinVer" Version="7.0.0">
+        <PackageReference Include="Microsoft.Data.SqlClient" Version="7.1.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.12" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.Abstractions" Version="2.3.13" />
+        <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.13" />
+        <PackageReference Include="MinVer" Version="8.0.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
