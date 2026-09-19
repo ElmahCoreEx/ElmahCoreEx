@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using System.Data.Common;
+using System.Data.SqlTypes;
 using System.Text;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
@@ -14,6 +15,10 @@ namespace ElmahCore.Sql;
 public class SqlErrorLog : RelationalErrorLog
 {
     private const int MaxAppNameLength = 60;
+    private const int MaxHostLength = 50;
+    private const int MaxTypeLength = 100;
+    private const int MaxSourceLength = 60;
+    private const int MaxUserLength = 50;
     private readonly bool _logAllXml;
     private readonly string _connectionString;
     private readonly string _schemaName;
@@ -87,18 +92,31 @@ INSERT INTO [{DatabaseSchemaName}].[{DatabaseTableName}] (ErrorId, Application, 
 VALUES (@ErrorId, @Application, @Host, @Type, @Source, @Message, @User, @StatusCode, @TimeUtc, @AllXml)
 "
         };
+        // Values longer than their column would make the insert fail and the error be lost,
+        // so shorten them. AllXml still holds the full values.
         command.Parameters.Add(new SqlParameter("ErrorId", id));
-        command.Parameters.Add(new SqlParameter("Application", appName));
-        command.Parameters.Add(new SqlParameter("Host", hostName));
-        command.Parameters.Add(new SqlParameter("Type", typeName));
-        command.Parameters.Add(new SqlParameter("Source", source));
+        command.Parameters.Add(new SqlParameter("Application", Truncate(appName, MaxAppNameLength)));
+        command.Parameters.Add(new SqlParameter("Host", Truncate(hostName, MaxHostLength)));
+        command.Parameters.Add(new SqlParameter("Type", Truncate(typeName, MaxTypeLength)));
+        command.Parameters.Add(new SqlParameter("Source", Truncate(source, MaxSourceLength)));
         command.Parameters.Add(new SqlParameter("Message", message));
-        command.Parameters.Add(new SqlParameter("User", user));
+        command.Parameters.Add(new SqlParameter("User", Truncate(user, MaxUserLength)));
         command.Parameters.Add(new SqlParameter("StatusCode", statusCode));
-        command.Parameters.Add(new SqlParameter("TimeUtc", time.ToUniversalTime()));
+        command.Parameters.Add(new SqlParameter("TimeUtc", ToSqlDateTime(time)));
         command.Parameters.Add(new SqlParameter("AllXml", xml));
 
         return command;
+    }
+
+    private static string Truncate(string value, int maxLength) =>
+        value?.Length > maxLength ? value[..maxLength] : value;
+
+    // An error without a time (DateTime.MinValue) is valid, but the DATETIME column cannot hold it.
+    // Store the time it was logged instead; AllXml still records that the error has no time.
+    private static DateTime ToSqlDateTime(DateTime time)
+    {
+        var utc = time.ToUniversalTime();
+        return utc < SqlDateTime.MinValue.Value ? DateTime.UtcNow : utc;
     }
 
     /// <inheritdoc />
