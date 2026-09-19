@@ -6,6 +6,7 @@
     <File Path="README.md" />
   </Folder>
   <Folder Name="/Tests/">
+    <Project Path="Tests/ElmahCore.IntegrationTests/ElmahCore.IntegrationTests.csproj" />
     <Project Path="Tests/ElmahCore.Mvc.Tests/ElmahCore.Mvc.Tests.csproj" />
     <Project Path="Tests/ElmahCore.Tests/ElmahCore.Tests.csproj" />
   </Folder>
