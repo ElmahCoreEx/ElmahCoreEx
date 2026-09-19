@@ -204,9 +204,22 @@ internal sealed class ErrorLogMiddleware
         // client that disconnects mid-body) can deliver fewer bytes than it declared.
         // ReadAtLeastAsync with throwOnEndOfStream:false reads whatever is actually
         // available instead of throwing EndOfStreamException and taking down the request.
-        var bytesRead = await request.Body.ReadAtLeastAsync(buffer, buffer.Length, throwOnEndOfStream: false,
-            cancellationToken: request.HttpContext.RequestAborted);
-        var bodyAsText = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+        string bodyAsText;
+        try
+        {
+            var bytesRead = await request.Body.ReadAtLeastAsync(buffer, buffer.Length, throwOnEndOfStream: false,
+                cancellationToken: request.HttpContext.RequestAborted);
+            bodyAsText = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+        }
+        catch (Exception ex) when (ex is IOException or OperationCanceledException)
+        {
+            // On a real server a client that disconnects mid-body surfaces as an IOException
+            // (Kestrel's BadHttpRequestException and ConnectionResetException both derive from it)
+            // or as cancellation of RequestAborted. Failing to capture the body is not an
+            // application error, so don't let it reach InvokeAsync's catch and get logged.
+            return null;
+        }
+
         body.Seek(0, SeekOrigin.Begin);
         request.Body = body;
 

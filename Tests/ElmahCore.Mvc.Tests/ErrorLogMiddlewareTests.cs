@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
@@ -152,5 +153,73 @@ public class ErrorLogMiddlewareTests
         errorLog.GetErrors(0, 10, entries);
         entries.Should().ContainSingle();
         entries[0].Error.Body.Should().Be(Encoding.UTF8.GetString(actualBody));
+    }
+
+    [Fact]
+    public async Task InvokeAsyncDoesNotLogErrorWhenBodyReadThrowsIOException()
+    {
+        // Kestrel's BadHttpRequestException ("Unexpected end of request content") and
+        // ConnectionResetException both derive from IOException.
+        var errorLog = await InvokeWithUnreadableBody(new ThrowingStream(new IOException("Connection reset")));
+
+        await errorLog.DidNotReceiveWithAnyArgs().LogAsync(default, default);
+    }
+
+    [Fact]
+    public async Task InvokeAsyncDoesNotLogErrorWhenRequestIsAbortedDuringBodyRead()
+    {
+        using var aborted = new CancellationTokenSource();
+        await aborted.CancelAsync();
+
+        var errorLog = await InvokeWithUnreadableBody(new MemoryStream(Encoding.UTF8.GetBytes("field=value")),
+            aborted.Token);
+
+        await errorLog.DidNotReceiveWithAnyArgs().LogAsync(default, default);
+    }
+
+    // MemoryErrorLog shares its entries across instances, so use a substitute to observe logging.
+    private async Task<ErrorLog> InvokeWithUnreadableBody(Stream body, CancellationToken requestAborted = default)
+    {
+        var errorLog = Substitute.For<ErrorLog>();
+        var options = Options.Create(new ElmahOptions { LogRequestBody = true });
+        var middleware = new ErrorLogMiddleware(_requestDelegate, errorLog, _loggerFactory, options);
+
+        var context = new DefaultHttpContext { RequestAborted = requestAborted };
+        context.Request.ContentType = "application/x-www-form-urlencoded";
+        context.Request.ContentLength = 5000;
+        context.Request.Body = body;
+
+        var act = async () => await middleware.InvokeAsync(context);
+        await act.Should().NotThrowAsync();
+
+        return errorLog;
+    }
+
+    // Simulates a Kestrel request body whose client disconnected mid-body.
+    private sealed class ThrowingStream(Exception exception) : Stream
+    {
+        public override bool CanRead => true;
+        public override bool CanSeek => false;
+        public override bool CanWrite => false;
+        public override long Length => throw new NotSupportedException();
+
+        public override long Position
+        {
+            get => throw new NotSupportedException();
+            set => throw new NotSupportedException();
+        }
+
+        public override int Read(byte[] buffer, int offset, int count) => throw exception;
+
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) =>
+            ValueTask.FromException<int>(exception);
+
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) =>
+            Task.FromException<int>(exception);
+
+        public override void Flush() { }
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+        public override void SetLength(long value) => throw new NotSupportedException();
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
     }
 }
